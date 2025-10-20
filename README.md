@@ -770,15 +770,15 @@ Visit http://localhost:8080/swagger-ui.html when the backend is running for inte
 ```properties
 # Database
 spring.datasource.url=jdbc:mysql://localhost:3306/petstore_db
-spring.datasource.username=root
-spring.datasource.password=password
+spring.datasource.username=your_datasource_user
+spring.datasource.password=your_datasource_password
 
 # JPA
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
 # JWT
-app.jwt.secret=mySecretKey
+app.jwt.secret=your_secret_key
 app.jwt.expiration-ms=86400000
 ```
 
