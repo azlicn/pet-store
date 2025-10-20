@@ -1,0 +1,128 @@
+<div class="pet-list-container">
+  <h1>{{showMyPetsOnly ? 'My Pets' : 'Pets'}}</h1>
+  
+  <mat-card class="filter-card" *ngIf="showFilters">
+    <mat-card-header>
+      <div class="filter-header">
+        <mat-card-title>Search & Filter Pets</mat-card-title>
+        <a class="reset-link" (click)="clearFilters()">Reset</a>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="filter-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Search by name</mat-label>
+          <input matInput [(ngModel)]="searchFilters.name" (input)="onFilterChange()" 
+                 placeholder="Enter pet name">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Category</mat-label>
+          <mat-select [(ngModel)]="searchFilters.categoryId" (selectionChange)="onFilterChange()">
+            <mat-option value="">All Categories</mat-option>
+            <mat-option *ngFor="let category of allCategories" [value]="category.id">
+              {{category.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="searchFilters.status" (selectionChange)="onFilterChange()">
+            <mat-option value="">All Status</mat-option>
+            <mat-option value="AVAILABLE">Available</mat-option>
+            <mat-option value="PENDING">Pending</mat-option>
+            <mat-option value="SOLD">Sold</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  
+  <div class="action-buttons">
+    <div class="icon-legend" *ngIf="showMyPetsOnly && authService.isLoggedIn() && !authService.isAdmin()">
+      <span class="legend-title">Icons:</span>
+      <span class="legend-item">
+        <mat-icon class="legend-icon created-only">sell</mat-icon>
+        Listed for sale by you
+      </span>
+      <span class="legend-item">
+        <mat-icon class="legend-icon owned-only">shopping_bag</mat-icon>
+        Purchased by you
+      </span>
+    </div>
+    
+    <button mat-flat-button color="primary" routerLink="/pets/add" 
+            *ngIf="authService.isLoggedIn()">
+      <mat-icon>add</mat-icon>
+      Add New Pet
+    </button>
+    
+    <button mat-flat-button 
+            [color]="showMyPetsOnly ? 'accent' : 'basic'"
+            (click)="toggleMyPets()"
+            *ngIf="authService.isLoggedIn() && !authService.isAdmin()">
+      <mat-icon>{{showMyPetsOnly ? 'pets' : 'pets'}}</mat-icon>
+      {{showMyPetsOnly ? 'Show All Pets' : 'My Pets'}}
+    </button>
+    
+    <button mat-icon-button (click)="toggleView()" class="view-toggle" 
+            [title]="viewMode === 'card' ? 'Switch to List View' : 'Switch to Card View'">
+      <mat-icon>{{viewMode === 'card' ? 'view_list' : 'view_module'}}</mat-icon>
+    </button>
+    <button mat-icon-button (click)="toggleFilters()" class="filter-toggle" 
+            [title]="showFilters ? 'Hide Filters' : 'Show Filters'">
+      <mat-icon>{{showFilters ? 'filter_alt_off' : 'filter_alt'}}</mat-icon>
+    </button>
+    <!-- <button mat-stroked-button (click)="refreshPets()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button> -->
+  </div>
+  
+  <div class="pet-count-info" *ngIf="pets.length > 0">
+    <p class="count-text">
+      Showing {{pets.length}} of {{allPets.length}} pets
+      <span *ngIf="showMyPetsOnly" class="filter-indicator">(My Pets Only)</span>
+    </p>
+  </div>
+  
+  <div *ngIf="pets.length > 0; else noPets">
+    <div class="pets-grid" *ngIf="viewMode === 'card'">
+      <app-pet-card 
+        *ngFor="let pet of pets" 
+        [pet]="pet"
+        (statusUpdate)="updateStatus($event)"
+        (petDelete)="deletePet($event)"
+        (petPurchase)="purchasePet($event)">
+      </app-pet-card>
+    </div>
+    
+    <app-pet-list-view 
+      *ngIf="viewMode === 'list'"
+      [pets]="pets"
+      (statusUpdate)="updateStatus($event)"
+      (petDelete)="deletePet($event)"
+      (petPurchase)="purchasePet($event)">
+    </app-pet-list-view>
+  </div>
+  
+  <ng-template #noPets>
+    <mat-card class="no-pets-card">
+      <mat-card-content>
+      <div class="no-pets-content">
+        <mat-icon class="large-icon">pets</mat-icon>
+        <h2>{{showMyPetsOnly ? 'No pets created by you' : 'No pets found'}}</h2>
+        <p *ngIf="!showMyPetsOnly">There are no pets matching your criteria. Try adjusting your filters<span *ngIf="authService.isAdmin()"> or add a new pet</span>.</p>
+        <p *ngIf="showMyPetsOnly">You haven't created any pets yet. Start by adding your first pet!</p>
+        <button mat-flat-button color="primary" routerLink="/pets/add" 
+                *ngIf="authService.isLoggedIn()">
+            <mat-icon>add</mat-icon>
+            Add First Pet
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-template>
+</div>

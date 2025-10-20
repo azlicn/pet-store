@@ -1,0 +1,266 @@
+:host {
+  display: block;
+  width: 100%;
+  position: relative;
+}
+
+.mermaid-container {
+  margin: 20px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  box-sizing: border-box;
+  overflow: visible;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+
+  // Ensure proper SVG rendering environment
+  .mermaid,
+  .mermaid-stable,
+  .mermaid-isolated {
+    display: block;
+    width: 100%;
+    height: auto;
+    text-align: center;
+    margin: 0 auto;
+    background: white !important;
+    position: relative;
+    min-height: 100px;
+    isolation: isolate;
+    contain: layout style paint;
+    
+    // Critical: Ensure SVG elements are properly sized
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      background: white !important;
+      
+      // Prevent getBBox errors by ensuring elements exist
+      * {
+        pointer-events: auto;
+      }
+      
+      // Ensure text elements are properly rendered
+      text {
+        font-family: Arial, sans-serif;
+        pointer-events: none;
+      }
+      
+      // Ensure shapes are properly rendered
+      rect, circle, path, line, polygon {
+        pointer-events: auto;
+      }
+    }
+    
+    // Prevent content from bleeding into other containers
+    &::before,
+    &::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+  }
+
+  // Override any problematic styles that might interfere with SVG rendering
+  .mermaid-content,
+  .mermaid {
+    line-height: normal;
+    font-family: Arial, sans-serif;
+    background: white !important;
+    
+    // Ensure container has proper dimensions for SVG calculations
+    &:before {
+      content: '';
+      display: inline-block;
+      height: 0;
+      width: 0;
+    }
+  }
+}
+
+.diagram-header {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 8px 8px 0 0;
+
+  h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 1.2em;
+  }
+}
+
+.diagram-description {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.mermaid-diagram {
+  padding: 20px;
+  text-align: center;
+  min-height: 200px;
+  overflow: auto;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.mermaid-content {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: white;
+
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    background: white !important;
+  }
+}
+
+.diagram-actions {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+  }
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  background: white;
+  border-radius: 0;
+
+  .mermaid-diagram {
+    height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.error-message {
+  padding: 20px;
+  text-align: center;
+  color: #d32f2f;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+  margin: 20px;
+
+  details {
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+    font-weight: 500;
+  }
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #666;
+
+  .loading-text {
+    margin-left: 12px;
+    font-size: 14px;
+  }
+}
+
+// Ensure proper rendering in different container contexts
+:host(.mat-tab-body-content),
+:host(.mat-expansion-panel-content),
+:host(.mat-card-content) {
+  .mermaid-container {
+    .mermaid svg {
+      // Force recalculation in constrained containers
+      width: auto;
+      min-width: 100%;
+    }
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .mermaid-container {
+    background: #303030;
+    border-color: #555;
+    color: #fff;
+
+    .mermaid svg {
+      filter: invert(0.87) hue-rotate(180deg);
+    }
+  }
+
+  .error-message {
+    background: #2d1b1b;
+    border-color: #4a2c2c;
+    color: #ffaaaa;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .mermaid-container {
+    padding: 12px;
+    margin: 10px 0;
+    
+    .mermaid svg {
+      // Ensure diagrams scale properly on mobile
+      max-width: calc(100vw - 32px);
+    }
+  }
+
+  .diagram-actions {
+    flex-wrap: wrap;
+    
+    .action-btn {
+      flex: 1;
+      min-width: 100px;
+    }
+  }
+}

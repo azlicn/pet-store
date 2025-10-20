@@ -1,0 +1,247 @@
+.pet-list-view {
+  width: 100%;
+  overflow-x: auto; 
+}
+
+.pet-table {
+  width: 100%;
+  min-width: 800px; 
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pet-row {
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+.pet-photo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  .pet-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+  }
+  
+  .pet-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    color: #999;
+    
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+    }
+    
+    span {
+      font-size: 10px;
+      text-align: center;
+      line-height: 1;
+    }
+  }
+}
+
+.pet-info {
+  .pet-name-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .pet-name {
+    font-weight: 500;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  
+  .relationship-icon {
+    font-size: 1.2rem !important;
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    
+    &.created-and-owned {
+      color: #e91e63; 
+    }
+    
+    &.created-only {
+      color: #ff9800;
+    }
+    
+    &.owned-only {
+      color: #2196f3; 
+    }
+  }
+  
+  .pet-tags {
+    margin-top: 4px;
+    
+    .tags-label {
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+    }
+  }
+}
+
+.price {
+  font-weight: 600;
+  font-size: 16px;
+  color: #ff6b35;
+  text-align: right;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  
+  button {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+  }
+}
+
+mat-header-cell {
+  font-weight: 600;
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+mat-cell, mat-header-cell {
+  padding: 12px 16px;
+}
+
+.mat-column-photo {
+  width: 8%;
+  min-width: 80px;
+}
+
+.mat-column-name {
+  width: 45%;
+  min-width: 300px;
+}
+
+.mat-column-category {
+  width: 12%;
+  min-width: 100px;
+}
+
+.mat-column-status {
+  width: 10%;
+  min-width: 90px;
+}
+
+.mat-column-price {
+  width: 8%;
+  min-width: 70px;
+  text-align: right;
+  
+  mat-cell, mat-header-cell {
+    text-align: right;
+  }
+}
+
+.mat-column-actions {
+  width: 17%;
+  min-width: 150px;
+}
+
+.status-available {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.status-pending {
+  background-color: #ff9800 !important;
+  color: white !important;
+}
+
+.status-sold {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.status-unknown {
+  background-color: #9e9e9e !important;
+  color: white !important;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .pet-table {
+    font-size: 14px;
+  }
+  
+  .pet-photo .pet-thumbnail {
+    width: 40px;
+    height: 40px;
+  }
+  
+  mat-cell, mat-header-cell {
+    padding: 8px 12px;
+  }
+  
+  .action-buttons button {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+  }
+  
+  // Adjust column widths for mobile - still use percentages
+  .mat-column-photo {
+    width: 12%;
+    min-width: 70px;
+  }
+  
+  .mat-column-name {
+    width: 30%;
+    min-width: 150px;
+  }
+  
+  .mat-column-category {
+    width: 15%;
+    min-width: 80px;
+  }
+  
+  .mat-column-status {
+    width: 13%;
+    min-width: 70px;
+  }
+  
+  .mat-column-price {
+    width: 10%;
+    min-width: 60px;
+  }
+  
+  .mat-column-actions {
+    width: 20%;
+    min-width: 120px;
+  }
+}

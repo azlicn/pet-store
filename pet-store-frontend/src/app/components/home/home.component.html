@@ -1,0 +1,62 @@
+<div class="home-container">
+  <div class="main-content">
+    <!-- Branding Section (30%) -->
+    <div class="branding-section">
+      <div class="brand-image">
+        <div class="hero-placeholder">
+          <img src="assets/images/pets-main.png" alt="Happy Pets" class="hero-image" />
+        </div>
+      </div>
+      <div class="brand-description">
+        <h2>Welcome to Pawfect Store</h2>
+        <p>
+          Find your perfect companion at Pawfect Store! We connect loving families with adorable, healthy pets ready to fill your home with joy and endless happiness.
+        </p>
+        <p>
+          From playful pups to cuddly kittens, every pet at Pawfect Store is lovingly cared for until they find their forever home.
+        </p>
+        <div class="cta-buttons">
+          <button mat-flat-button color="primary" routerLink="/login">
+            <mat-icon>favorite</mat-icon>
+            Start Your Journey
+          </button>
+        <!--   <button mat-stroked-button color="accent" routerLink="/login">
+            <mat-icon>favorite</mat-icon>
+            Start Your Journey
+          </button> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Latest Pets Section (70%) -->
+    <div class="latest-pets-section">
+      <div class="section-header">
+        <h2>Latest Arrivals</h2>
+        <p>Meet our newest furry friends looking for their forever homes</p>
+      </div>
+      
+      <div class="pets-grid" *ngIf="latestPets.length > 0; else noPets">
+        <app-latest-pet-card 
+          *ngFor="let pet of latestPets; trackBy: trackByPetId"
+          [pet]="pet"
+          (imageError)="onImageError($event)">
+        </app-latest-pet-card>
+      </div>
+
+      <ng-template #noPets>
+        <div class="no-pets-message">
+          <mat-icon>pets</mat-icon>
+          <h3>No pets available at the moment</h3>
+          <p>Check back soon for new arrivals!</p>
+        </div>
+      </ng-template>
+
+      <div class="view-all-section">
+        <button mat-flat-button color="accent" routerLink="/pets">
+          <mat-icon>arrow_forward</mat-icon>
+          View All Pets
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

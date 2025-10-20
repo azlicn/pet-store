@@ -1,0 +1,296 @@
+// Custom Yellow/Orange Theme
+@use '@angular/material' as mat;
+
+// Google Fonts Import
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
+
+// Define yellow/orange palette
+$yellow-palette: (
+  50: #fffbf0,
+  100: #fff4d9,
+  200: #ffe9b3,
+  300: #ffdb82,
+  400: #ffc947,
+  500: #ffb020,
+  600: #ff9500,
+  700: #e67e00,
+  800: #cc6600,
+  900: #b35200,
+  A100: #ffe0b3,
+  A200: #ffc966,
+  A400: #ffb300,
+  A700: #ff9500,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: rgba(black, 0.87),
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: rgba(black, 0.87),
+    A700: white,
+  )
+);
+
+$orange-palette: (
+  50: #fff3e0,
+  100: #ffe0b3,
+  200: #ffcc80,
+  300: #ffb74d,
+  400: #ffa726,
+  500: #ff9800,
+  600: #fb8c00,
+  700: #f57c00,
+  800: #ef6c00,
+  900: #e65100,
+  A100: #ffd180,
+  A200: #ffab40,
+  A400: #ff9100,
+  A700: #ff6d00,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: rgba(black, 0.87),
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: rgba(black, 0.87),
+    A700: white,
+  )
+);
+
+// Create theme with yellow primary and orange accent
+$primary: mat.define-palette($yellow-palette, 500);
+$accent: mat.define-palette($orange-palette, 600);
+$warn: mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary,
+    accent: $accent,
+    warn: $warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($theme);
+
+/* Font Variables */
+:root {
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'Newsreader', serif;
+  --font-fallback: 'Roboto', "Helvetica Neue", sans-serif;
+  
+  /* Yellow Theme Color Variables */
+  --primary-yellow: #ffb020;
+  --primary-yellow-light: #ffc947;
+  --primary-yellow-dark: #ff9500;
+  --accent-orange: #fb8c00;
+  --accent-orange-light: #ffa726;
+  --accent-orange-dark: #f57c00;
+  --background-cream: #fffbf0;
+  --background-light: #fff4d9;
+  --text-dark: #4a4a4a;
+  --text-medium: #6b6b6b;
+  --text-light: #8a8a8a;
+  --text-white: #ffffff;
+  --card-shadow: rgba(255, 176, 32, 0.2);
+  --border-light: rgba(255, 176, 32, 0.3);
+
+  /* Red Theme Color Variables */
+  --primary-red: #e53935;
+  --primary-red-light: #ef5350;
+  --primary-red-dark: #c62828;
+  --accent-pink: #f06292;
+  --accent-pink-light: #f48fb1;
+  --accent-pink-dark: #d81b60;
+
+  /* Green Theme Color Variables */
+  --primary-green: #43a047;
+  --primary-green-light: #66bb6a;
+  --primary-green-dark: #2e7d32;
+  --accent-teal: #26a69a;
+  --accent-teal-light: #4db6ac;
+  --accent-teal-dark: #00796b;
+
+  /* Blue Theme Color Variables */
+  --primary-blue: #1e88e5;
+  --primary-blue-light: #42a5f5;
+  --primary-blue-dark: #1565c0;
+  --accent-cyan: #00acc1;
+  --accent-cyan-light: #26c6da;
+  --accent-cyan-dark: #00838f;
+
+}
+
+/* Global styles */
+html, body { 
+  height: 100%; 
+}
+
+body { 
+  margin: 0; 
+  font-family: var(--font-body);
+  background: linear-gradient(135deg, var(--background-cream) 0%, var(--background-light) 100%);
+  line-height: 1.6;
+  color: var(--text-dark);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6,
+.mat-headline-1, .mat-headline-2, .mat-headline-3, .mat-headline-4, .mat-headline-5, .mat-headline-6,
+.mat-title, .mat-large-title, .mat-medium-title, .mat-small-title,
+mat-card-title, .mat-card-title,
+mat-card-subtitle, .mat-card-subtitle,
+mat-header-cell, .mat-header-cell,
+mat-label, .mat-label,
+.heading-font {
+  font-family: var(--font-heading) !important;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+p, span, div, .mat-body, .mat-body-1, .mat-body-2, .mat-caption, .mat-small,
+.body-font {
+  font-family: var(--font-body) !important;
+}
+
+/* Button fonts */
+.mat-button, .mat-raised-button, .mat-flat-button, .mat-stroked-button {
+  font-family: var(--font-heading) !important;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+/* Input placeholder fonts */
+input::placeholder,
+textarea::placeholder,
+.mat-input-element::placeholder,
+::ng-deep .mat-input-element::placeholder {
+  font-family: var(--font-body) !important;
+  opacity: 0.6;
+}
+
+/* Navigation and toolbar fonts */
+.mat-toolbar, .mat-toolbar h1, .mat-toolbar h2, .mat-toolbar h3, .mat-toolbar h4, .mat-toolbar h5, .mat-toolbar h6 {
+  font-family: var(--font-heading) !important;
+}
+
+/* Fix for Angular Material form field label positioning */
+.mat-mdc-form-field {
+  .mat-mdc-floating-label {
+    top: 14px;
+  }
+  
+  .mat-mdc-form-field-infix {
+    min-height: 56px;
+    padding-top: 16px;
+  }
+}
+
+/* Custom styles */
+.mat-elevation-z4 {
+  box-shadow: 0px 2px 4px -1px var(--card-shadow),
+              0px 4px 5px 0px var(--card-shadow),
+              0px 1px 10px 0px var(--card-shadow);
+}
+
+/* Yellow theme card styles */
+.mat-card {
+  background: white;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 12px var(--card-shadow);
+}
+
+.mat-flat-button.mat-primary {
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--primary-yellow-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+
+  &:hover {
+    background: linear-gradient(135deg, var(--primary-yellow-dark) 0%, #e65100 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+  }
+}
+
+/* Button customizations for yellow theme */
+.mat-raised-button.mat-primary {
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--primary-yellow-dark) 100%);
+  color: white;
+}
+
+.mat-raised-button.mat-accent {
+  background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-dark) 100%);
+  color: white;
+}
+
+.mat-stroked-button.mat-accent {
+  border-color: var(--accent-orange);
+  color: var(--accent-orange-dark);
+}
+
+.mat-stroked-button.mat-accent:hover {
+  background-color: var(--background-light);
+}
+
+/* Toolbar override for yellow theme */
+.mat-toolbar.mat-primary {
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--accent-orange) 100%) !important;
+  color: white;
+}
+
+/* Utility classes */
+.text-center {
+  text-align: center;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* Loading spinner */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Confirmation Dialog Global Styles */
+.confirm-dialog-container {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden !important;
+  }
+}
+
+.confirm-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px);
+}

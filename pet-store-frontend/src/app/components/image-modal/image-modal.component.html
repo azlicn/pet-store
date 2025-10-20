@@ -1,0 +1,44 @@
+<div class="image-modal-container">
+  <div class="modal-header">
+    <h2 mat-dialog-title class="pet-name">{{ data.pet.name }}</h2>
+    <button mat-icon-button (click)="closeModal()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="image-container" mat-dialog-content>
+    <img [src]="currentImage" 
+         [alt]="data.pet.name" 
+         class="modal-image"
+         loading="lazy">
+    
+    <div class="image-navigation" *ngIf="hasMultipleImages">
+      <button mat-icon-button 
+              class="nav-button prev-button"
+              [disabled]="!canGoPrevious"
+              (click)="previousImage()">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-icon-button 
+              class="nav-button next-button"
+              [disabled]="!canGoNext"
+              (click)="nextImage()">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-footer" mat-dialog-actions>
+    <div class="image-info">
+      <span *ngIf="hasMultipleImages" class="image-counter">
+        {{ currentImageIndex + 1 }} / {{ data.pet.photoUrls?.length }}
+      </span>
+      <span class="pet-category">{{ data.pet.category.name }}</span>
+    </div>
+    
+    <div class="action-buttons">
+      <button mat-flat-button (click)="closeModal()">Close</button>
+    </div>
+  </div>
+</div>

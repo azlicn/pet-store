@@ -1,0 +1,101 @@
+package com.petstore.controller;
+
+import com.petstore.dto.LoginRequest;
+import com.petstore.dto.SignUpRequest;
+import com.petstore.model.Role;
+import com.petstore.model.User;
+import com.petstore.repository.UserRepository;
+import com.petstore.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+@RestController
+@RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "User authentication and registration APIs")
+public class AuthController {
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
+    @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticate user and return JWT token")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+            );
+
+            String jwt = tokenProvider.generateToken(authentication);
+            
+            User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", jwt);
+            response.put("type", "Bearer");
+            response.put("user", Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "roles", user.getRoles()
+            ));
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Invalid email or password");
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "User registration", description = "Register a new user account")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+        Map<String, String> response = new HashMap<>();
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            response.put("message", "Email is already in use!");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        User user = new User(
+            signUpRequest.getEmail(),
+            passwordEncoder.encode(signUpRequest.getPassword()),
+            signUpRequest.getFirstName(),
+            signUpRequest.getLastName()
+        );
+
+        if (signUpRequest.getRole() != null && signUpRequest.getRole().equals("ADMIN")) {
+            user.setRoles(Set.of(Role.ADMIN));
+        } else {
+            user.setRoles(Set.of(Role.USER));
+        }
+
+        userRepository.save(user);
+
+        response.put("message", "User registered successfully!");
+        return ResponseEntity.ok(response);
+    }
+}

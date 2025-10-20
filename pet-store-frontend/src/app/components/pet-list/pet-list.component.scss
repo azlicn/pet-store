@@ -1,0 +1,177 @@
+.pet-list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.filter-card {
+  margin-bottom: 20px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.reset-link {
+  color: #ff6b35;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #e55a2b;
+    text-decoration: underline;
+  }
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.filter-row mat-form-field {
+  flex: 1; 
+  min-width: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pet-count-info {
+  margin-bottom: 16px;
+  
+  .count-text {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+    text-align: center;
+    
+    .filter-indicator {
+      color: #ff6b35;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+  }
+}
+
+.filter-toggle {
+  color: #666;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #ff6b35;
+  }
+}
+
+.view-toggle {
+  color: #666;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #ff6b35;
+  }
+}
+
+.pets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  align-items: stretch; 
+}
+
+.no-pets-card {
+  text-align: center;
+  padding: 40px;
+}
+
+.no-pets-content .large-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.no-pets-content h2 {
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.no-pets-content p {
+  color: #999;
+  margin-bottom: 20px;
+}
+
+.icon-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 12px;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #666;
+  
+  .legend-title {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    .legend-icon {
+      font-size: 1rem !important;
+      width: 1rem !important;
+      height: 1rem !important;
+      
+      &.created-and-owned {
+        color: #e91e63; 
+      }
+      
+      &.created-only {
+        color: #ff9800;
+      }
+      
+      &.owned-only {
+        color: #2196f3; 
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .icon-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-left: 0;
+    margin-top: 8px;
+    
+    .legend-item {
+      gap: 6px;
+    }
+  }
+}

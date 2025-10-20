@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  petstore-mysql:
+    image: mysql:8.0
+    container_name: petstore-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-defaultpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+      timeout: 5s
+    networks:
+      - petstore-network
+
+  petstore-backend:
+    build:
+      context: ../pet-store-api
+      dockerfile: Dockerfile
+    container_name: petstore-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      DOCKER_DB_URL: jdbc:mysql://petstore-mysql:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true&serverTimezone=UTC
+      DOCKER_DB_USERNAME: root
+      DOCKER_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DOCKER_JWT_SECRET: ${DOCKER_JWT_SECRET}
+      DOCKER_JWT_EXPIRATION: ${DOCKER_JWT_EXPIRATION}
+      DOCKER_CORS_ALLOWED_ORIGINS: ${DOCKER_CORS_ALLOWED_ORIGINS}
+    ports:
+      - "8080:8080"
+    depends_on:
+      petstore-mysql:
+        condition: service_healthy
+    networks:
+      - petstore-network
+
+  petstore-frontend:
+    build:
+      context: ../pet-store-frontend
+      dockerfile: Dockerfile
+    container_name: petstore-frontend
+    ports:
+      - "80:80"
+    environment:
+      - API_URL=${API_URL}
+    depends_on:
+      - petstore-backend
+    networks:
+      - petstore-network
+
+volumes:
+  mysql_data:
+
+networks:
+  petstore-network:
+    driver: bridge

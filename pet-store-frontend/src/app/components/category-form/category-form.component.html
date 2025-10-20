@@ -1,0 +1,56 @@
+<div class="category-form-container">
+  <mat-card class="category-form-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>{{ isEditMode ? 'edit' : 'add' }}</mat-icon>
+        {{ isEditMode ? 'Edit Category' : 'Create New Category' }}
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading category...</p>
+      </div>
+
+      <form *ngIf="!loading" [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="category-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Category Name</mat-label>
+          <input
+            matInput
+            formControlName="name"
+            placeholder="Enter category name"
+            maxlength="30">
+          <mat-icon matSuffix>category</mat-icon>
+          <mat-hint align="end">{{ name?.value?.length || 0 }}/30</mat-hint>
+          <mat-error *ngIf="name?.invalid && name?.touched">
+            {{ getErrorMessage('name') }}
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="categoryForm.invalid || submitting"
+            class="submit-button">
+            <mat-icon *ngIf="!submitting">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
+            {{ submitting ? 'Saving...' : (isEditMode ? 'Update Category' : 'Create Category') }}
+          </button>
+
+          <button
+            mat-button
+            type="button"
+            (click)="onCancel()"
+            [disabled]="submitting"
+            class="cancel-button">
+            <mat-icon>cancel</mat-icon>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

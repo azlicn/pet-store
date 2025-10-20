@@ -1,0 +1,64 @@
+<div class="unauthorized-container">
+  <mat-card class="unauthorized-card">
+    <mat-card-content class="card-content">
+      <div class="error-header">
+        <mat-icon class="error-icon" [ngClass]="pageIcon">{{ pageIcon }}</mat-icon>
+        <h1 class="error-code">
+          {{ errorType === 'not-logged-in' ? '401' : '403' }}
+        </h1>
+      </div>
+
+      <h2 class="error-title">{{ pageTitle }}</h2>
+
+      <p class="error-message">{{ errorMessage }}</p>
+
+      <div *ngIf="attemptedUrl" class="attempted-url">
+        <p><strong>Attempted to access:</strong> {{ attemptedUrl }}</p>
+      </div>
+
+      <div class="action-buttons">
+        <button *ngIf="showLoginButton" 
+                mat-raised-button 
+                color="primary" 
+                (click)="onLogin()"
+                class="action-button">
+          <mat-icon>login</mat-icon>
+          Log In
+        </button>
+
+        <button mat-raised-button 
+                color="accent" 
+                (click)="onGoHome()"
+                class="action-button">
+          <mat-icon>home</mat-icon>
+          Go to Home
+        </button>
+
+        <button mat-stroked-button 
+                (click)="onGoBack()"
+                class="action-button">
+          <mat-icon>arrow_back</mat-icon>
+          Go Back
+        </button>
+      </div>
+
+      <div class="help-text">
+        <p *ngIf="errorType === 'not-logged-in'">
+          Please log in with your account to continue.
+        </p>
+        <p *ngIf="errorType === 'forbidden' && attemptedUrl?.includes('/users/') && attemptedUrl?.includes('/edit')">
+          You can only edit your own user profile. Administrators can edit any user profile.
+        </p>
+        <p *ngIf="errorType === 'forbidden' && attemptedUrl?.includes('/pets/edit/')">
+          You can only edit pets that you have created. Administrators can edit any pet.
+        </p>
+        <p *ngIf="errorType === 'forbidden' && !(attemptedUrl?.includes('/users/') && attemptedUrl?.includes('/edit')) && !attemptedUrl?.includes('/pets/edit/')">
+          If you believe this is an error, please contact your administrator.
+        </p>
+        <p *ngIf="errorType === 'general'">
+          If you need access to this resource, please contact support.
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,160 @@
+<div class="user-edit-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="title-icon">person</mat-icon>
+        {{isEditingOwnProfile ? 'Edit My Profile' : 'Edit User'}}
+      </mat-card-title>
+      <mat-card-subtitle>
+        {{isEditingOwnProfile ? 'Update your personal information and password' : 'Manage user information and roles'}}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-overlay">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>{{userForm && userForm.get('firstName')?.value ? 'Saving changes...' : 'Loading user data...'}}</p>
+      </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form" [class.loading]="loading">
+        <div class="form-section">
+          <h3 class="section-title">Personal Information</h3>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>First Name</mat-label>
+            <input matInput 
+                   formControlName="firstName" 
+                   placeholder="Enter first name"
+                   autocomplete="given-name">
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('firstName')">
+              {{getFieldError('firstName')}}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Last Name</mat-label>
+            <input matInput 
+                   formControlName="lastName" 
+                   placeholder="Enter last name"
+                   autocomplete="family-name">
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('lastName')">
+              {{getFieldError('lastName')}}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input matInput 
+                   type="email"
+                   formControlName="email" 
+                   placeholder="Enter email address"
+                   autocomplete="email">
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('email')">
+              {{getFieldError('email')}}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field *ngIf="authService.isAdmin()" appearance="outline" class="full-width">
+            <mat-label>User Roles</mat-label>
+            <mat-select formControlName="roles" multiple>
+              <mat-option value="USER">USER</mat-option>
+              <mat-option value="ADMIN">ADMIN</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>security</mat-icon>
+            <mat-hint>Select user roles (ADMIN access required)</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Change Password</h3>
+          <p class="section-description">Leave password fields blank to keep current password</p>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Current Password</mat-label>
+            <input matInput 
+                   [type]="hideCurrentPassword ? 'password' : 'text'"
+                   formControlName="currentPassword" 
+                   placeholder="Enter current password"
+                   autocomplete="current-password">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button 
+                    matSuffix 
+                    type="button"
+                    (click)="togglePasswordVisibility('current')" 
+                    [attr.aria-label]="'Hide password'" 
+                    [attr.aria-pressed]="hideCurrentPassword">
+              <mat-icon>{{hideCurrentPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="isFieldInvalid('currentPassword')">
+              {{getFieldError('currentPassword')}}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>New Password</mat-label>
+            <input matInput 
+                   [type]="hideNewPassword ? 'password' : 'text'"
+                   formControlName="newPassword" 
+                   placeholder="Enter new password"
+                   autocomplete="new-password">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button 
+                    matSuffix 
+                    type="button"
+                    (click)="togglePasswordVisibility('new')" 
+                    [attr.aria-label]="'Hide password'" 
+                    [attr.aria-pressed]="hideNewPassword">
+              <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-hint>Password must be at least 6 characters long</mat-hint>
+            <mat-error *ngIf="isFieldInvalid('newPassword')">
+              {{getFieldError('newPassword')}}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirm New Password</mat-label>
+            <input matInput 
+                   [type]="hideConfirmPassword ? 'password' : 'text'"
+                   formControlName="confirmPassword" 
+                   placeholder="Confirm new password"
+                   autocomplete="new-password">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button 
+                    matSuffix 
+                    type="button"
+                    (click)="togglePasswordVisibility('confirm')" 
+                    [attr.aria-label]="'Hide password'" 
+                    [attr.aria-pressed]="hideConfirmPassword">
+              <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="isFieldInvalid('confirmPassword')">
+              {{getFieldError('confirmPassword')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+      </form>
+    </mat-card-content>
+    
+    <mat-card-actions align="end">
+      <button mat-flat-button 
+              color="primary"
+              (click)="onSubmit()"
+              [disabled]="loading || userForm.invalid">
+        <mat-icon>save</mat-icon>
+        Save Changes
+      </button>
+      
+      <button mat-flat-button 
+              (click)="onCancel()"
+              [disabled]="loading">
+        <mat-icon>cancel</mat-icon>
+        Cancel
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

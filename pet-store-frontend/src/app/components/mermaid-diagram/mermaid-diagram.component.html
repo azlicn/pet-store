@@ -1,0 +1,32 @@
+<div class="mermaid-container">
+  <div class="diagram-header" *ngIf="title">
+    <h3>{{ title }}</h3>
+    <p *ngIf="description" class="diagram-description">{{ description }}</p>
+  </div>
+  <div 
+    #mermaidDiv 
+    class="mermaid-diagram"
+    [id]="diagramId">
+    {{ diagramDefinition }}
+  </div>
+ <!--  <div class="diagram-actions" *ngIf="showActions">
+    <button 
+      class="action-btn"
+      (click)="downloadSVG()"
+      title="Download as SVG">
+      📥 Download
+    </button>
+    <button 
+      class="action-btn"
+      (click)="toggleFullscreen()"
+      title="Toggle fullscreen">
+      {{ isFullscreen ? '🗗' : '🗖' }} {{ isFullscreen ? 'Exit' : 'Fullscreen' }}
+    </button>
+    <button 
+      class="action-btn"
+      (click)="copyToClipboard()"
+      title="Copy diagram definition">
+      📋 Copy
+    </button>
+  </div> -->
+</div>

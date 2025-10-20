@@ -1,0 +1,140 @@
+.header-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px var(--card-shadow);
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--accent-orange) 100%) !important;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* Logo Section */
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.logo-section:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.logo-icon {
+  color: var(--accent-orange);
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.store-name {
+  font-size: 1.8rem;
+  font-family: var(--font-heading) !important;
+  font-weight: 400;
+  color: white;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Navigation Links */
+.nav-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-links button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-links button:hover {
+  background-color: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+
+.nav-links button.active {
+  background-color: rgba(255,255,255,0.2);
+  font-family: var(--font-heading) !important;
+  font-weight: 400;
+  letter-spacing: 0.8px;
+}
+
+/* User Section */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-info {
+  font-family: var(--font-body) !important;
+  font-weight: 400;
+  font-style: italic;
+  color: rgba(255,255,255,0.9);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+  
+  .store-name {
+    font-size: 1.4rem;
+    font-family: var(--font-heading) !important;
+    letter-spacing: 1px;
+  }
+  
+  .user-info {
+    display: none;
+  }
+  
+  .user-section button {
+    padding: 6px 12px;
+  }
+  
+  .logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .logo-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-section {
+    gap: 8px;
+    padding: 4px 8px;
+  }
+  
+  .store-name {
+    font-size: 1.2rem;
+    font-family: var(--font-heading) !important;
+    letter-spacing: 0.8px;
+  }
+  
+  .user-section {
+    gap: 8px;
+  }
+}

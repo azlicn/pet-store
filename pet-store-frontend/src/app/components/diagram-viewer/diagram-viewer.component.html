@@ -1,0 +1,36 @@
+<mat-card class="diagram-viewer-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>architecture</mat-icon>
+      {{ title || 'System Diagram' }}
+    </mat-card-title>
+    <mat-card-subtitle *ngIf="description">{{ description }}</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="diagram-selector" *ngIf="showSelector && quickDiagrams.length > 1">
+      <mat-form-field appearance="outline">
+        <mat-label>Select Diagram</mat-label>
+        <mat-select [(value)]="selectedDiagramId" (selectionChange)="onDiagramChange()">
+          <mat-option *ngFor="let diagram of quickDiagrams" [value]="diagram.id">
+            {{ diagram.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <app-mermaid-diagram
+      [diagramDefinition]="currentDiagram"
+      [title]="selectedDiagramTitle"
+      [showActions]="showActions"
+      [theme]="theme">
+    </app-mermaid-diagram>
+  </mat-card-content>
+
+  <mat-card-actions *ngIf="showFullDocsLink">
+    <button mat-button color="primary" routerLink="/docs">
+      <mat-icon>description</mat-icon>
+      View Full Documentation
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -1,0 +1,119 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header class="register-header">
+      <mat-card-title class="register-title">
+        <mat-icon class="register-icon">person_add</mat-icon>
+        Create Account
+      </mat-card-title>
+      <mat-card-subtitle>Join our pet store community</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="register-content">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+        <div class="name-row">
+          <mat-form-field appearance="outline" class="name-field">
+            <mat-label>First Name</mat-label>
+            <input matInput 
+                   formControlName="firstName" 
+                   placeholder="Enter your first name"
+                   autocomplete="given-name">
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('firstName')">
+              {{getFieldError('firstName')}}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="name-field">
+            <mat-label>Last Name</mat-label>
+            <input matInput 
+                   formControlName="lastName" 
+                   placeholder="Enter your last name"
+                   autocomplete="family-name">
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="isFieldInvalid('lastName')">
+              {{getFieldError('lastName')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input matInput 
+                 type="email"
+                 formControlName="email" 
+                 placeholder="Enter your email address"
+                 autocomplete="email">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="isFieldInvalid('email')">
+            {{getFieldError('email')}}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput 
+                 [type]="hidePassword ? 'password' : 'text'"
+                 formControlName="password" 
+                 placeholder="Create a password"
+                 autocomplete="new-password">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button 
+                  matSuffix 
+                  type="button"
+                  (click)="togglePasswordVisibility()" 
+                  [attr.aria-label]="'Hide password'" 
+                  [attr.aria-pressed]="hidePassword">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-hint>Password must be at least 6 characters long</mat-hint>
+          <mat-error *ngIf="isFieldInvalid('password')">
+            {{getFieldError('password')}}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput 
+                 [type]="hideConfirmPassword ? 'password' : 'text'"
+                 formControlName="confirmPassword" 
+                 placeholder="Confirm your password"
+                 autocomplete="new-password">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button 
+                  matSuffix 
+                  type="button"
+                  (click)="toggleConfirmPasswordVisibility()" 
+                  [attr.aria-label]="'Hide password'" 
+                  [attr.aria-pressed]="hideConfirmPassword">
+            <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="isFieldInvalid('confirmPassword')">
+            {{getFieldError('confirmPassword')}}
+          </mat-error>
+        </mat-form-field>
+
+        <button mat-flat-button 
+                type="submit" 
+                color="primary" 
+                class="register-button"
+                [disabled]="registerForm.invalid || isLoading">
+          <mat-icon *ngIf="isLoading" class="loading-icon">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="!isLoading">person_add</mat-icon>
+          {{isLoading ? 'Creating Account...' : 'Create Account'}}
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions class="register-actions">
+      <div class="login-link">
+        <span>Already have an account?</span>
+        <a
+           color="primary" 
+           routerLink="/login" 
+           class="login-button">
+          Sign In
+        </a>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -1,0 +1,56 @@
+<mat-toolbar color="primary" class="header-toolbar">
+  <mat-toolbar-row>
+    <div class="logo-section" routerLink="/">
+      <div class="logo">
+        <mat-icon class="logo-icon">pets</mat-icon>
+      </div>
+      <span class="store-name">Pawfect Store</span>
+    </div>
+    
+    <span class="spacer"></span>
+    
+    <div class="nav-links">
+      <!-- <button mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon>home</mat-icon>
+        Home
+      </button> -->
+      <button mat-button routerLink="/pets" routerLinkActive="active">
+        <mat-icon>pets</mat-icon>
+        Browse Pets
+      </button>
+      <button mat-button routerLink="/categories" routerLinkActive="active" *ngIf="isAdmin()">
+        <mat-icon>category</mat-icon>
+        Categories
+      </button>
+      <button mat-button 
+              routerLink="/users" 
+              routerLinkActive="active"
+              *ngIf="isAdmin()">
+        <mat-icon>people</mat-icon>
+        Users
+      </button>
+    </div>
+    
+    <span class="spacer"></span>
+    
+    <div class="user-section">
+      <ng-container *ngIf="currentUser$ | async as user; else loginButton">
+        <span class="user-info">Welcome, {{user.firstName}}!</span>
+        <button mat-button [routerLink]="['/users', user.id, 'edit']" matTooltip="Edit Profile">
+          <mat-icon>person</mat-icon>
+          Profile
+        </button>
+        <button mat-button (click)="onLogout()">
+          <mat-icon>logout</mat-icon>
+          Logout
+        </button>
+      </ng-container>
+      <ng-template #loginButton>
+        <button mat-flat-button color="accent" (click)="navigateToLogin()">
+          <mat-icon>login</mat-icon>
+          Login
+        </button>
+      </ng-template>
+    </div>
+  </mat-toolbar-row>
+</mat-toolbar>

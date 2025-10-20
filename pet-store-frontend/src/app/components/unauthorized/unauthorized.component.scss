@@ -1,0 +1,244 @@
+.unauthorized-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 64px);
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.unauthorized-card {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-content {
+  padding: 48px 32px !important;
+}
+
+.error-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.error-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #f44336;
+  margin-bottom: 16px;
+}
+
+.error-code {
+  font-size: 3rem;
+  font-weight: 600;
+  margin: 0;
+  color: rgba(0, 0, 0, 0.87);
+  font-family: var(--font-heading) !important;
+}
+
+.error-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: rgba(0, 0, 0, 0.87);
+  font-family: var(--font-heading) !important;
+}
+
+.error-message {
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.attempted-url {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0 0 32px 0;
+  border-left: 4px solid var(--primary-yellow, #ffc107);
+  
+  p {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.87);
+    word-break: break-all;
+  }
+  
+  strong {
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin: 0 0 32px 0;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+  height: 48px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  mat-icon {
+    font-size: 20px;
+  }
+}
+
+.help-text {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.6);
+    font-style: italic;
+    line-height: 1.5;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .unauthorized-container {
+    padding: 16px;
+  }
+  
+  .card-content {
+    padding: 32px 24px !important;
+  }
+  
+  .error-code {
+    font-size: 2.5rem;
+  }
+  
+  .error-title {
+    font-size: 1.3rem;
+  }
+  
+  .error-message {
+    font-size: 0.9rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+    
+    .action-button {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .error-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .error-code {
+    font-size: 2rem;
+  }
+  
+  .error-title {
+    font-size: 1.2rem;
+  }
+  
+  .attempted-url {
+    p {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Material Design enhancements
+::ng-deep {
+  .success-snackbar {
+    background-color: #4caf50 !important;
+    color: white !important;
+  }
+  
+  .error-snackbar {
+    background-color: #f44336 !important;
+    color: white !important;
+  }
+}
+
+// Error type specific icon colors
+.error-icon {
+  &.login {
+    color: var(--primary-yellow, #ffc107) !important;
+  }
+  
+  &.block {
+    color: #f44336 !important;
+  }
+  
+  &.security {
+    color: var(--accent-orange, #ff9800) !important;
+  }
+}
+
+// Material Design enhancements
+::ng-deep {
+  .mat-mdc-raised-button {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    }
+  }
+  
+  .mat-mdc-outlined-button {
+    border: 2px solid;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+// Success/info color variants for different error types
+.unauthorized-card {
+  &.not-logged-in {
+    .error-icon {
+      color: #3498db;
+    }
+  }
+  
+  &.forbidden {
+    .error-icon {
+      color: #e74c3c;
+    }
+  }
+  
+  &.general {
+    .error-icon {
+      color: #f39c12;
+    }
+  }
+}

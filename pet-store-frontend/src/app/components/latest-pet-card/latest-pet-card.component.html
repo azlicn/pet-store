@@ -1,0 +1,37 @@
+<mat-card 
+  class="latest-pet-card"
+  [routerLink]="['/pets']"
+  [queryParams]="{petId: pet.id}">
+  
+  <div class="pet-image-container">
+    <div class="pet-image-placeholder" *ngIf="!getPetImageUrl(pet); else petImage">
+      <mat-icon>pets</mat-icon>
+      <span>{{ pet.category.name }}</span>
+    </div>
+    <ng-template #petImage>
+      <img 
+        [src]="getPetImageUrl(pet)" 
+        [alt]="pet.name"
+        class="pet-image"
+        (error)="onImageError($event)" />
+    </ng-template>
+    <div class="pet-status-badge" [class]="'status-' + pet.status.toLowerCase()">
+      {{ pet.status }}
+    </div>
+  </div>
+  
+  <mat-card-content>
+    <h3 class="pet-name">{{ pet.name }}</h3>
+    <p class="pet-category">{{ pet.category.name }}</p>
+    <p class="pet-price" *ngIf="pet.price">
+      {{ pet.price | currency }}
+    </p>
+  </mat-card-content>
+  
+  <div class="pet-tags" *ngIf="pet.tags && pet.tags.length > 0">
+    <mat-chip-set>
+      <mat-chip *ngFor="let tag of pet.tags">{{ tag }}</mat-chip>
+    </mat-chip-set>
+  </div>
+  
+</mat-card>
