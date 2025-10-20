@@ -52,3 +52,7 @@ node_modules/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Build output directories
+pet-store-frontend/dist/
+pet-store-frontend/.angular/
