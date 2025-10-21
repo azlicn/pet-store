@@ -84,19 +84,6 @@ class PetServiceTest {
         verify(petRepository).findAll();
     }
 
-    @Test
-    void getAvailablePets_ShouldReturnOnlyAvailablePetsWithoutOwner() {
-
-        List<Pet> expectedPets = Arrays.asList(testPet);
-        when(petRepository.findByOwnerIsNullAndStatus(PetStatus.AVAILABLE)).thenReturn(expectedPets);
-
-        List<Pet> actualPets = petService.getAvailablePets();
-
-        assertThat(actualPets).hasSize(1);
-        assertThat(actualPets.get(0).getStatus()).isEqualTo(PetStatus.AVAILABLE);
-        assertThat(actualPets.get(0).getOwner()).isNull();
-        verify(petRepository).findByOwnerIsNullAndStatus(PetStatus.AVAILABLE);
-    }
 
     @Test
     void getPetById_WhenPetExists_ShouldReturnPet() {
@@ -253,16 +240,4 @@ class PetServiceTest {
         verify(petRepository).findByOwner(testUser);
     }
 
-    @Test
-    void searchPetsByName_ShouldReturnMatchingPets() {
-
-        List<Pet> matchingPets = Arrays.asList(testPet);
-        when(petRepository.findByNameContainingIgnoreCase("buddy")).thenReturn(matchingPets);
-
-        List<Pet> result = petService.searchPetsByName("buddy");
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).containsIgnoringCase("buddy");
-        verify(petRepository).findByNameContainingIgnoreCase("buddy");
-    }
 }

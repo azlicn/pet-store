@@ -30,11 +30,6 @@ public class PetService {
         return petRepository.findAll();
     }
 
-    // Get pets available for purchase (store inventory - no owner)
-    public List<Pet> getAvailablePets() {
-        return petRepository.findByOwnerIsNullAndStatus(PetStatus.AVAILABLE);
-    }
-
     // Get pets owned by a specific user
     public List<Pet> getPetsByOwner(User owner) {
         return petRepository.findByOwner(owner);
@@ -68,14 +63,6 @@ public class PetService {
 
     public List<Pet> getPetsByStatus(PetStatus status) {
         return petRepository.findByStatus(status);
-    }
-
-    public List<Pet> getPetsByCategory(Long categoryId) {
-        return petRepository.findByCategoryId(categoryId);
-    }
-
-    public List<Pet> searchPetsByName(String name) {
-        return petRepository.findByNameContainingIgnoreCase(name);
     }
 
     public List<Pet> findPetsByFilters(String name, Long categoryId, PetStatus status, Integer limit) {

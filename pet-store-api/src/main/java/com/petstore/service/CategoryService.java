@@ -1,6 +1,7 @@
 package com.petstore.service;
 
 import com.petstore.exception.CategoryInUseException;
+import com.petstore.exception.CategoryAlreadyExistsException;
 import com.petstore.model.Category;
 import com.petstore.model.Pet;
 import com.petstore.repository.CategoryRepository;
@@ -28,11 +29,11 @@ public class CategoryService {
         return categoryRepository.findById(id);
     }
 
-    public Optional<Category> getCategoryByName(String name) {
-        return categoryRepository.findByName(name);
-    }
 
     public Category saveCategory(Category category) {
+        if (categoryRepository.existsByName(category.getName())) {
+            throw new CategoryAlreadyExistsException(category.getName());
+        }
         return categoryRepository.save(category);
     }
 
@@ -40,6 +41,11 @@ public class CategoryService {
         Optional<Category> existingCategory = categoryRepository.findById(id);
 
         if (existingCategory.isPresent()) {
+            // Check for duplicate name (excluding current category)
+            if (categoryRepository.existsByName(categoryDetails.getName()) &&
+                !existingCategory.get().getName().equals(categoryDetails.getName())) {
+                throw new CategoryAlreadyExistsException(categoryDetails.getName());
+            }
             Category category = existingCategory.get();
             category.setName(categoryDetails.getName());
             return categoryRepository.save(category);
@@ -57,42 +63,27 @@ public class CategoryService {
 
         Category category = categoryOpt.get();
 
-        // Check if any pets are using this category
-        List<Pet> petsUsingCategory = petRepository.findByCategoryId(id);
-
-        if (!petsUsingCategory.isEmpty()) {
+        // Check if the category can be safely deleted
+        if (!canDeleteCategory(id)) {
+            int usageCount = getCategoryUsageCount(id);
             throw new CategoryInUseException(
                     id,
                     category.getName(),
-                    petsUsingCategory.size());
+                    usageCount);
         }
 
         categoryRepository.deleteById(id);
         return true;
     }
 
-    public boolean existsByName(String name) {
-        return categoryRepository.existsByName(name);
-    }
 
-    /**
-     * Check if a category is being used by any pets
-     * 
-     * @param categoryId the category ID to check
-     * @return the number of pets using this category
-     */
-    public int getCategoryUsageCount(Long categoryId) {
+    private int getCategoryUsageCount(Long categoryId) {
         List<Pet> petsUsingCategory = petRepository.findByCategoryId(categoryId);
         return petsUsingCategory.size();
     }
 
-    /**
-     * Check if a category can be safely deleted (not being used by any pets)
-     * 
-     * @param categoryId the category ID to check
-     * @return true if the category can be deleted, false otherwise
-     */
-    public boolean canDeleteCategory(Long categoryId) {
+
+    private boolean canDeleteCategory(Long categoryId) {
         return getCategoryUsageCount(categoryId) == 0;
     }
 }

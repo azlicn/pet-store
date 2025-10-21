@@ -43,24 +43,22 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
             String jwt = tokenProvider.generateToken(authentication);
-            
+
             User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             Map<String, Object> response = new HashMap<>();
             response.put("token", jwt);
             response.put("type", "Bearer");
             response.put("user", Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "firstName", user.getFirstName(),
-                "lastName", user.getLastName(),
-                "roles", user.getRoles()
-            ));
+                    "id", user.getId(),
+                    "email", user.getEmail(),
+                    "firstName", user.getFirstName(),
+                    "lastName", user.getLastName(),
+                    "roles", user.getRoles()));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -81,11 +79,10 @@ public class AuthController {
         }
 
         User user = new User(
-            signUpRequest.getEmail(),
-            passwordEncoder.encode(signUpRequest.getPassword()),
-            signUpRequest.getFirstName(),
-            signUpRequest.getLastName()
-        );
+                signUpRequest.getEmail(),
+                passwordEncoder.encode(signUpRequest.getPassword()),
+                signUpRequest.getFirstName(),
+                signUpRequest.getLastName());
 
         if (signUpRequest.getRole() != null && signUpRequest.getRole().equals("ADMIN")) {
             user.setRoles(Set.of(Role.ADMIN));

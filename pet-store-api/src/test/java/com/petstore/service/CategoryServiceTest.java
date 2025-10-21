@@ -79,36 +79,14 @@ class CategoryServiceTest {
     }
 
     @Test
-    void getCategoryByName_WhenCategoryExists_ShouldReturnCategory() {
-        when(categoryRepository.findByName("Dogs")).thenReturn(Optional.of(testCategory));
-
-        Optional<Category> actualCategory = categoryService.getCategoryByName("Dogs");
-
-        assertThat(actualCategory).isPresent();
-        assertThat(actualCategory.get().getId()).isEqualTo(1L);
-        assertThat(actualCategory.get().getName()).isEqualTo("Dogs");
-        verify(categoryRepository).findByName("Dogs");
-    }
-
-    @Test
-    void getCategoryByName_WhenCategoryDoesNotExist_ShouldReturnEmpty() {
-        when(categoryRepository.findByName("Birds")).thenReturn(Optional.empty());
-
-        Optional<Category> actualCategory = categoryService.getCategoryByName("Birds");
-
-        assertThat(actualCategory).isEmpty();
-        verify(categoryRepository).findByName("Birds");
-    }
-
-    @Test
     void saveCategory_ShouldSaveAndReturnCategory() {
         Category newCategory = new Category();
         newCategory.setName("Fish");
-        
+
         Category savedCategory = new Category();
         savedCategory.setId(3L);
         savedCategory.setName("Fish");
-        
+
         when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
 
         Category result = categoryService.saveCategory(newCategory);
@@ -123,11 +101,11 @@ class CategoryServiceTest {
     void updateCategory_WhenCategoryExists_ShouldUpdateAndReturnCategory() {
         Category categoryDetails = new Category();
         categoryDetails.setName("Updated Dogs");
-        
+
         Category updatedCategory = new Category();
         updatedCategory.setId(1L);
         updatedCategory.setName("Updated Dogs");
-        
+
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(categoryRepository.save(any(Category.class))).thenReturn(updatedCategory);
 
@@ -144,7 +122,7 @@ class CategoryServiceTest {
     void updateCategory_WhenCategoryDoesNotExist_ShouldReturnNull() {
         Category categoryDetails = new Category();
         categoryDetails.setName("Updated Category");
-        
+
         when(categoryRepository.findById(999L)).thenReturn(Optional.empty());
 
         Category result = categoryService.updateCategory(999L, categoryDetails);
@@ -179,23 +157,4 @@ class CategoryServiceTest {
         verify(categoryRepository, never()).deleteById(any());
     }
 
-    @Test
-    void existsByName_WhenCategoryExists_ShouldReturnTrue() {
-        when(categoryRepository.existsByName("Dogs")).thenReturn(true);
-
-        boolean exists = categoryService.existsByName("Dogs");
-
-        assertThat(exists).isTrue();
-        verify(categoryRepository).existsByName("Dogs");
-    }
-
-    @Test
-    void existsByName_WhenCategoryDoesNotExist_ShouldReturnFalse() {
-        when(categoryRepository.existsByName("Birds")).thenReturn(false);
-
-        boolean exists = categoryService.existsByName("Birds");
-
-        assertThat(exists).isFalse();
-        verify(categoryRepository).existsByName("Birds");
-    }
 }

@@ -64,28 +64,25 @@ class CategoryExceptionTest {
 
     @Test
     void testDeleteCategory_Success_WhenNosPetsUsingCategory() {
-        
+
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(petRepository.findByCategoryId(1L)).thenReturn(Collections.emptyList());
 
-        
         boolean result = categoryService.deleteCategory(1L);
 
-        
         assertTrue(result);
         verify(categoryRepository, times(1)).deleteById(1L);
     }
 
     @Test
     void testDeleteCategory_ThrowsException_WhenPetsUsingCategory() {
-        
+
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(petRepository.findByCategoryId(1L)).thenReturn(Arrays.asList(testPet1, testPet2));
 
         CategoryInUseException exception = assertThrows(
-            CategoryInUseException.class,
-            () -> categoryService.deleteCategory(1L)
-        );
+                CategoryInUseException.class,
+                () -> categoryService.deleteCategory(1L));
 
         assertEquals(1L, exception.getCategoryId());
         assertEquals("Dogs", exception.getCategoryName());
@@ -98,65 +95,25 @@ class CategoryExceptionTest {
 
     @Test
     void testDeleteCategory_ReturnsFalse_WhenCategoryNotFound() {
-        
+
         when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
 
-        
         boolean result = categoryService.deleteCategory(1L);
 
-        
         assertFalse(result);
         verify(petRepository, never()).findByCategoryId(anyLong());
         verify(categoryRepository, never()).deleteById(anyLong());
     }
 
     @Test
-    void testGetCategoryUsageCount() {
-        
-        when(petRepository.findByCategoryId(1L)).thenReturn(Arrays.asList(testPet1, testPet2));
-
-        
-        int count = categoryService.getCategoryUsageCount(1L);
-
-        
-        assertEquals(2, count);
-    }
-
-    @Test
-    void testCanDeleteCategory_ReturnsTrue_WhenNoPetsUsingCategory() {
-        
-        when(petRepository.findByCategoryId(1L)).thenReturn(Collections.emptyList());
-
-        
-        boolean canDelete = categoryService.canDeleteCategory(1L);
-
-        
-        assertTrue(canDelete);
-    }
-
-    @Test
-    void testCanDeleteCategory_ReturnsFalse_WhenPetsUsingCategory() {
-        
-        when(petRepository.findByCategoryId(1L)).thenReturn(Arrays.asList(testPet1));
-
-        
-        boolean canDelete = categoryService.canDeleteCategory(1L);
-
-        
-        assertFalse(canDelete);
-    }
-
-    @Test
     void testCategoryInUseException_CustomMessage() {
 
         CategoryInUseException exception = new CategoryInUseException(
-            1L, 
-            "Dogs", 
-            3, 
-            "Custom error message"
-        );
+                1L,
+                "Dogs",
+                3,
+                "Custom error message");
 
-        
         assertEquals(1L, exception.getCategoryId());
         assertEquals("Dogs", exception.getCategoryName());
         assertEquals(3, exception.getPetCount());

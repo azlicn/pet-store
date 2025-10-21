@@ -32,10 +32,10 @@ public class UserController {
     public ResponseEntity<?> getAllUsers() {
         try {
             List<User> users = userService.getAllUsers();
-            
+
             List<Map<String, Object>> userResponses = users.stream()
-                .map(this::convertToUserResponse)
-                .collect(Collectors.toList());
+                    .map(this::convertToUserResponse)
+                    .collect(Collectors.toList());
 
             return ResponseEntity.ok(userResponses);
         } catch (Exception e) {
@@ -51,7 +51,7 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             User user = userService.getUserById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
             return ResponseEntity.ok(convertToUserResponse(user));
         } catch (Exception e) {
@@ -69,14 +69,14 @@ public class UserController {
             // Get current authentication
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
             // Create user object from request
             User userDetails = new User();
             userDetails.setFirstName(updateRequest.getFirstName());
             userDetails.setLastName(updateRequest.getLastName());
             userDetails.setEmail(updateRequest.getEmail());
-            
+
             // Only allow password updates if provided
             if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
                 userDetails.setPassword(updateRequest.getPassword());
@@ -88,11 +88,11 @@ public class UserController {
             }
 
             User updatedUser = userService.updateUser(id, userDetails);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User updated successfully");
             response.put("user", convertToUserResponse(updatedUser));
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -103,8 +103,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Delete user", 
-               description = "Delete user by ID (ADMIN only). Users who own pets or have created pets cannot be deleted until those pets are removed or transferred.")
+    @Operation(summary = "Delete user", description = "Delete user by ID (ADMIN only). Users who own pets or have created pets cannot be deleted until those pets are removed or transferred.")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             // Check if user exists
@@ -115,10 +114,10 @@ public class UserController {
             }
 
             userService.deleteUser(id);
-            
+
             Map<String, String> response = new HashMap<>();
             response.put("message", "User deleted successfully");
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();

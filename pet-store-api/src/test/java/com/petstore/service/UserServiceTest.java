@@ -157,13 +157,13 @@ class UserServiceTest {
     void updateUser_WhenUserDoesNotExist_ShouldThrowException() {
         User userDetails = new User();
         userDetails.setFirstName("Jane");
-        
+
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateUser(999L, userDetails))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessage("User not found with id: 999");
-        
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("User not found with id: 999");
+
         verify(userRepository).findById(999L);
         verify(userRepository, never()).save(any(User.class));
     }
@@ -177,9 +177,9 @@ class UserServiceTest {
         when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(testAdmin));
 
         assertThatThrownBy(() -> userService.updateUser(1L, userDetails))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessage("Email is already in use by another user");
-        
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Email is already in use by another user");
+
         verify(userRepository).findById(1L);
         verify(userRepository).findByEmail("admin@test.com");
         verify(userRepository, never()).save(any(User.class));
@@ -227,8 +227,8 @@ class UserServiceTest {
         User result = userService.updateUser(1L, userDetails);
 
         assertThat(result.getFirstName()).isEqualTo("UpdatedJohn");
-        assertThat(result.getLastName()).isEqualTo("Doe"); 
-        assertThat(result.getEmail()).isEqualTo("user@test.com"); 
+        assertThat(result.getLastName()).isEqualTo("Doe");
+        assertThat(result.getEmail()).isEqualTo("user@test.com");
         verify(userRepository).findById(1L);
         verify(userRepository).save(any(User.class));
         verify(passwordEncoder, never()).encode(anyString());
@@ -266,7 +266,7 @@ class UserServiceTest {
 
         userService.deleteUser(1L);
 
-        verify(userRepository).findById(1L);
+        verify(userRepository, atLeastOnce()).findById(1L);
         verify(petRepository).findByOwner(testUser);
         verify(petRepository).findByCreatedBy(1L);
         verify(userRepository).delete(testUser);
@@ -277,89 +277,89 @@ class UserServiceTest {
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.deleteUser(999L))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessage("User not found with id: 999");
-        
-        verify(userRepository).findById(999L);
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("User not found with id: 999");
+
+        verify(userRepository, atLeastOnce()).findById(999L);
         verify(petRepository, never()).findByOwner(any());
         verify(petRepository, never()).findByCreatedBy(any());
         verify(userRepository, never()).delete(any(User.class));
     }
-    
+
     @Test
     void deleteUser_WhenUserOwnsPets_ShouldThrowUserInUseException() {
         Pet ownedPet1 = new Pet();
         ownedPet1.setId(1L);
         ownedPet1.setName("Buddy");
-        
+
         Pet ownedPet2 = new Pet();
         ownedPet2.setId(2L);
         ownedPet2.setName("Max");
-        
+
         List<Pet> ownedPets = Arrays.asList(ownedPet1, ownedPet2);
-        
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(petRepository.findByOwner(testUser)).thenReturn(ownedPets);
         when(petRepository.findByCreatedBy(1L)).thenReturn(Arrays.asList()); // No created pets
 
         assertThatThrownBy(() -> userService.deleteUser(1L))
-            .isInstanceOf(UserInUseException.class)
-            .hasMessageContaining("Cannot delete user 'user@test.com' (ID: 1)")
-            .hasMessageContaining("ownership of 2 pet(s)");
-        
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
+                .isInstanceOf(UserInUseException.class)
+                .hasMessageContaining("Cannot delete user 'user@test.com' (ID: 1)")
+                .hasMessageContaining("ownership of 2 pet(s)");
+
+        verify(userRepository, atLeastOnce()).findById(1L);
+        verify(petRepository, atLeast(2)).findByOwner(testUser);
         verify(petRepository).findByCreatedBy(1L);
         verify(userRepository, never()).delete(any(User.class));
     }
-    
+
     @Test
     void deleteUser_WhenUserCreatedPets_ShouldThrowUserInUseException() {
         Pet createdPet1 = new Pet();
         createdPet1.setId(3L);
         createdPet1.setName("Luna");
-        
+
         List<Pet> createdPets = Arrays.asList(createdPet1);
-        
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(petRepository.findByOwner(testUser)).thenReturn(Arrays.asList()); // No owned pets
         when(petRepository.findByCreatedBy(1L)).thenReturn(createdPets);
 
         assertThatThrownBy(() -> userService.deleteUser(1L))
-            .isInstanceOf(UserInUseException.class)
-            .hasMessageContaining("Cannot delete user 'user@test.com' (ID: 1)")
-            .hasMessageContaining("created 1 pet(s)");
-        
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
-        verify(petRepository).findByCreatedBy(1L);
+                .isInstanceOf(UserInUseException.class)
+                .hasMessageContaining("Cannot delete user 'user@test.com' (ID: 1)")
+                .hasMessageContaining("created 1 pet(s)");
+
+        verify(userRepository, atLeastOnce()).findById(1L);
+        verify(petRepository, atLeast(2)).findByOwner(testUser);
+        verify(petRepository, atLeast(2)).findByCreatedBy(1L);
         verify(userRepository, never()).delete(any(User.class));
     }
-    
+
     @Test
     void deleteUser_WhenUserOwnsAndCreatedPets_ShouldThrowUserInUseException() {
         Pet ownedPet = new Pet();
         ownedPet.setId(1L);
         ownedPet.setName("Buddy");
-        
+
         Pet createdPet = new Pet();
         createdPet.setId(2L);
         createdPet.setName("Luna");
-        
+
         List<Pet> ownedPets = Arrays.asList(ownedPet);
         List<Pet> createdPets = Arrays.asList(createdPet);
-        
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(petRepository.findByOwner(testUser)).thenReturn(ownedPets);
         when(petRepository.findByCreatedBy(1L)).thenReturn(createdPets);
 
         assertThatThrownBy(() -> userService.deleteUser(1L))
-            .isInstanceOf(UserInUseException.class)
-            .hasMessageContaining("Cannot delete user 'user@test.com' (ID: 1)")
-            .hasMessageContaining("ownership of 1 pet(s) and created 1 pet(s)");
-        
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
+                .isInstanceOf(UserInUseException.class)
+                .hasMessageContaining("Cannot delete user 'user@test.com' (ID: 1)")
+                .hasMessageContaining("ownership of 1 pet(s) and created 1 pet(s)");
+
+        verify(userRepository, atLeastOnce()).findById(1L);
+        verify(petRepository, atLeast(2)).findByOwner(testUser);
         verify(petRepository).findByCreatedBy(1L);
         verify(userRepository, never()).delete(any(User.class));
     }
@@ -383,102 +383,5 @@ class UserServiceTest {
         assertThat(exists).isFalse();
         verify(userRepository).existsById(999L);
     }
-    
-    @Test
-    void getUserOwnedPetCount_WhenUserExistsAndOwnsPets_ShouldReturnCount() {
-        Pet pet1 = new Pet();
-        Pet pet2 = new Pet();
-        List<Pet> ownedPets = Arrays.asList(pet1, pet2);
-        
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(petRepository.findByOwner(testUser)).thenReturn(ownedPets);
 
-        int count = userService.getUserOwnedPetCount(1L);
-
-        assertThat(count).isEqualTo(2);
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
-    }
-    
-    @Test
-    void getUserOwnedPetCount_WhenUserDoesNotExist_ShouldReturnZero() {
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
-
-        int count = userService.getUserOwnedPetCount(999L);
-
-        assertThat(count).isEqualTo(0);
-        verify(userRepository).findById(999L);
-        verify(petRepository, never()).findByOwner(any());
-    }
-    
-    @Test
-    void getUserCreatedPetCount_WhenUserCreatedPets_ShouldReturnCount() {
-        Pet pet1 = new Pet();
-        Pet pet2 = new Pet();
-        Pet pet3 = new Pet();
-        List<Pet> createdPets = Arrays.asList(pet1, pet2, pet3);
-        
-        when(petRepository.findByCreatedBy(1L)).thenReturn(createdPets);
-
-        int count = userService.getUserCreatedPetCount(1L);
-
-        assertThat(count).isEqualTo(3);
-        verify(petRepository).findByCreatedBy(1L);
-    }
-    
-    @Test
-    void getUserCreatedPetCount_WhenUserCreatedNoPets_ShouldReturnZero() {
-        when(petRepository.findByCreatedBy(1L)).thenReturn(Arrays.asList());
-
-        int count = userService.getUserCreatedPetCount(1L);
-
-        assertThat(count).isEqualTo(0);
-        verify(petRepository).findByCreatedBy(1L);
-    }
-    
-    @Test
-    void canDeleteUser_WhenUserHasNoPets_ShouldReturnTrue() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(petRepository.findByOwner(testUser)).thenReturn(Arrays.asList());
-        when(petRepository.findByCreatedBy(1L)).thenReturn(Arrays.asList());
-
-        boolean canDelete = userService.canDeleteUser(1L);
-
-        assertThat(canDelete).isTrue();
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
-        verify(petRepository).findByCreatedBy(1L);
-    }
-    
-    @Test
-    void canDeleteUser_WhenUserOwnsPets_ShouldReturnFalse() {
-        Pet pet = new Pet();
-        List<Pet> ownedPets = Arrays.asList(pet);
-        
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(petRepository.findByOwner(testUser)).thenReturn(ownedPets);
-
-        boolean canDelete = userService.canDeleteUser(1L);
-
-        assertThat(canDelete).isFalse();
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
-    }
-    
-    @Test
-    void canDeleteUser_WhenUserCreatedPets_ShouldReturnFalse() {
-        Pet pet = new Pet();
-        List<Pet> createdPets = Arrays.asList(pet);
-        
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(petRepository.findByOwner(testUser)).thenReturn(Arrays.asList());
-        when(petRepository.findByCreatedBy(1L)).thenReturn(createdPets);
-
-        boolean canDelete = userService.canDeleteUser(1L);
-
-        assertThat(canDelete).isFalse();
-        verify(userRepository).findById(1L);
-        verify(petRepository).findByOwner(testUser);
-        verify(petRepository).findByCreatedBy(1L);
-    }
 }

@@ -50,7 +50,7 @@ public class UserService {
      */
     public User updateUser(Long id, User userDetails) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         // Update fields
         if (userDetails.getFirstName() != null) {
@@ -82,41 +82,26 @@ public class UserService {
      */
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        
-        // Check if user owns any pets
-        List<Pet> ownedPets = petRepository.findByOwner(user);
-        
-        // Check if user created any pets
-        List<Pet> createdPets = petRepository.findByCreatedBy(id);
-        
-        // If user has any pets (owned or created), prevent deletion
-        if (!ownedPets.isEmpty() || !createdPets.isEmpty()) {
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        if (!canDeleteUser(id)) {
+            int ownedCount = getUserOwnedPetCount(id);
+            int createdCount = getUserCreatedPetCount(id);
             throw new UserInUseException(
                     id,
                     user.getEmail(),
-                    ownedPets.size(),
-                    createdPets.size()
-            );
+                    ownedCount,
+                    createdCount);
         }
-        
+
         userRepository.delete(user);
     }
 
-    /**
-     * Check if user exists by ID
-     */
     public boolean existsById(Long id) {
         return userRepository.existsById(id);
     }
-    
-    /**
-     * Get count of pets owned by a user
-     * 
-     * @param userId the user ID to check
-     * @return the number of pets owned by this user
-     */
-    public int getUserOwnedPetCount(Long userId) {
+
+    private int getUserOwnedPetCount(Long userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             return 0;
@@ -124,25 +109,13 @@ public class UserService {
         List<Pet> ownedPets = petRepository.findByOwner(user.get());
         return ownedPets.size();
     }
-    
-    /**
-     * Get count of pets created by a user
-     * 
-     * @param userId the user ID to check
-     * @return the number of pets created by this user
-     */
-    public int getUserCreatedPetCount(Long userId) {
+
+    private int getUserCreatedPetCount(Long userId) {
         List<Pet> createdPets = petRepository.findByCreatedBy(userId);
         return createdPets.size();
     }
-    
-    /**
-     * Check if a user can be safely deleted (has no pets owned or created)
-     * 
-     * @param userId the user ID to check
-     * @return true if the user can be deleted, false otherwise
-     */
-    public boolean canDeleteUser(Long userId) {
+
+    private boolean canDeleteUser(Long userId) {
         return getUserOwnedPetCount(userId) == 0 && getUserCreatedPetCount(userId) == 0;
     }
 }
