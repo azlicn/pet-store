@@ -80,15 +80,12 @@ class CategoryExceptionTest {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(petRepository.findByCategoryId(1L)).thenReturn(Arrays.asList(testPet1, testPet2));
 
-        CategoryInUseException exception = assertThrows(
-                CategoryInUseException.class,
-                () -> categoryService.deleteCategory(1L));
+    CategoryInUseException exception = assertThrows(
+        CategoryInUseException.class,
+        () -> categoryService.deleteCategory(1L));
 
-        assertEquals(1L, exception.getCategoryId());
-        assertEquals("Dogs", exception.getCategoryName());
-        assertEquals(2, exception.getPetCount());
-        assertTrue(exception.getMessage().contains("Cannot delete category 'Dogs'"));
-        assertTrue(exception.getMessage().contains("2 pet(s)"));
+    assertTrue(exception.getMessage().contains("Cannot delete category 'Dogs'"));
+    assertTrue(exception.getMessage().contains("2 pet(s)"));
 
         verify(categoryRepository, never()).deleteById(anyLong());
     }
@@ -107,16 +104,7 @@ class CategoryExceptionTest {
 
     @Test
     void testCategoryInUseException_CustomMessage() {
-
-        CategoryInUseException exception = new CategoryInUseException(
-                1L,
-                "Dogs",
-                3,
-                "Custom error message");
-
-        assertEquals(1L, exception.getCategoryId());
-        assertEquals("Dogs", exception.getCategoryName());
-        assertEquals(3, exception.getPetCount());
-        assertEquals("Custom error message", exception.getMessage());
+    CategoryInUseException exception = new CategoryInUseException("Custom error message");
+    assertEquals("Custom error message", exception.getMessage());
     }
 }

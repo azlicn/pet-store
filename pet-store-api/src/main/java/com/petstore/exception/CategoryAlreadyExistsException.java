@@ -1,7 +1,11 @@
 package com.petstore.exception;
 
+/**
+ * Custom exception thrown when attempting to create a category that already exists
+ */
 public class CategoryAlreadyExistsException extends RuntimeException {
-    public CategoryAlreadyExistsException(String name) {
-        super("Category with name '" + name + "' already exists.");
+    
+    public CategoryAlreadyExistsException(String message) {
+        super(message);
     }
 }

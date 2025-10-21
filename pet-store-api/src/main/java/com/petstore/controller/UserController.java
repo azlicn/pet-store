@@ -65,40 +65,43 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and #id == authentication.principal.id)")
     @Operation(summary = "Update user", description = "Update user information (ADMIN and USER can update)")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest updateRequest) {
-        try {
-            // Get current authentication
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            boolean isAdmin = auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        // Get current authentication
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-            // Create user object from request
-            User userDetails = new User();
-            userDetails.setFirstName(updateRequest.getFirstName());
-            userDetails.setLastName(updateRequest.getLastName());
-            userDetails.setEmail(updateRequest.getEmail());
-
-            // Only allow password updates if provided
-            if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
-                userDetails.setPassword(updateRequest.getPassword());
-            }
-
-            // Only ADMIN can update roles
-            if (isAdmin && updateRequest.getRoles() != null) {
-                userDetails.setRoles(updateRequest.getRoles());
-            }
-
-            User updatedUser = userService.updateUser(id, userDetails);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "User updated successfully");
-            response.put("user", convertToUserResponse(updatedUser));
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
+        // Check if user exists
+        User existingUser = userService.getUserById(id)
+                .orElse(null);
+        if (existingUser == null) {
             Map<String, String> error = new HashMap<>();
-            error.put("message", "Failed to update user: " + e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            error.put("message", "User not found with id: " + id);
+            return ResponseEntity.status(404).body(error);
         }
+
+        // Create user object from request
+        User userDetails = new User();
+        userDetails.setFirstName(updateRequest.getFirstName());
+        userDetails.setLastName(updateRequest.getLastName());
+        userDetails.setEmail(updateRequest.getEmail());
+
+        // Only allow password updates if provided
+        if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
+            userDetails.setPassword(updateRequest.getPassword());
+        }
+
+        // Only ADMIN can update roles
+        if (isAdmin && updateRequest.getRoles() != null) {
+            userDetails.setRoles(updateRequest.getRoles());
+        }
+
+        User updatedUser = userService.updateUser(id, userDetails);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User updated successfully");
+        response.put("user", convertToUserResponse(updatedUser));
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

@@ -32,8 +32,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleCategoryInUseException(
             CategoryInUseException ex, HttpServletRequest request) {
         
-        logger.warn("Category deletion blocked - Category {} is still in use by {} pets", 
-                ex.getCategoryName(), ex.getPetCount());
+    logger.warn("Category deletion blocked: {}", ex.getMessage());
         
         ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.CONFLICT.value(),
@@ -52,8 +51,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserInUseException(
             UserInUseException ex, HttpServletRequest request) {
         
-        logger.warn("User deletion blocked - User {} has {} owned pets and {} created pets", 
-                ex.getUserEmail(), ex.getOwnedPetCount(), ex.getCreatedPetCount());
+    logger.warn("User deletion blocked: {}", ex.getMessage());
         
         ErrorResponse errorResponse = new ErrorResponse(
             HttpStatus.CONFLICT.value(),

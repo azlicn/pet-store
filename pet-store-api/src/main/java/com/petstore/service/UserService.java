@@ -87,11 +87,17 @@ public class UserService {
         if (!canDeleteUser(id)) {
             int ownedCount = getUserOwnedPetCount(id);
             int createdCount = getUserCreatedPetCount(id);
-            throw new UserInUseException(
-                    id,
-                    user.getEmail(),
-                    ownedCount,
-                    createdCount);
+            StringBuilder message = new StringBuilder();
+            message.append(String.format("Cannot delete user '%s' (ID: %d) because they have ", user.getEmail(), id));
+            if (ownedCount > 0 && createdCount > 0) {
+                message.append(String.format("ownership of %d pet(s) and created %d pet(s)", ownedCount, createdCount));
+            } else if (ownedCount > 0) {
+                message.append(String.format("ownership of %d pet(s)", ownedCount));
+            } else if (createdCount > 0) {
+                message.append(String.format("created %d pet(s)", createdCount));
+            }
+            message.append(" that still exist in the database");
+            throw new UserInUseException(message.toString());
         }
 
         userRepository.delete(user);

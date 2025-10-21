@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -47,24 +48,17 @@ public class PetController {
                 "Received request to get available pets with filters - name: '{}', categoryId: {}, status: {}, limit: {}",
                 name, categoryId, status, limit);
 
-        try {
-            if (name != null || categoryId != null || status != null || limit != null) {
-                logger.debug("Applying filters to pet search");
-                List<Pet> pets = petService.findPetsByFilters(name, categoryId, status, limit);
-                logger.info("Found {} pets matching filter criteria", pets.size());
-                return ResponseEntity.ok(pets);
-            }
-
+        List<Pet> pets;
+        if (name != null || categoryId != null || status != null || limit != null) {
+            logger.debug("Applying filters to pet search");
+            pets = petService.findPetsByFilters(name, categoryId, status, limit);
+            logger.info("Found {} pets matching filter criteria", pets.size());
+        } else {
             logger.debug("No filters provided, returning all available pets");
-            List<Pet> pets = petService.getAllPets();
+            pets = petService.getAllPets();
             logger.info("Retrieved {} available pets from store inventory", pets.size());
-            return ResponseEntity.ok(pets);
-        } catch (Exception e) {
-            logger.error(
-                    "Error occurred while retrieving pets with filters - name: '{}', categoryId: {}, status: {}, limit: {}",
-                    name, categoryId, status, limit, e);
-            throw e;
         }
+        return ResponseEntity.ok(pets);
     }
 
     @GetMapping("/latest")
@@ -110,24 +104,18 @@ public class PetController {
     @Operation(summary = "Add a new pet", description = "Add a new pet to the store")
     public ResponseEntity<Pet> addPet(@Valid @RequestBody Pet pet) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth != null ? auth.getName() : "anonymous";
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String username = auth != null ? auth.getName() : "anonymous";
 
-        logger.info("User '{}' attempting to add new pet: '{}' in category: '{}' with price: ${}",
-                username, pet.getName(),
-                pet.getCategory() != null ? pet.getCategory().getName() : "unknown",
-                pet.getPrice());
+    logger.info("User '{}' attempting to add new pet: '{}' in category: '{}' with price: ${}",
+        username, pet.getName(),
+        pet.getCategory() != null ? pet.getCategory().getName() : "unknown",
+        pet.getPrice());
 
-        try {
-            Pet savedPet = petService.savePet(pet);
-            logger.info("Successfully added new pet with ID: {} - '{}' by user: '{}'",
-                    savedPet.getId(), savedPet.getName(), username);
-            return ResponseEntity.ok(savedPet);
-        } catch (Exception e) {
-            logger.error("Error occurred while adding new pet '{}' by user: '{}'",
-                    pet.getName(), username, e);
-            throw e;
-        }
+    Pet savedPet = petService.savePet(pet);
+    logger.info("Successfully added new pet with ID: {} - '{}' by user: '{}'",
+        savedPet.getId(), savedPet.getName(), username);
+    return ResponseEntity.ok(savedPet);
     }
 
     @PutMapping("/{id}")
@@ -142,47 +130,40 @@ public class PetController {
 
         logger.info("User '{}' attempting to update pet with ID: {}", username, id);
 
-        try {
-            Optional<User> currentUserOpt = userRepository.findByEmail(username);
-            if (!currentUserOpt.isPresent()) {
-                logger.warn("User '{}' not found in database during pet update attempt for ID: {}", username, id);
-                return ResponseEntity.status(401).build(); // Unauthorized
-            }
+        Optional<User> currentUserOpt = userRepository.findByEmail(username);
+        if (!currentUserOpt.isPresent()) {
+            logger.warn("User '{}' not found in database during pet update attempt for ID: {}", username, id);
+            return ResponseEntity.status(401).build(); // Unauthorized
+        }
 
-            User currentUser = currentUserOpt.get();
+        User currentUser = currentUserOpt.get();
+        Optional<Pet> existingPetOpt = petService.getPetById(id);
+        if (!existingPetOpt.isPresent()) {
+            logger.warn("Pet with ID: {} not found during update attempt by user: '{}'", id, username);
+            return ResponseEntity.notFound().build();
+        }
 
-            Optional<Pet> existingPetOpt = petService.getPetById(id);
-            if (!existingPetOpt.isPresent()) {
-                logger.warn("Pet with ID: {} not found during update attempt by user: '{}'", id, username);
-                return ResponseEntity.notFound().build();
-            }
+        Pet existingPet = existingPetOpt.get();
+        boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
+        boolean isOwner = existingPet.getCreatedBy() != null &&
+                existingPet.getCreatedBy().equals(currentUser.getId());
 
-            Pet existingPet = existingPetOpt.get();
+        logger.debug("User '{}' permission check for pet ID: {} - isAdmin: {}, isOwner: {}",
+                username, id, isAdmin, isOwner);
 
-            boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
-            boolean isOwner = existingPet.getCreatedBy() != null &&
-                    existingPet.getCreatedBy().equals(currentUser.getId());
+        if (!isAdmin && !isOwner) {
+            logger.warn("User '{}' denied access to update pet ID: {} - insufficient permissions", username, id);
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
 
-            logger.debug("User '{}' permission check for pet ID: {} - isAdmin: {}, isOwner: {}",
-                    username, id, isAdmin, isOwner);
-
-            if (!isAdmin && !isOwner) {
-                logger.warn("User '{}' denied access to update pet ID: {} - insufficient permissions", username, id);
-                return ResponseEntity.status(403).build(); // Forbidden
-            }
-
-            Pet updatedPet = petService.updatePet(id, petDetails);
-            if (updatedPet != null) {
-                logger.info("Successfully updated pet ID: {} - '{}' by user: '{}'",
-                        updatedPet.getId(), updatedPet.getName(), username);
-                return ResponseEntity.ok(updatedPet);
-            } else {
-                logger.error("Failed to update pet ID: {} by user: '{}' - service returned null", id, username);
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            logger.error("Error occurred while updating pet ID: {} by user: '{}'", id, username, e);
-            throw e;
+        Pet updatedPet = petService.updatePet(id, petDetails);
+        if (updatedPet != null) {
+            logger.info("Successfully updated pet ID: {} - '{}' by user: '{}'",
+                    updatedPet.getId(), updatedPet.getName(), username);
+            return ResponseEntity.ok(updatedPet);
+        } else {
+            logger.error("Failed to update pet ID: {} by user: '{}' - service returned null", id, username);
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -197,21 +178,16 @@ public class PetController {
 
         logger.info("Admin user '{}' attempting to delete pet with ID: {}", username, id);
 
-        try {
-            Optional<Pet> petToDelete = petService.getPetById(id);
+        Optional<Pet> petToDelete = petService.getPetById(id);
 
-            boolean deleted = petService.deletePet(id);
-            if (deleted) {
-                String petName = petToDelete.isPresent() ? petToDelete.get().getName() : "unknown";
-                logger.info("Successfully deleted pet ID: {} - '{}' by admin: '{}'", id, petName, username);
-                return ResponseEntity.ok().build();
-            } else {
-                logger.warn("Failed to delete pet ID: {} by admin: '{}' - pet not found", id, username);
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            logger.error("Error occurred while deleting pet ID: {} by admin: '{}'", id, username, e);
-            throw e;
+        boolean deleted = petService.deletePet(id);
+        if (deleted) {
+            String petName = petToDelete.isPresent() ? petToDelete.get().getName() : "unknown";
+            logger.info("Successfully deleted pet ID: {} - '{}' by admin: '{}'", id, petName, username);
+            return ResponseEntity.ok().build();
+        } else {
+            logger.warn("Failed to delete pet ID: {} by admin: '{}' - pet not found", id, username);
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -227,20 +203,14 @@ public class PetController {
 
         logger.info("Admin user '{}' attempting to update status of pet ID: {} to: {}", username, id, status);
 
-        try {
-            Pet updatedPet = petService.updatePetStatus(id, status);
-            if (updatedPet != null) {
-                logger.info("Successfully updated pet ID: {} - '{}' status to: {} by admin: '{}'",
-                        id, updatedPet.getName(), status, username);
-                return ResponseEntity.ok(updatedPet);
-            } else {
-                logger.warn("Failed to update status for pet ID: {} by admin: '{}' - pet not found", id, username);
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            logger.error("Error occurred while updating status of pet ID: {} to: {} by admin: '{}'",
-                    id, status, username, e);
-            throw e;
+        Pet updatedPet = petService.updatePetStatus(id, status);
+        if (updatedPet != null) {
+            logger.info("Successfully updated pet ID: {} - '{}' status to: {} by admin: '{}'",
+                    id, updatedPet.getName(), status, username);
+            return ResponseEntity.ok(updatedPet);
+        } else {
+            logger.warn("Failed to update status for pet ID: {} by admin: '{}' - pet not found", id, username);
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -269,34 +239,29 @@ public class PetController {
 
         logger.info("Received request to get user's pets (owned and created)");
 
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String userEmail = auth.getName();
-            Optional<User> userOptional = userRepository.findByEmail(userEmail);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = auth.getName();
+        Optional<User> userOptional = userRepository.findByEmail(userEmail);
 
-            if (userOptional.isEmpty()) {
-                logger.warn("User with email '{}' not found during getMyPets request", userEmail);
-                return ResponseEntity.badRequest().build();
-            }
-
-            User user = userOptional.get();
-            List<Pet> userPets = petService.getPetsByUser(user);
-
-            List<Pet> ownedPets = petService.getPetsByOwner(user);
-            List<Pet> createdPets = petService.getPetsByCreator(user.getId());
-
-            logger.info(
-                    "Found {} total pets for user '{}': {} owned pets + {} created pets (total {} after deduplication)",
-                    userPets.size(), userEmail, ownedPets.size(), createdPets.size(), userPets.size());
-            logger.debug("Owned pets: {}, Created pets: {}",
-                    ownedPets.stream().map(Pet::getName).toList(),
-                    createdPets.stream().map(Pet::getName).toList());
-
-            return ResponseEntity.ok(userPets);
-        } catch (Exception e) {
-            logger.error("Error occurred while retrieving user's pets", e);
-            throw e;
+        if (userOptional.isEmpty()) {
+            logger.warn("User with email '{}' not found during getMyPets request", userEmail);
+            return ResponseEntity.badRequest().build();
         }
+
+        User user = userOptional.get();
+        List<Pet> userPets = petService.getPetsByUser(user);
+
+        List<Pet> ownedPets = petService.getPetsByOwner(user);
+        List<Pet> createdPets = petService.getPetsByCreator(user.getId());
+
+        logger.info(
+                "Found {} total pets for user '{}': {} owned pets + {} created pets (total {} after deduplication)",
+                userPets.size(), userEmail, ownedPets.size(), createdPets.size(), userPets.size());
+        logger.debug("Owned pets: {}, Created pets: {}",
+                ownedPets.stream().map(Pet::getName).toList(),
+                createdPets.stream().map(Pet::getName).toList());
+
+        return ResponseEntity.ok(userPets);
     }
 
     @GetMapping("/auth-test")
@@ -312,7 +277,7 @@ public class PetController {
         }
 
         User user = userOptional.get();
-        return ResponseEntity.ok(java.util.Map.of(
+        return ResponseEntity.ok(Map.of(
                 "message", "Authentication successful",
                 "user", user.getEmail(),
                 "userId", user.getId(),

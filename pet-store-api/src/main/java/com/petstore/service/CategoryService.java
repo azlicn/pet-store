@@ -32,7 +32,8 @@ public class CategoryService {
 
     public Category saveCategory(Category category) {
         if (categoryRepository.existsByName(category.getName())) {
-            throw new CategoryAlreadyExistsException(category.getName());
+            throw new CategoryAlreadyExistsException(
+                String.format("Category with name '%s' already exists.", category.getName()));
         }
         return categoryRepository.save(category);
     }
@@ -44,7 +45,8 @@ public class CategoryService {
             // Check for duplicate name (excluding current category)
             if (categoryRepository.existsByName(categoryDetails.getName()) &&
                 !existingCategory.get().getName().equals(categoryDetails.getName())) {
-                throw new CategoryAlreadyExistsException(categoryDetails.getName());
+                throw new CategoryAlreadyExistsException(
+                    String.format("Category with name '%s' already exists.", categoryDetails.getName()));
             }
             Category category = existingCategory.get();
             category.setName(categoryDetails.getName());
@@ -67,9 +69,8 @@ public class CategoryService {
         if (!canDeleteCategory(id)) {
             int usageCount = getCategoryUsageCount(id);
             throw new CategoryInUseException(
-                    id,
-                    category.getName(),
-                    usageCount);
+                String.format("Cannot delete category '%s' (ID: %d) because it is currently being used by %d pet(s)",
+                    category.getName(), id, usageCount));
         }
 
         categoryRepository.deleteById(id);
