@@ -77,9 +77,9 @@ export class CategoryListComponent implements OnInit {
 
     const dialogData: ConfirmDialogData = {
           title: 'Delete Category',
-          message: `Are you sure you want to delete category "<strong>${category.name}</strong>"?<br><br>
+          message: `Are you sure you want to delete category "<strong>${category.name}</strong>"?<br>
                    <strong>Warning:</strong> This category cannot be deleted if it is currently being used by any pets. 
-                   You will need to reassign or remove those pets first.<br><br>
+                   You will need to reassign or remove those pets first.<br>
                    This action cannot be undone and will permanently remove this category from the system.`,
           confirmText: 'Delete Category',
           cancelText: 'Keep Category',
@@ -87,7 +87,7 @@ export class CategoryListComponent implements OnInit {
         };
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
+      width: '450px',
       maxWidth: '90vw',
       data: dialogData,
       disableClose: true,
