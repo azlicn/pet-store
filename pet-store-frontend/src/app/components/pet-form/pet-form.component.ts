@@ -154,13 +154,7 @@ export class PetFormComponent implements OnInit {
       };
 
       if (this.isEdit && this.petId) {
-        console.log('Auth Debug Info:');
-        console.log('Is logged in:', this.authService.isLoggedIn());
-        console.log('Current user:', this.authService.getCurrentUser());
-        console.log('Token exists:', !!this.authService.getToken());
-        console.log('Token preview:', this.authService.getToken()?.substring(0, 50) + '...');
-        console.log('Full token for verification:', this.authService.getToken());
-        
+
         this.petService.updatePet(this.petId, pet).subscribe({
           next: () => {
             this.snackBar.open('Pet updated successfully', 'Close', { duration: 2000 });
