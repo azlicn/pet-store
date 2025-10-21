@@ -1,6 +1,8 @@
 package com.petstore.service;
 
+import com.petstore.exception.EmailAlreadyInUseException;
 import com.petstore.exception.UserInUseException;
+import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
 import com.petstore.repository.PetRepository;
@@ -49,8 +51,9 @@ public class UserService {
      * Update user information
      */
     public User updateUser(Long id, User userDetails) {
+
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
 
         // Update fields
         if (userDetails.getFirstName() != null) {
@@ -63,7 +66,7 @@ public class UserService {
             // Check if email is already in use by another user
             Optional<User> existingUser = userRepository.findByEmail(userDetails.getEmail());
             if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
-                throw new RuntimeException("Email is already in use by another user");
+                throw new EmailAlreadyInUseException("Email is already in use by another user");
             }
             user.setEmail(userDetails.getEmail());
         }
@@ -81,8 +84,9 @@ public class UserService {
      * Delete user by ID (ADMIN only)
      */
     public void deleteUser(Long id) {
+
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
 
         if (!canDeleteUser(id)) {
             int ownedCount = getUserOwnedPetCount(id);
@@ -108,6 +112,7 @@ public class UserService {
     }
 
     private int getUserOwnedPetCount(Long userId) {
+
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             return 0;

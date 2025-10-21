@@ -2,6 +2,8 @@ package com.petstore.controller;
 
 import com.petstore.dto.LoginRequest;
 import com.petstore.dto.SignUpRequest;
+import com.petstore.exception.AuthenticationFailedException;
+import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.repository.UserRepository;
@@ -41,36 +43,37 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user and return JWT token")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+
+        Authentication authentication;
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
-            String jwt = tokenProvider.generateToken(authentication);
-
-            User user = userRepository.findByEmail(loginRequest.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", jwt);
-            response.put("type", "Bearer");
-            response.put("user", Map.of(
-                    "id", user.getId(),
-                    "email", user.getEmail(),
-                    "firstName", user.getFirstName(),
-                    "lastName", user.getLastName(),
-                    "roles", user.getRoles()));
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", "Invalid email or password");
-            return ResponseEntity.badRequest().body(error);
+            authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        } catch (org.springframework.security.authentication.BadCredentialsException ex) {
+            throw new AuthenticationFailedException("Invalid email or password");
         }
+
+        String jwt = tokenProvider.generateToken(authentication);
+
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("type", "Bearer");
+        response.put("user", Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "roles", user.getRoles()));
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
     @Operation(summary = "User registration", description = "Register a new user account")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+
         Map<String, String> response = new HashMap<>();
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {

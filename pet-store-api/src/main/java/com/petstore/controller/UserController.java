@@ -1,6 +1,7 @@
 package com.petstore.controller;
 
 import com.petstore.dto.UserUpdateRequest;
+import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.User;
 import com.petstore.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,35 +31,21 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all users", description = "Retrieve all users (ADMIN only)")
     public ResponseEntity<?> getAllUsers() {
-        try {
-            List<User> users = userService.getAllUsers();
-
-            List<Map<String, Object>> userResponses = users.stream()
-                    .map(this::convertToUserResponse)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok(userResponses);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", "Failed to retrieve users: " + e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        
+        List<User> users = userService.getAllUsers();
+        List<Map<String, Object>> userResponses = users.stream()
+                .map(this::convertToUserResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userResponses);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and #id == authentication.principal.id)")
     @Operation(summary = "Get user by ID", description = "Retrieve user by ID (ADMIN can access any user, USER can only access their own)")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        try {
-            User user = userService.getUserById(id)
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
-            return ResponseEntity.ok(convertToUserResponse(user));
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        return ResponseEntity.ok(convertToUserResponse(user));
     }
 
     @PutMapping("/{id}")

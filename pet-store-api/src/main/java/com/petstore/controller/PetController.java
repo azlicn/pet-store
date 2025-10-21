@@ -76,18 +76,13 @@ public class PetController {
 
         logger.info("Received request to get pet by ID: {}", id);
 
-        try {
-            Optional<Pet> pet = petService.getPetById(id);
-            if (pet.isPresent()) {
-                logger.info("Pet found with ID: {} - '{}'", id, pet.get().getName());
-                return ResponseEntity.ok(pet.get());
-            } else {
-                logger.warn("Pet not found with ID: {}", id);
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            logger.error("Error occurred while retrieving pet with ID: {}", id, e);
-            throw e;
+        Optional<Pet> pet = petService.getPetById(id);
+        if (pet.isPresent()) {
+            logger.info("Pet found with ID: {} - '{}'", id, pet.get().getName());
+            return ResponseEntity.ok(pet.get());
+        } else {
+            logger.warn("Pet not found with ID: {}", id);
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -104,18 +99,18 @@ public class PetController {
     @Operation(summary = "Add a new pet", description = "Add a new pet to the store")
     public ResponseEntity<Pet> addPet(@Valid @RequestBody Pet pet) {
 
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String username = auth != null ? auth.getName() : "anonymous";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth != null ? auth.getName() : "anonymous";
 
-    logger.info("User '{}' attempting to add new pet: '{}' in category: '{}' with price: ${}",
-        username, pet.getName(),
-        pet.getCategory() != null ? pet.getCategory().getName() : "unknown",
-        pet.getPrice());
+        logger.info("User '{}' attempting to add new pet: '{}' in category: '{}' with price: ${}",
+                username, pet.getName(),
+                pet.getCategory() != null ? pet.getCategory().getName() : "unknown",
+                pet.getPrice());
 
-    Pet savedPet = petService.savePet(pet);
-    logger.info("Successfully added new pet with ID: {} - '{}' by user: '{}'",
-        savedPet.getId(), savedPet.getName(), username);
-    return ResponseEntity.ok(savedPet);
+        Pet savedPet = petService.savePet(pet);
+        logger.info("Successfully added new pet with ID: {} - '{}' by user: '{}'",
+                savedPet.getId(), savedPet.getName(), username);
+        return ResponseEntity.ok(savedPet);
     }
 
     @PutMapping("/{id}")
@@ -268,6 +263,7 @@ public class PetController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Test authentication", description = "Test endpoint to verify authentication is working")
     public ResponseEntity<?> testAuth() {
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
         Optional<User> userOptional = userRepository.findByEmail(userEmail);

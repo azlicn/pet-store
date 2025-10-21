@@ -25,6 +25,7 @@ public class CategoryController {
     @Operation(summary = "Get all categories", description = "Retrieve a list of all categories")
     @GetMapping
     public ResponseEntity<List<Category>> getAllCategories() {
+
         List<Category> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
@@ -33,6 +34,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+
         Optional<Category> category = categoryService.getCategoryById(id);
         return category.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -42,6 +44,7 @@ public class CategoryController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) {
+
         Category savedCategory = categoryService.saveCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
     }
@@ -51,6 +54,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> updateCategory(@PathVariable Long id,
             @Valid @RequestBody Category categoryDetails) {
+
         Category updatedCategory = categoryService.updateCategory(id, categoryDetails);
 
         if (updatedCategory != null) {
@@ -64,7 +68,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        // The CategoryInUseException will be handled by the GlobalExceptionHandler
+
         boolean deleted = categoryService.deleteCategory(id);
 
         if (deleted) {

@@ -1,6 +1,7 @@
 package com.petstore.controller;
 
 import com.petstore.dto.UserUpdateRequest;
+import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.service.UserService;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
@@ -85,25 +87,8 @@ class UserControllerTest {
         List<Map<String, Object>> users = (List<Map<String, Object>>) response.getBody();
         assertThat(users).hasSize(2);
         assertThat(users.get(0).get("email")).isEqualTo("user@example.com");
-        assertThat(users.get(0).get("password")).isNull(); 
+        assertThat(users.get(0).get("password")).isNull();
         assertThat(users.get(1).get("email")).isEqualTo("admin@example.com");
-    }
-
-    @Test
-    @DisplayName("GET /api/users - Should handle service exception")
-    void shouldHandleServiceExceptionWhenGettingAllUsers() {
-
-        when(userService.getAllUsers()).thenThrow(new RuntimeException("Database error"));
-
-        ResponseEntity<?> response = userController.getAllUsers();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).contains("Failed to retrieve users");
-        assertThat(errorResponse.get("message")).contains("Database error");
     }
 
     @Test
@@ -133,14 +118,9 @@ class UserControllerTest {
 
         when(userService.getUserById(999L)).thenReturn(Optional.empty());
 
-        ResponseEntity<?> response = userController.getUserById(999L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).contains("User not found with id: 999");
+        assertThrows(UserNotFoundException.class, () -> {
+            userController.getUserById(999L);
+        });
     }
 
     @Test
@@ -162,8 +142,8 @@ class UserControllerTest {
         updatedUser.setCreatedAt(testUser.getCreatedAt());
         updatedUser.setUpdatedAt(LocalDateTime.now());
 
-    when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
-    when(userService.updateUser(eq(1L), any(User.class))).thenReturn(updatedUser);
+        when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
+        when(userService.updateUser(eq(1L), any(User.class))).thenReturn(updatedUser);
 
         try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
                 SecurityContextHolder.class)) {
@@ -258,10 +238,10 @@ class UserControllerTest {
 
             when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
             when(userService.updateUser(eq(1L), any(User.class)))
-                .thenThrow(new RuntimeException("Email already exists"));
+                    .thenThrow(new RuntimeException("Email already exists"));
 
             // Expect RuntimeException to be thrown
-            org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+            assertThrows(RuntimeException.class, () -> {
                 userController.updateUser(1L, updateRequest);
             });
         }
@@ -273,7 +253,7 @@ class UserControllerTest {
 
         UserUpdateRequest updateRequest = new UserUpdateRequest();
         updateRequest.setFirstName("John Updated");
-        updateRequest.setPassword(""); 
+        updateRequest.setPassword("");
 
         User updatedUser = new User();
         updatedUser.setId(1L);
@@ -354,19 +334,18 @@ class UserControllerTest {
     @DisplayName("convertToUserResponse - Should exclude sensitive information")
     void shouldExcludeSensitiveInformationInResponse() {
 
-        ResponseEntity<?> response = userController.getUserById(1L);
         when(userService.getUserById(1L)).thenReturn(Optional.of(testUser));
-        response = userController.getUserById(1L);
+        ResponseEntity<?> response = userController.getUserById(1L);
 
-        
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isInstanceOf(Map.class);
-        
+
         @SuppressWarnings("unchecked")
         Map<String, Object> userResponse = (Map<String, Object>) response.getBody();
-        
-        assertThat(userResponse).containsKeys("id", "email", "firstName", "lastName", "roles", "createdAt", "updatedAt");
-        
+
+        assertThat(userResponse).containsKeys("id", "email", "firstName", "lastName", "roles", "createdAt",
+                "updatedAt");
+
         assertThat(userResponse).doesNotContainKey("password");
     }
 
@@ -407,8 +386,9 @@ class UserControllerTest {
     void shouldHandleEdgeCaseIds() {
 
         when(userService.getUserById(0L)).thenReturn(Optional.empty());
-        ResponseEntity<?> response = userController.getUserById(0L);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThrows(UserNotFoundException.class, () -> {
+            userController.getUserById(0L);
+        });
 
         when(userService.existsById(0L)).thenReturn(false);
         ResponseEntity<?> deleteResponse = userController.deleteUser(0L);
@@ -418,9 +398,10 @@ class UserControllerTest {
     @Test
     @DisplayName("Edge cases - Should handle negative IDs")
     void shouldHandleNegativeIds() {
-        
+
         when(userService.getUserById(-1L)).thenReturn(Optional.empty());
-        ResponseEntity<?> response = userController.getUserById(-1L);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThrows(UserNotFoundException.class, () -> {
+            userController.getUserById(-1L);
+        });
     }
 }

@@ -2,6 +2,8 @@ package com.petstore.controller;
 
 import com.petstore.dto.LoginRequest;
 import com.petstore.dto.SignUpRequest;
+import com.petstore.exception.AuthenticationFailedException;
+import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.repository.UserRepository;
@@ -27,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
@@ -118,16 +121,11 @@ class AuthControllerTest {
     void shouldReturnErrorForInvalidCredentials() {
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new BadCredentialsException("Invalid credentials"));
+                .thenThrow(new AuthenticationFailedException("Invalid credentials"));
 
-        ResponseEntity<?> response = authController.authenticateUser(loginRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).isEqualTo("Invalid email or password");
+        assertThrows(AuthenticationFailedException.class, () -> {
+            authController.authenticateUser(loginRequest);
+        });
     }
 
     @Test
@@ -142,14 +140,9 @@ class AuthControllerTest {
         when(tokenProvider.generateToken(authentication)).thenReturn(expectedToken);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
 
-        ResponseEntity<?> response = authController.authenticateUser(loginRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).isEqualTo("Invalid email or password");
+        assertThrows(UserNotFoundException.class, () -> {
+            authController.authenticateUser(loginRequest);
+        });
     }
 
     @Test
@@ -300,14 +293,9 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new RuntimeException("Authentication service unavailable"));
 
-        ResponseEntity<?> response = authController.authenticateUser(loginRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).isEqualTo("Invalid email or password");
+        assertThrows(RuntimeException.class, () -> {
+            authController.authenticateUser(loginRequest);
+        });
     }
 
     @Test
@@ -321,14 +309,9 @@ class AuthControllerTest {
         when(tokenProvider.generateToken(authentication))
                 .thenThrow(new RuntimeException("Token generation failed"));
 
-        ResponseEntity<?> response = authController.authenticateUser(loginRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).isEqualTo("Invalid email or password");
+        assertThrows(RuntimeException.class, () -> {
+            authController.authenticateUser(loginRequest);
+        });
     }
 
     @Test
@@ -340,11 +323,11 @@ class AuthControllerTest {
         emptyRequest.setPassword("");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new BadCredentialsException("Empty credentials"));
+                .thenThrow(new AuthenticationFailedException("Empty credentials"));
 
-        ResponseEntity<?> response = authController.authenticateUser(emptyRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThrows(AuthenticationFailedException.class, () -> {
+            authController.authenticateUser(emptyRequest);
+        });
     }
 
     @Test
