@@ -44,7 +44,7 @@ public class Pet {
 
     // Owner of the pet (null = store inventory, not null = customer purchase)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     @ElementCollection
