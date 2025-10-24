@@ -1,4 +1,4 @@
-package com.petstore.model;
+package com.petstore.enums;
 
 public enum PetStatus {
     AVAILABLE,

@@ -1,14 +1,13 @@
 package com.petstore.repository;
 
-import com.petstore.config.TestDatabaseConfig;
 import com.petstore.model.User;
 import com.petstore.model.Role;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -19,8 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
-@Import(TestDatabaseConfig.class)
 @ActiveProfiles("test")
+@DisplayName("User Repository Tests")
 class UserRepositoryTest {
 
     @Autowired
@@ -34,7 +33,7 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Create test users
+
         testUser = new User();
         testUser.setEmail("user@test.com");
         testUser.setFirstName("John");
@@ -55,11 +54,11 @@ class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by email - Should return user when email exists")
     void findByEmail_ShouldReturnUserWhenEmailExists() {
-        // When
+
         Optional<User> foundUser = userRepository.findByEmail("user@test.com");
 
-        // Then
         assertThat(foundUser).isPresent();
         assertThat(foundUser.get().getEmail()).isEqualTo("user@test.com");
         assertThat(foundUser.get().getFirstName()).isEqualTo("John");
@@ -68,65 +67,66 @@ class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by email - Should return empty when email does not exist")
     void findByEmail_ShouldReturnEmptyWhenEmailDoesNotExist() {
-        // When
+
         Optional<User> foundUser = userRepository.findByEmail("nonexistent@test.com");
 
-        // Then
         assertThat(foundUser).isEmpty();
     }
 
     @Test
+    @DisplayName("Find by email - Should be case insensitive")
     void findByEmail_ShouldBeCaseInsensitive() {
-        // When
+
         Optional<User> foundUser1 = userRepository.findByEmail("USER@TEST.COM");
         Optional<User> foundUser2 = userRepository.findByEmail("User@Test.Com");
         Optional<User> foundUser3 = userRepository.findByEmail("user@test.com");
 
-        // Then
         assertThat(foundUser1).isPresent();
         assertThat(foundUser2).isPresent();
         assertThat(foundUser3).isPresent();
-        
+
         assertThat(foundUser1.get().getId()).isEqualTo(testUser.getId());
         assertThat(foundUser2.get().getId()).isEqualTo(testUser.getId());
         assertThat(foundUser3.get().getId()).isEqualTo(testUser.getId());
     }
 
     @Test
+    @DisplayName("Exists by email - Should return true when email exists")
     void existsByEmail_ShouldReturnTrueWhenEmailExists() {
-        // When
+
         boolean exists = userRepository.existsByEmail("user@test.com");
 
-        // Then
         assertThat(exists).isTrue();
     }
 
     @Test
+    @DisplayName("Exists by email - Should return false when email does not exist")
     void existsByEmail_ShouldReturnFalseWhenEmailDoesNotExist() {
-        // When
+
         boolean exists = userRepository.existsByEmail("nonexistent@test.com");
 
-        // Then
         assertThat(exists).isFalse();
     }
 
     @Test
+    @DisplayName("Exists by email - Should be case insensitive")
     void existsByEmail_ShouldBeCaseInsensitive() {
-        // When
+
         boolean exists1 = userRepository.existsByEmail("USER@TEST.COM");
         boolean exists2 = userRepository.existsByEmail("User@Test.Com");
         boolean exists3 = userRepository.existsByEmail("user@test.com");
 
-        // Then
         assertThat(exists1).isTrue();
         assertThat(exists2).isTrue();
         assertThat(exists3).isTrue();
     }
 
     @Test
+    @DisplayName("Save - Should persist new user with all fields")
     void save_ShouldPersistNewUserWithAllFields() {
-        // Given
+
         User newUser = new User();
         newUser.setEmail("new@test.com");
         newUser.setFirstName("Jane");
@@ -134,10 +134,8 @@ class UserRepositoryTest {
         newUser.setPassword("encodedPassword456");
         newUser.setRoles(Set.of(Role.USER));
 
-        // When
         User savedUser = userRepository.save(newUser);
 
-        // Then
         assertThat(savedUser.getId()).isNotNull();
         assertThat(savedUser.getEmail()).isEqualTo("new@test.com");
         assertThat(savedUser.getFirstName()).isEqualTo("Jane");
@@ -149,15 +147,14 @@ class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should update existing user")
     void save_ShouldUpdateExistingUser() {
-        // Given
+
         testUser.setFirstName("UpdatedJohn");
         testUser.setLastName("UpdatedDoe");
 
-        // When
         User updatedUser = userRepository.save(testUser);
 
-        // Then
         assertThat(updatedUser.getId()).isEqualTo(testUser.getId());
         assertThat(updatedUser.getFirstName()).isEqualTo("UpdatedJohn");
         assertThat(updatedUser.getLastName()).isEqualTo("UpdatedDoe");
@@ -166,25 +163,26 @@ class UserRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should throw exception for duplicate email")
     void save_ShouldThrowExceptionForDuplicateEmail() {
-        // Given
+
         User duplicateUser = new User();
-        duplicateUser.setEmail("user@test.com"); // Same email as testUser
+        duplicateUser.setEmail("user@test.com");
         duplicateUser.setFirstName("Duplicate");
         duplicateUser.setLastName("User");
         duplicateUser.setPassword("password");
         duplicateUser.setRoles(Set.of(Role.USER));
 
-        // When & Then
         assertThatThrownBy(() -> {
             userRepository.save(duplicateUser);
-            entityManager.flush(); // Force the constraint check
+            entityManager.flush();
         }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
+    @DisplayName("Save - Should handle multiple roles")
     void save_ShouldHandleMultipleRoles() {
-        // Given
+
         User multiRoleUser = new User();
         multiRoleUser.setEmail("multirole@test.com");
         multiRoleUser.setFirstName("Multi");
@@ -192,69 +190,67 @@ class UserRepositoryTest {
         multiRoleUser.setPassword("password");
         multiRoleUser.setRoles(Set.of(Role.USER, Role.ADMIN));
 
-        // When
         User savedUser = userRepository.save(multiRoleUser);
 
-        // Then
         assertThat(savedUser.getRoles()).hasSize(2);
         assertThat(savedUser.getRoles()).containsExactlyInAnyOrder(Role.USER, Role.ADMIN);
     }
 
     @Test
+    @DisplayName("Delete by ID - Should remove user from database")
     void deleteById_ShouldRemoveUserFromDatabase() {
-        // Given
+
         Long userId = testUser.getId();
         assertThat(userRepository.findById(userId)).isPresent();
 
-        // When
         userRepository.deleteById(userId);
 
-        // Then
         assertThat(userRepository.findById(userId)).isEmpty();
     }
 
     @Test
+    @DisplayName("Find all - Should return all users")
     void findAll_ShouldReturnAllUsers() {
-        // When
+
         Iterable<User> allUsers = userRepository.findAll();
 
-        // Then
         assertThat(allUsers).hasSize(2);
         assertThat(allUsers).extracting(User::getEmail)
-            .containsExactlyInAnyOrder("user@test.com", "admin@test.com");
+                .containsExactlyInAnyOrder("user@test.com", "admin@test.com");
     }
 
     @Test
+    @DisplayName("Count - Should return correct number of users")
     void count_ShouldReturnCorrectNumberOfUsers() {
-        // When
+
         long userCount = userRepository.count();
 
-        // Then
         assertThat(userCount).isEqualTo(2);
     }
 
     @Test
+    @DisplayName("Find by ID - Should return user when ID exists")
     void findById_ShouldReturnUserWhenIdExists() {
-        // When
+
         Optional<User> foundUser = userRepository.findById(testUser.getId());
 
-        // Then
         assertThat(foundUser).isPresent();
         assertThat(foundUser.get().getEmail()).isEqualTo("user@test.com");
     }
 
     @Test
+    @DisplayName("Find by ID - Should return empty when ID does not exist")
     void findById_ShouldReturnEmptyWhenIdDoesNotExist() {
-        // When
+
         Optional<User> foundUser = userRepository.findById(999L);
 
-        // Then
         assertThat(foundUser).isEmpty();
     }
 
     @Test
+    @DisplayName("Save - Should handle empty roles")
     void save_ShouldHandleEmptyRoles() {
-        // Given
+
         User userWithoutRoles = new User();
         userWithoutRoles.setEmail("noroles@test.com");
         userWithoutRoles.setFirstName("No");
@@ -262,16 +258,15 @@ class UserRepositoryTest {
         userWithoutRoles.setPassword("password");
         userWithoutRoles.setRoles(Set.of());
 
-        // When
         User savedUser = userRepository.save(userWithoutRoles);
 
-        // Then
         assertThat(savedUser.getRoles()).isEmpty();
     }
 
     @Test
+    @DisplayName("Save - Should trim and normalize email")
     void save_ShouldTrimAndNormalizeEmail() {
-        // Given
+
         User userWithSpacedEmail = new User();
         userWithSpacedEmail.setEmail("  SPACED@TEST.COM  ");
         userWithSpacedEmail.setFirstName("Spaced");
@@ -279,10 +274,8 @@ class UserRepositoryTest {
         userWithSpacedEmail.setPassword("password");
         userWithSpacedEmail.setRoles(Set.of(Role.USER));
 
-        // When
         User savedUser = userRepository.save(userWithSpacedEmail);
 
-        // Then
         assertThat(savedUser.getEmail()).isEqualTo("spaced@test.com");
     }
 }

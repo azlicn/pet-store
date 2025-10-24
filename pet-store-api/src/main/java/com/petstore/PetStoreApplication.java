@@ -5,11 +5,22 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+/**
+ * Main application class for the Pet Store API
+ * Handles application startup and environment configuration
+ */
 @SpringBootApplication
 @EnableJpaAuditing
 public class PetStoreApplication {
 
+    /**
+     * Application entry point
+     * Loads environment variables from .env file and starts the Spring application
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
+        
         // Load .env file if it exists
         Dotenv dotenv = Dotenv.configure()
                 .directory(".")

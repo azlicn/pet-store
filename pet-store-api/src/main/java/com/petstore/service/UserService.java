@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service for managing user operations in the pet store
+ */
 @Service
 public class UserService {
 
@@ -27,33 +30,47 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Get all users (ADMIN only)
+     * Gets all users in the system (ADMIN only)
+     *
+     * @return list of all users
      */
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     /**
-     * Get user by ID
+     * Retrieves a user by their ID
+     *
+     * @param id the ID of the user to retrieve
+     * @return the user if found
      */
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
     /**
-     * Get user by email
+     * Retrieves a user by their email address
+     *
+     * @param email the email address to search for
+     * @return the user if found
      */
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
     /**
-     * Update user information
+     * Updates a user's information
+     *
+     * @param id the ID of the user to update
+     * @param userDetails the new user details
+     * @return the updated user
+     * @throws UserNotFoundException if user not found
+     * @throws EmailAlreadyInUseException if the new email is already in use
      */
     public User updateUser(Long id, User userDetails) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         // Update fields
         if (userDetails.getFirstName() != null) {
@@ -66,7 +83,7 @@ public class UserService {
             // Check if email is already in use by another user
             Optional<User> existingUser = userRepository.findByEmail(userDetails.getEmail());
             if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
-                throw new EmailAlreadyInUseException("Email is already in use by another user");
+                throw new EmailAlreadyInUseException(userDetails.getEmail());
             }
             user.setEmail(userDetails.getEmail());
         }
@@ -81,12 +98,16 @@ public class UserService {
     }
 
     /**
-     * Delete user by ID (ADMIN only)
+     * Deletes a user by their ID (ADMIN only)
+     *
+     * @param id the ID of the user to delete
+     * @throws UserNotFoundException if user not found
+     * @throws UserInUseException if user owns or created pets that still exist
      */
     public void deleteUser(Long id) {
 
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         if (!canDeleteUser(id)) {
             int ownedCount = getUserOwnedPetCount(id);
@@ -107,10 +128,22 @@ public class UserService {
         userRepository.delete(user);
     }
 
+    /**
+     * Checks if a user exists by their ID
+     *
+     * @param id the ID to check
+     * @return true if user exists, false otherwise
+     */
     public boolean existsById(Long id) {
         return userRepository.existsById(id);
     }
 
+    /**
+     * Gets the number of pets owned by a user
+     *
+     * @param userId the ID of the user
+     * @return the number of pets owned
+     */
     private int getUserOwnedPetCount(Long userId) {
 
         Optional<User> user = userRepository.findById(userId);
@@ -121,11 +154,23 @@ public class UserService {
         return ownedPets.size();
     }
 
+    /**
+     * Gets the number of pets created by a user
+     *
+     * @param userId the ID of the user
+     * @return the number of pets created
+     */
     private int getUserCreatedPetCount(Long userId) {
         List<Pet> createdPets = petRepository.findByCreatedBy(userId);
         return createdPets.size();
     }
 
+    /**
+     * Checks if a user can be safely deleted
+     *
+     * @param userId the ID of the user
+     * @return true if user can be deleted, false otherwise
+     */
     private boolean canDeleteUser(Long userId) {
         return getUserOwnedPetCount(userId) == 0 && getUserCreatedPetCount(userId) == 0;
     }

@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Entity representing a user in the pet store system
+ * Contains user authentication and profile information
+ */
 @Entity
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -48,6 +52,10 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    /**
+     * Sets initial values before persisting
+     * Normalizes email and sets creation timestamps
+     */
     @PrePersist
     protected void onCreate() {
         if (email != null) {
@@ -57,6 +65,9 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Updates values before saving changes
+     */
     @PreUpdate
     protected void onUpdate() {
         if (email != null) {
@@ -65,9 +76,20 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Default constructor
+     */
     public User() {
     }
 
+    /**
+     * Creates a new user with the given details
+     *
+     * @param email user's email address
+     * @param password user's password
+     * @param firstName user's first name
+     * @param lastName user's last name
+     */
     public User(String email, String password, String firstName, String lastName) {
         this.email = email;
         this.password = password;
@@ -76,66 +98,147 @@ public class User {
         this.roles.add(Role.USER); // Default role
     }
 
+    /**
+     * Gets the user ID
+     *
+     * @return the user ID
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets the user ID
+     *
+     * @param id the ID to set
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets the user's email address
+     *
+     * @return the email address
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Sets the user's email address
+     * Email will be trimmed and converted to lowercase
+     *
+     * @param email the email to set
+     */
     public void setEmail(String email) {
         this.email = email != null ? email.trim().toLowerCase() : null;
     }
 
+    /**
+     * Gets the user's password (hashed)
+     *
+     * @return the hashed password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Sets the user's password
+     *
+     * @param password the password to set (will be hashed before storage)
+     */
     public void setPassword(String password) {
         this.password = password;
     }
 
+    /**
+     * Gets the user's first name
+     *
+     * @return the first name
+     */
     public String getFirstName() {
         return firstName;
     }
 
+    /**
+     * Sets the user's first name
+     *
+     * @param firstName the first name to set
+     */
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
+    /**
+     * Gets the user's last name
+     *
+     * @return the last name
+     */
     public String getLastName() {
         return lastName;
     }
 
+    /**
+     * Sets the user's last name
+     *
+     * @param lastName the last name to set
+     */
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
+    /**
+     * Gets the user's roles
+     *
+     * @return set of roles assigned to the user
+     */
     public Set<Role> getRoles() {
         return roles;
     }
 
+    /**
+     * Sets the user's roles
+     *
+     * @param roles the roles to assign to the user
+     */
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
+    /**
+     * Gets the creation timestamp
+     *
+     * @return when this user was created
+     */
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
+    /**
+     * Sets the creation timestamp
+     *
+     * @param createdAt the timestamp to set
+     */
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
+    /**
+     * Gets the last update timestamp
+     *
+     * @return when this user was last updated
+     */
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
+    /**
+     * Sets the last update timestamp
+     *
+     * @param updatedAt the timestamp to set
+     */
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }

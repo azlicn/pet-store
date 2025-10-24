@@ -8,9 +8,20 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+/**
+ * {@code SpringSecurityAuditorAware} provides the current auditor (user ID)
+ * for Spring Data JPA auditing purposes.
+ *
+ */
 @Component
 public class SpringSecurityAuditorAware implements AuditorAware<Long> {
 
+     /**
+     * Returns the current auditor's user ID, if available.
+     *
+     * @return an {@link Optional} containing the current auditor's user ID,
+     *         or {@code 1L} as the default system auditor
+     */
     @Override
     public Optional<Long> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

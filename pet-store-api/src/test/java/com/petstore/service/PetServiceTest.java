@@ -1,13 +1,14 @@
 package com.petstore.service;
 
 import com.petstore.model.Pet;
-import com.petstore.model.PetStatus;
+import com.petstore.enums.PetStatus;
 import com.petstore.model.Category;
 import com.petstore.model.User;
 import com.petstore.model.Role;
 import com.petstore.repository.PetRepository;
 import com.petstore.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Pet Service Tests")
 class PetServiceTest {
 
     @Mock
@@ -72,6 +74,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Get all pets - Should return all pets")
     void getAllPets_ShouldReturnAllPets() {
 
         List<Pet> expectedPets = Arrays.asList(testPet);
@@ -86,6 +89,7 @@ class PetServiceTest {
 
 
     @Test
+    @DisplayName("Get pet by ID - Should return pet when exists")
     void getPetById_WhenPetExists_ShouldReturnPet() {
 
         when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
@@ -98,6 +102,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Get pet by ID - Should return empty when pet does not exist")
     void getPetById_WhenPetDoesNotExist_ShouldReturnEmpty() {
 
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
@@ -109,6 +114,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Save pet - Should save and return pet")
     void savePet_ShouldSaveAndReturnPet() {
 
         when(petRepository.save(any(Pet.class))).thenReturn(testPet);
@@ -121,6 +127,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Purchase pet - Should assign owner and change status when pet is available")
     void purchasePet_WhenPetIsAvailable_ShouldAssignOwnerAndChangeStatus() {
 
         testPet.setStatus(PetStatus.AVAILABLE);
@@ -147,6 +154,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Purchase pet - Should return null when pet not found")
     void purchasePet_WhenPetNotFound_ShouldReturnNull() {
 
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
@@ -159,6 +167,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Purchase pet - Should return null when pet not available")
     void purchasePet_WhenPetNotAvailable_ShouldReturnNull() {
 
         testPet.setStatus(PetStatus.SOLD);
@@ -172,6 +181,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Update pet status - Should update status when pet exists")
     void updatePetStatus_WhenPetExists_ShouldUpdateStatus() {
 
         Pet updatedPet = new Pet();
@@ -191,6 +201,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Update pet status - Should return null when pet not found")
     void updatePetStatus_WhenPetNotFound_ShouldReturnNull() {
 
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
@@ -203,6 +214,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Delete pet - Should return true when pet exists")
     void deletePet_WhenPetExists_ShouldReturnTrue() {
 
         when(petRepository.existsById(1L)).thenReturn(true);
@@ -215,6 +227,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Delete pet - Should return false when pet does not exist")
     void deletePet_WhenPetDoesNotExist_ShouldReturnFalse() {
 
         when(petRepository.existsById(999L)).thenReturn(false);
@@ -227,6 +240,7 @@ class PetServiceTest {
     }
 
     @Test
+    @DisplayName("Get pets by owner - Should return pets owned by user")
     void getPetsByOwner_ShouldReturnPetsOwnedByUser() {
 
         testPet.setOwner(testUser);

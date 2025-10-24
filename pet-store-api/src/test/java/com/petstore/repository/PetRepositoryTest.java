@@ -1,17 +1,16 @@
 package com.petstore.repository;
 
-import com.petstore.config.TestDatabaseConfig;
 import com.petstore.model.Pet;
-import com.petstore.model.PetStatus;
+import com.petstore.enums.PetStatus;
 import com.petstore.model.Category;
 import com.petstore.model.User;
 import com.petstore.model.Role;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,8 +23,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(TestDatabaseConfig.class)
 @ActiveProfiles("test")
+@DisplayName("Pet Repository Tests")
 class PetRepositoryTest {
 
     @Autowired
@@ -103,6 +102,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by status - Should return pets with specific status")
     void findByStatus_ShouldReturnPetsWithSpecificStatus() {
 
         List<Pet> availablePets = petRepository.findByStatus(PetStatus.AVAILABLE);
@@ -118,6 +118,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by category ID - Should return pets in specific category")
     void findByCategoryId_ShouldReturnPetsInSpecificCategory() {
 
         List<Pet> dogs = petRepository.findByCategoryId(dogsCategory.getId());
@@ -133,6 +134,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by name containing - Should return matching pets ignoring case")
     void findByNameContainingIgnoreCase_ShouldReturnMatchingPets() {
 
         List<Pet> buddyResults = petRepository.findByNameContainingIgnoreCase("buddy");
@@ -149,6 +151,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by owner is null and status - Should return store inventory pets")
     void findByOwnerIsNullAndStatus_ShouldReturnStoreInventoryPets() {
 
         List<Pet> storeInventory = petRepository.findByOwnerIsNullAndStatus(PetStatus.AVAILABLE);
@@ -160,6 +163,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by owner - Should return pets owned by specific user")
     void findByOwner_ShouldReturnPetsOwnedBySpecificUser() {
 
         List<Pet> testUserPets = petRepository.findByOwner(testUser);
@@ -175,6 +179,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find pets by filters - With name filter should return matching pets")
     void findPetsByFilters_WithNameFilter_ShouldReturnMatchingPets() {
 
         List<Pet> results = petRepository.findPetsByFilters("buddy", null, null, Pageable.unpaged());
@@ -184,6 +189,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find pets by filters - With category filter should return matching pets")
     void findPetsByFilters_WithCategoryFilter_ShouldReturnMatchingPets() {
 
         List<Pet> results = petRepository.findPetsByFilters(null, dogsCategory.getId(), null, Pageable.unpaged());
@@ -194,6 +200,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find pets by filters - With status filter should return matching pets")
     void findPetsByFilters_WithStatusFilter_ShouldReturnMatchingPets() {
 
         List<Pet> availableResults = petRepository.findPetsByFilters(null, null, PetStatus.AVAILABLE,
@@ -208,6 +215,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find pets by filters - With multiple filters should return matching pets")
     void findPetsByFilters_WithMultipleFilters_ShouldReturnMatchingPets() {
 
         List<Pet> results = petRepository.findPetsByFilters(
@@ -220,6 +228,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find pets by filters - With limit should respect pageable")
     void findPetsByFilters_WithLimit_ShouldRespectPageable() {
 
         List<Pet> results = petRepository.findPetsByFilters(
@@ -229,6 +238,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find pets by filters - With null filters should return all pets")
     void findPetsByFilters_WithNullFilters_ShouldReturnAllPets() {
 
         List<Pet> results = petRepository.findPetsByFilters(null, null, null, Pageable.unpaged());
@@ -238,6 +248,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find latest pets by status - Should return pets ordered by created date descending")
     void findLatestPetsByStatus_ShouldReturnPetsOrderedByCreatedAtDesc() {
 
         Pet olderPet = new Pet();
@@ -264,6 +275,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find latest pets by status - With limit should respect pageable")
     void findLatestPetsByStatus_WithLimit_ShouldRespectPageable() {
 
         for (int i = 1; i <= 5; i++) {
@@ -283,6 +295,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by owner is null and status - Should filter different statuses correctly")
     void findByOwnerIsNullAndStatus_WithDifferentStatuses_ShouldFilterCorrectly() {
 
         Pet pendingPet = new Pet();
@@ -309,6 +322,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should persist pet with all fields")
     void save_ShouldPersistPetWithAllFields() {
 
         Pet newPet = new Pet();
@@ -333,6 +347,7 @@ class PetRepositoryTest {
     }
 
     @Test
+    @DisplayName("Delete by ID - Should remove pet from database")
     void deleteById_ShouldRemovePetFromDatabase() {
 
         Long petId = availableDog.getId();

@@ -4,6 +4,7 @@ import com.petstore.model.Category;
 import com.petstore.repository.CategoryRepository;
 import com.petstore.repository.PetRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Category Service Tests")
 class CategoryServiceTest {
 
     @Mock
@@ -45,6 +47,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Get all categories - Should return all categories")
     void getAllCategories_ShouldReturnAllCategories() {
         List<Category> expectedCategories = Arrays.asList(testCategory, anotherCategory);
         when(categoryRepository.findAll()).thenReturn(expectedCategories);
@@ -57,6 +60,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Get category by ID - Should return category when exists")
     void getCategoryById_WhenCategoryExists_ShouldReturnCategory() {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
 
@@ -69,6 +73,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Get category by ID - Should return empty when does not exist")
     void getCategoryById_WhenCategoryDoesNotExist_ShouldReturnEmpty() {
         when(categoryRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -79,6 +84,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Save category - Should save and return category")
     void saveCategory_ShouldSaveAndReturnCategory() {
         Category newCategory = new Category();
         newCategory.setName("Fish");
@@ -98,6 +104,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Update category - Should update and return category when exists")
     void updateCategory_WhenCategoryExists_ShouldUpdateAndReturnCategory() {
         Category categoryDetails = new Category();
         categoryDetails.setName("Updated Dogs");
@@ -119,6 +126,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Update category - Should return null when does not exist")
     void updateCategory_WhenCategoryDoesNotExist_ShouldReturnNull() {
         Category categoryDetails = new Category();
         categoryDetails.setName("Updated Category");
@@ -133,6 +141,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Delete category - Should return true when exists and no pets")
     void deleteCategory_WhenCategoryExists_ShouldReturnTrue() {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
         when(petRepository.findByCategoryId(1L)).thenReturn(Arrays.asList()); // Empty list - no pets using category
@@ -146,6 +155,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Delete category - Should return false when does not exist")
     void deleteCategory_WhenCategoryDoesNotExist_ShouldReturnFalse() {
         when(categoryRepository.findById(999L)).thenReturn(Optional.empty());
 

@@ -1,25 +1,26 @@
 package com.petstore.repository;
 
-import com.petstore.config.TestDatabaseConfig;
 import com.petstore.model.Category;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ActiveProfiles;
-import jakarta.validation.ConstraintViolationException;
 
-import java.util.Optional;
+import jakarta.validation.ConstraintViolationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.ActiveProfiles;
+
 @DataJpaTest
-@Import(TestDatabaseConfig.class)
 @ActiveProfiles("test")
+@DisplayName("Category Repository Tests")
 class CategoryRepositoryTest {
 
     @Autowired
@@ -45,6 +46,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by name - Should return category when name exists")
     void findByName_ShouldReturnCategoryWhenNameExists() {
 
         Optional<Category> foundCategory = categoryRepository.findByName("Dogs");
@@ -55,6 +57,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by name - Should return empty when name does not exist")
     void findByName_ShouldReturnEmptyWhenNameDoesNotExist() {
 
         Optional<Category> foundCategory = categoryRepository.findByName("Birds");
@@ -63,6 +66,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by name - Should be case sensitive")
     void findByName_ShouldBeCaseSensitive() {
 
         Optional<Category> foundCategory1 = categoryRepository.findByName("dogs");
@@ -75,6 +79,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by name - Should handle whitespace in name")
     void findByName_ShouldHandleWhitespaceInName() {
 
         Category categoryWithSpaces = new Category();
@@ -89,6 +94,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Exists by name - Should return true when name exists")
     void existsByName_ShouldReturnTrueWhenNameExists() {
 
         boolean exists = categoryRepository.existsByName("Dogs");
@@ -97,6 +103,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Exists by name - Should return false when name does not exist")
     void existsByName_ShouldReturnFalseWhenNameDoesNotExist() {
 
         boolean exists = categoryRepository.existsByName("Birds");
@@ -105,6 +112,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Exists by name - Should be case sensitive")
     void existsByName_ShouldBeCaseSensitive() {
 
         boolean exists1 = categoryRepository.existsByName("dogs");
@@ -117,6 +125,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Exists by name - Should handle whitespace correctly")
     void existsByName_ShouldHandleWhitespaceCorrectly() {
 
         Category categoryWithSpaces = new Category();
@@ -130,6 +139,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should persist new category")
     void save_ShouldPersistNewCategory() {
 
         Category newCategory = new Category();
@@ -144,6 +154,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should update existing category")
     void save_ShouldUpdateExistingCategory() {
 
         dogsCategory.setName("Updated Dogs");
@@ -156,6 +167,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should throw exception for duplicate name")
     void save_ShouldThrowExceptionForDuplicateName() {
         Category duplicateCategory = new Category();
         duplicateCategory.setName("Dogs");
@@ -167,6 +179,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Delete by ID - Should remove category from database")
     void deleteById_ShouldRemoveCategoryFromDatabase() {
 
         Long categoryId = dogsCategory.getId();
@@ -178,6 +191,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find all - Should return all categories")
     void findAll_ShouldReturnAllCategories() {
 
         Iterable<Category> allCategories = categoryRepository.findAll();
@@ -188,6 +202,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Count - Should return correct number of categories")
     void count_ShouldReturnCorrectNumberOfCategories() {
 
         long categoryCount = categoryRepository.count();
@@ -196,6 +211,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by ID - Should return category when ID exists")
     void findById_ShouldReturnCategoryWhenIdExists() {
 
         Optional<Category> foundCategory = categoryRepository.findById(dogsCategory.getId());
@@ -205,6 +221,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Find by ID - Should return empty when ID does not exist")
     void findById_ShouldReturnEmptyWhenIdDoesNotExist() {
 
         Optional<Category> foundCategory = categoryRepository.findById(999L);
@@ -213,6 +230,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should handle null name")
     void save_ShouldHandleNullName() {
 
         Category categoryWithNullName = new Category();
@@ -225,6 +243,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should handle empty name")
     void save_ShouldHandleEmptyName() {
 
         Category categoryWithEmptyName = new Category();
@@ -237,6 +256,7 @@ class CategoryRepositoryTest {
     }
 
     @Test
+    @DisplayName("Save - Should trim whitespace from name")
     void save_ShouldTrimWhitespaceFromName() {
 
         Category categoryWithSpaces = new Category();

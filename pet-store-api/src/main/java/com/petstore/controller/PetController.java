@@ -1,7 +1,7 @@
 package com.petstore.controller;
 
+import com.petstore.enums.PetStatus;
 import com.petstore.model.Pet;
-import com.petstore.model.PetStatus;
 import com.petstore.model.User;
 import com.petstore.model.Role;
 import com.petstore.service.PetService;
@@ -263,7 +263,7 @@ public class PetController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Test authentication", description = "Test endpoint to verify authentication is working")
     public ResponseEntity<?> testAuth() {
-        
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
         Optional<User> userOptional = userRepository.findByEmail(userEmail);

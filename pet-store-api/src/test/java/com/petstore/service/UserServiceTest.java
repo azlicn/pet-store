@@ -1,5 +1,6 @@
 package com.petstore.service;
 
+import com.petstore.exception.EmailAlreadyInUseException;
 import com.petstore.exception.UserInUseException;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
@@ -7,6 +8,7 @@ import com.petstore.model.Role;
 import com.petstore.repository.PetRepository;
 import com.petstore.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +28,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("User Service Tests")
 class UserServiceTest {
 
     @Mock
@@ -63,6 +66,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Get all users - Should return all users")
     void getAllUsers_ShouldReturnAllUsers() {
         List<User> expectedUsers = Arrays.asList(testUser, testAdmin);
         when(userRepository.findAll()).thenReturn(expectedUsers);
@@ -75,6 +79,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Get user by ID - Should return user when exists")
     void getUserById_WhenUserExists_ShouldReturnUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
@@ -87,6 +92,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Get user by ID - Should return empty when user does not exist")
     void getUserById_WhenUserDoesNotExist_ShouldReturnEmpty() {
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -97,6 +103,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Get user by email - Should return user when exists")
     void getUserByEmail_WhenUserExists_ShouldReturnUser() {
         when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(testUser));
 
@@ -109,6 +116,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Get user by email - Should return empty when user does not exist")
     void getUserByEmail_WhenUserDoesNotExist_ShouldReturnEmpty() {
         when(userRepository.findByEmail("nonexistent@test.com")).thenReturn(Optional.empty());
 
@@ -119,6 +127,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Update user - Should update all fields when user exists")
     void updateUser_WhenUserExists_ShouldUpdateAllFields() {
         User userDetails = new User();
         userDetails.setFirstName("Jane");
@@ -154,6 +163,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Update user - Should throw exception when user does not exist")
     void updateUser_WhenUserDoesNotExist_ShouldThrowException() {
         User userDetails = new User();
         userDetails.setFirstName("Jane");
@@ -169,6 +179,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Update user - Should throw exception when email already in use")
     void updateUser_WhenEmailAlreadyInUse_ShouldThrowException() {
         User userDetails = new User();
         userDetails.setEmail("admin@test.com");
@@ -177,8 +188,8 @@ class UserServiceTest {
         when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(testAdmin));
 
         assertThatThrownBy(() -> userService.updateUser(1L, userDetails))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Email is already in use by another user");
+                .isInstanceOf(EmailAlreadyInUseException.class)
+                .hasMessage("Email 'admin@test.com' is already in use");
 
         verify(userRepository).findById(1L);
         verify(userRepository).findByEmail("admin@test.com");
@@ -186,6 +197,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Update user - Should allow update when email is same as current user")
     void updateUser_WhenEmailIsSameAsCurrentUser_ShouldAllowUpdate() {
         User userDetails = new User();
         userDetails.setEmail("user@test.com");
@@ -211,6 +223,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Update user - Should only update non-null fields")
     void updateUser_WithNullFields_ShouldOnlyUpdateNonNullFields() {
         User userDetails = new User();
         userDetails.setFirstName("UpdatedJohn");
@@ -236,6 +249,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Update user - Should not update password when empty")
     void updateUser_WithEmptyPassword_ShouldNotUpdatePassword() {
         User userDetails = new User();
         userDetails.setFirstName("UpdatedJohn");
@@ -259,6 +273,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Delete user - Should delete user when exists and has no pets")
     void deleteUser_WhenUserExistsAndHasNoPets_ShouldDeleteUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(petRepository.findByOwner(testUser)).thenReturn(Arrays.asList()); // Empty list - no owned pets
@@ -273,6 +288,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Delete user - Should throw exception when user does not exist")
     void deleteUser_WhenUserDoesNotExist_ShouldThrowException() {
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -287,6 +303,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Delete user - Should throw exception when user owns pets")
     void deleteUser_WhenUserOwnsPets_ShouldThrowUserInUseException() {
         Pet ownedPet1 = new Pet();
         ownedPet1.setId(1L);
@@ -314,6 +331,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Delete user - Should throw exception when user created pets")
     void deleteUser_WhenUserCreatedPets_ShouldThrowUserInUseException() {
         Pet createdPet1 = new Pet();
         createdPet1.setId(3L);
@@ -337,6 +355,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Delete user - Should throw exception when user owns and created pets")
     void deleteUser_WhenUserOwnsAndCreatedPets_ShouldThrowUserInUseException() {
         Pet ownedPet = new Pet();
         ownedPet.setId(1L);
@@ -365,6 +384,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Exists by ID - Should return true when user exists")
     void existsById_WhenUserExists_ShouldReturnTrue() {
         when(userRepository.existsById(1L)).thenReturn(true);
 
@@ -375,6 +395,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Exists by ID - Should return false when user does not exist")
     void existsById_WhenUserDoesNotExist_ShouldReturnFalse() {
         when(userRepository.existsById(999L)).thenReturn(false);
 
