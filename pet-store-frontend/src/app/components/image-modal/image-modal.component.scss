@@ -30,6 +30,12 @@
   font-size: 1.4rem;
 }
 
+.pet-tags {
+  color: var(--text-medium);
+  font-style: italic;
+  font-size: 0.90rem;
+}
+
 .close-button {
   color: var(--text-medium);
 }
@@ -137,6 +143,38 @@
 .action-buttons {
   display: flex;
   gap: 8px;
+}
+
+.pet-status-badge {
+  position: absolute;
+  top: 8px; 
+ // right: 8px; 
+  padding: 3px 8px;
+  border-radius: 16px; 
+  font-size: 0.7rem; 
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+}
+
+.status-available {
+  background-color: var(--accent-orange) !important;
+  color: white !important;
+}
+
+.status-pending {
+  background-color: var(--primary-yellow-dark) !important;
+  color: white !important;
+}
+
+.status-sold {
+  background-color: var(--primary-red) !important;
+  color: white !important;
+}
+
+.status-unknown {
+  background-color: var(--text-light) !important;
+  color: white !important;
 }
 
 /* Mobile responsive */
