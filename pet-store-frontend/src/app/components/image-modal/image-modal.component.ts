@@ -1,9 +1,14 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { Pet } from '../../models/pet.model';
+import { Component, Inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from "@angular/material/dialog";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { Pet, PetStatus } from "../../models/pet.model";
+import { MatChipsModule } from "@angular/material/chips";
 
 export interface ImageModalData {
   pet: Pet;
@@ -11,16 +16,11 @@ export interface ImageModalData {
 }
 
 @Component({
-  selector: 'app-image-modal',
+  selector: "app-image-modal",
   standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule
-  ],
-  templateUrl: './image-modal.component.html',
-  styleUrl: './image-modal.component.scss'
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule],
+  templateUrl: "./image-modal.component.html",
+  styleUrl: "./image-modal.component.scss",
 })
 export class ImageModalComponent {
   currentImageIndex = 0;
@@ -33,7 +33,7 @@ export class ImageModalComponent {
   }
 
   get currentImage(): string {
-    return this.data.pet.photoUrls?.[this.currentImageIndex] || '';
+    return this.data.pet.photoUrls?.[this.currentImageIndex] || "";
   }
 
   get hasMultipleImages(): boolean {
@@ -46,6 +46,19 @@ export class ImageModalComponent {
 
   get canGoNext(): boolean {
     return this.currentImageIndex < (this.data.pet.photoUrls?.length || 0) - 1;
+  }
+
+  getStatusClass(status: PetStatus): string {
+    switch (status) {
+      case "AVAILABLE":
+        return "status-available";
+      case "PENDING":
+        return "status-pending";
+      case "SOLD":
+        return "status-sold";
+      default:
+        return "status-unknown";
+    }
   }
 
   previousImage(): void {

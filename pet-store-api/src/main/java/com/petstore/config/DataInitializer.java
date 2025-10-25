@@ -183,9 +183,9 @@ public class DataInitializer implements CommandLineRunner {
                         List.of("easy-care", "peaceful", "golden"));
 
                 createSamplePet("Betta Fish– Blue Sapphire", fishCategory, new BigDecimal("15.00"),
-                        List.of("https://i.pinimg.com/736x/63/9d/f8/639df8995693bf587446149541fe0ab6.jpg",
-                                "https://i.pinimg.com/736x/7b/ed/ff/7bedff1f3f3f4e2f4e2f4e2f4e2f4e2f.jpg",
-                                "https://i.pinimg.com/736x/0c/1a/2b/0c1a2b6f4e5f6a7b8c9d0e1f2a3b4c5d.jpg"),
+                        List.of("https://i.pinimg.com/736x/4b/75/a2/4b75a2127ef703e0f140d0df050d9e88.jpg",
+                                "https://i.pinimg.com/736x/a9/1a/35/a91a35cb1faf5c347afd30d885d211f1.jpg",
+                                "https://i.pinimg.com/736x/86/bb/2f/86bb2ff2bedf1cfcf4a4a815e843a2f9.jpg"),
                         List.of("colorful", "low-maintenance", "beautiful"));
             }
 
