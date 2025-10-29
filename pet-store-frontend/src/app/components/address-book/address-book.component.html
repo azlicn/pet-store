@@ -1,0 +1,63 @@
+<div class="address-book-form-container">
+
+    <mat-card class="address-book-form-card">
+        <mat-card-header>
+            <div class="address-book-header-row">
+                <mat-card-title>
+                    <mat-icon class="mat-icon-title">import_contacts</mat-icon>
+                    Address Book
+                </mat-card-title>
+                <button mat-raised-button color="primary" (click)="openAddressForm()" class="add-address-button">
+                    <mat-icon>add</mat-icon>
+                    Add New Address
+                </button>
+            </div>
+        </mat-card-header>
+
+        <mat-card-content>
+
+            <div *ngIf="loading" class="loading-container">
+                <mat-spinner diameter="40"></mat-spinner>
+                <p>Loading addresses...</p>
+            </div>
+
+            <div *ngIf="!loading && addresses.length === 0" class="no-addresses">
+                <p>No addresses found. Please add a new address.</p>
+            </div>
+
+            <div *ngIf="!loading && addresses.length > 0" class="address-book-list">
+                <div *ngFor="let address of addresses" class="address-book-card-wrapper">
+                    <mat-card class="address-book-card">
+                       <!--  <button *ngIf="address.isDefault" mat-icon-button matTooltip="Default Address" class="default-star-btn">
+                            <mat-icon>star</mat-icon>
+                        </button> -->
+                        <mat-card-header>
+                            <mat-card-title>
+                                {{ address.street }}, <br>{{ address.city }},<br>{{ address.state }}
+                            </mat-card-title>
+                            
+                        </mat-card-header>
+                        <mat-card-content class="card-content">
+                            <p><strong>Phone:</strong> {{ address.phoneNumber }}</p>
+                            <p><strong>Country:</strong> {{ address.country }}</p>
+                            <p><strong>Postal Code:</strong> {{ address.postalCode }}</p>
+                        </mat-card-content>
+                        <mat-card-actions class="card-action">
+                            <ng-container *ngIf="address.isDefault">
+                                <button mat-icon-button matTooltip="Default Address" class="default-star-btn">
+                                    <mat-icon>star</mat-icon>
+                                </button>
+                            </ng-container>
+                                <button mat-icon-button color="primary" (click)="openAddressForm(address)" matTooltip="Edit Address">
+                                    <mat-icon>edit</mat-icon>
+                                </button>
+                                <button mat-icon-button color="warn" (click)="onDeleteAddress(address.id)" matTooltip="Delete Address">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </mat-card-actions>
+                    </mat-card>
+                </div>
+            </div>
+        </mat-card-content>
+    </mat-card>
+</div>

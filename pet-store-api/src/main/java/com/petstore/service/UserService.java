@@ -20,14 +20,17 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PetRepository petRepository;
+    private final PetRepository petRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PetRepository petRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.petRepository = petRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     /**
      * Gets all users in the system (ADMIN only)
@@ -138,6 +141,16 @@ public class UserService {
         return userRepository.existsById(id);
     }
 
+     /**
+     * Checks if a user exists by their ID
+     *
+     * @param id the ID to check
+     * @return true if user exists, false otherwise
+     */
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     /**
      * Gets the number of pets owned by a user
      *
@@ -173,5 +186,14 @@ public class UserService {
      */
     private boolean canDeleteUser(Long userId) {
         return getUserOwnedPetCount(userId) == 0 && getUserCreatedPetCount(userId) == 0;
+    }
+
+    /**
+     * Saves a user to the repository
+     *
+     * @param user the user to save
+     */
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 }

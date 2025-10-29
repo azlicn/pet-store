@@ -9,6 +9,7 @@ export enum PetStatus {
 export interface Pet {
   id?: number;
   name: string;
+  description: string;
   category: Category;
   price: number;
   status: PetStatus;

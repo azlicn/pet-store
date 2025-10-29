@@ -172,7 +172,7 @@ erDiagram
         string name "Pet name"
         text description "Pet description"
         enum status "AVAILABLE, PENDING, SOLD"
-        decimal price "Pet price in USD"
+        decimal price "Pet price"
         string image_url "Pet image URL"
         bigint category_id FK "Reference to category"
         bigint owner_id FK "Current owner who bought the pet (nullable)"

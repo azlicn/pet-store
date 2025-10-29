@@ -21,6 +21,8 @@ import { AuthService } from '../../services/auth.service';
 import { PetCardComponent } from '../pet-card/pet-card.component';
 import { PetListViewComponent } from '../pet-list-view/pet-list-view.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../confirm-dialog/confirm-dialog.component';
+import { StoreService } from 'src/app/services/store.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-pet-list',
@@ -58,9 +60,12 @@ export class PetListComponent implements OnInit {
     status: ''
   };
 
+  userId = this.authService.getCurrentUser()?.id;
+
   constructor(
     private petService: PetService,
     private categoryService: CategoryService,
+    private storeService: StoreService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     public authService: AuthService
@@ -303,6 +308,26 @@ export class PetListComponent implements OnInit {
             console.error('Error purchasing pet:', error);
           }
         });
+      }
+    });
+  }
+
+  addToCart(pet: Pet): void {
+    if (!pet.id) {
+      return;
+    }
+
+    this.storeService.addToCart(pet.id, this.userId!).subscribe({
+      next: () => {
+        this.snackBar.open(`"${pet.name}" added to cart!`, 'Close', { duration: 3000 });
+        if (this.userId) {
+          this.storeService.updateCartItemCount(this.userId);
+        }
+      },
+      error: (error) => {
+        const err = error as HttpErrorResponse;
+        this.snackBar.open(err.error.message || 'Error adding pet to cart', 'Close', { duration: 3000 });
+        //console.error('Error adding pet to cart:', error);
       }
     });
   }

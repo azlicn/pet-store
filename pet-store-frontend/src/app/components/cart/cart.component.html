@@ -1,0 +1,105 @@
+<div class="cart-container" *ngIf="cart"
+  style="height: 100vh; display: flex; flex-direction: column; position: relative;">
+  <button class="cart-dialog-close" (click)="closeDialog()" aria-label="Close">
+    <mat-icon>close</mat-icon>
+  </button>
+  <h2>Shopping Cart</h2>
+  <div class="cart-section">
+    <ng-container *ngIf="cart.items?.length > 0; else emptyCart">
+      <div class="cart-items">
+        <div class="cart-item-card" *ngFor="let item of cart.items">
+          <div class="item-info">
+            <div class="pet-name">
+              <img [src]="item.pet.photoUrls?.[0] || 'assets/default-pet.jpg'" title="{{ item.pet.name }}" />
+              <span>{{ item.pet.name }}</span>
+            </div>
+          </div>
+          <div class="item-actions">
+            <span class="item-price">{{ item.price | currency }}</span>
+            <button mat-icon-button color="warn" (click)="removeItem(item.id)" title="Remove Item">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #emptyCart>
+
+      <div class="empty-cart">
+        <mat-icon>shopping_cart</mat-icon>
+        <p>Your cart is empty. Please place your order.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="cart-summary" *ngIf="cart.items?.length > 0">
+    <div *ngIf="cart.discount" class="summary-row">
+      <mat-icon color="primary">attach_money</mat-icon>
+      <span class="label"><strong>Subtotal</strong>:</span>
+      <span class="value subtotal">{{ total | currency }}</span>
+    </div>
+
+    <div *ngIf="cart.discount" class="summary-row discount-row">
+      <div class="discount-row-content">
+        <mat-icon color="accent">local_offer</mat-icon>
+        <span class="label-with-btn">
+          Discount ({{ cart.discount.code }}):
+          <button mat-icon-button class="remove-discount-btn" color="warn" (click)="removeDiscount()" title="Remove Discount">
+            <mat-icon fontIcon="close" style="font-size: 16px;"></mat-icon>
+          </button>
+        </span>
+        <span class="value discount">-{{ cart.discount.discountAmount | currency }}</span>
+      </div>
+    </div>
+
+    <!-- <div *ngIf="cart.discount" class="summary-row total-row">
+      <mat-icon color="primary">calculate</mat-icon>
+      <span class="label">Total after discount:</span>
+      <span class="value total">{{ cart.totalAfterDiscount | currency }}</span>
+    </div> -->
+    <ng-container *ngIf="cart.discount; else noDiscount">
+      <div class="summary-row total-row">
+        <mat-icon color="primary">calculate</mat-icon>
+        <span class="label">Total after discount:</span>
+        <span class="value total">{{ cart.totalAfterDiscount | currency }}</span>
+      </div>
+    </ng-container>
+    <ng-template #noDiscount>
+      <div class="summary-row total-row">
+        <mat-icon color="primary">calculate</mat-icon>
+        <span class="label">Total:</span>
+        <span class="value total">{{ total | currency }}</span>
+      </div>
+    </ng-template>
+
+    <div class="available-discounts" *ngIf="availableDiscounts.length > 0">
+      <span class="discounts-label">Available Discounts:</span>
+      <div class="discount-chips-row">
+        <mat-chip *ngFor="let d of availableDiscounts" class="discount-chip" selectable="false" color="accent">
+          <span style="cursor:pointer;display:inline-block;width:100%" (dblclick)="copyDiscountCode(d.code)">
+            <span class="discount-code">{{ d.code }}</span>
+            <span class="discount-percent">({{ d.percentage }}% off)</span>
+          </span>
+        </mat-chip>
+      </div>
+      <small class="hint-text">* Double-click a code to copy and paste.</small>
+    </div>
+    <div class="discount-input-row">
+      <mat-form-field appearance="outline" class="discount-input">
+        <mat-label>Discount Code</mat-label>
+        <input [(ngModel)]="discountCode" matInput placeholder="Enter discount code" maxlength="30">
+      </mat-form-field>
+      <button mat-raised-button color="accent" (click)="applyDiscount()">
+        <mat-icon>local_offer</mat-icon>
+        Apply Discount
+      </button>
+    </div>
+
+    <div class="checkout-row">
+      <button mat-raised-button color="primary" (click)="checkout()">
+        <mat-icon>shopping_cart_checkout</mat-icon>
+        Checkout
+      </button>
+    </div>
+  </div>
+</div>

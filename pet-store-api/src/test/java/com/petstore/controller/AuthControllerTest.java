@@ -8,6 +8,8 @@ import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.repository.UserRepository;
 import com.petstore.security.JwtTokenProvider;
+import com.petstore.service.UserService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,7 +43,7 @@ class AuthControllerTest {
     private AuthenticationManager authenticationManager;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -91,7 +93,7 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(tokenProvider.generateToken(authentication)).thenReturn(expectedToken);
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
         ResponseEntity<?> response = authController.authenticateUser(loginRequest);
 
@@ -137,7 +139,7 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(tokenProvider.generateToken(authentication)).thenReturn(expectedToken);
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+        when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> {
             authController.authenticateUser(loginRequest);
@@ -155,9 +157,9 @@ class AuthControllerTest {
         savedUser.setLastName("Smith");
         savedUser.setRoles(Set.of(Role.USER));
 
-        when(userRepository.existsByEmail("jane@example.com")).thenReturn(false);
+        when(userService.existsByEmail("jane@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userService.saveUser(any(User.class))).thenReturn(savedUser);
 
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
@@ -183,9 +185,9 @@ class AuthControllerTest {
         savedAdminUser.setLastName("Smith");
         savedAdminUser.setRoles(Set.of(Role.ADMIN));
 
-        when(userRepository.existsByEmail("admin@example.com")).thenReturn(false);
+        when(userService.existsByEmail("admin@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userRepository.save(any(User.class))).thenReturn(savedAdminUser);
+        when(userService.saveUser(any(User.class))).thenReturn(savedAdminUser);
 
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
@@ -208,9 +210,9 @@ class AuthControllerTest {
         savedUser.setEmail("jane@example.com");
         savedUser.setRoles(Set.of(Role.USER));
 
-        when(userRepository.existsByEmail("jane@example.com")).thenReturn(false);
+        when(userService.existsByEmail("jane@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userService.saveUser(any(User.class))).thenReturn(savedUser);
 
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
@@ -228,9 +230,9 @@ class AuthControllerTest {
         savedUser.setEmail("jane@example.com");
         savedUser.setRoles(Set.of(Role.USER));
 
-        when(userRepository.existsByEmail("jane@example.com")).thenReturn(false);
+        when(userService.existsByEmail("jane@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userService.saveUser(any(User.class))).thenReturn(savedUser);
 
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
@@ -241,7 +243,7 @@ class AuthControllerTest {
     @DisplayName("POST /api/auth/register - Should return error when email already exists")
     void shouldReturnErrorWhenEmailAlreadyExists() {
 
-        when(userRepository.existsByEmail("jane@example.com")).thenReturn(true);
+        when(userService.existsByEmail("jane@example.com")).thenReturn(true);
 
         ResponseEntity<?> response = authController.registerUser(signUpRequest);
 
@@ -337,9 +339,9 @@ class AuthControllerTest {
         nullRequest.setEmail("valid@example.com");
         nullRequest.setPassword("password123");
 
-        when(userRepository.existsByEmail("valid@example.com")).thenReturn(false);
+        when(userService.existsByEmail("valid@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userService.saveUser(any(User.class))).thenReturn(testUser);
 
         ResponseEntity<?> response = authController.registerUser(nullRequest);
 

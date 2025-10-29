@@ -1,0 +1,199 @@
+<div class="checkout-container">
+    <h2>Order Summary</h2>
+
+    <!-- Addresses -->
+    <section class="address-section">
+        <h3>Shipping Address</h3>
+        <div *ngIf="addresses.length; else noAddress">
+            <ng-container *ngFor="let addr of addresses">
+                <div *ngIf="addr.isDefault" class="address-card">
+                    <label>
+                        <input type="radio" name="shippingAddress" [value]="addr.id" [(ngModel)]="selectedAddressId" />
+                        {{ addr.fullName}},<br>{{ addr.street }},<br>{{ addr.city }},<br>{{ addr.postalCode }} {{
+                        addr.state }},<br>{{ addr.country }}
+                    </label>
+                </div>
+            </ng-container>
+        </div>
+        <ng-template #noAddress>
+            <div class="address-action-row">
+                <p>No saved addresses found. <br>Please add one in your profile or add a new address.</p>
+                <button mat-raised-button color="primary" (click)="addNewAddress()">Add New</button>
+            </div>
+        </ng-template>
+
+        <!-- Billing Address Section -->
+        <div class="billing-address-section">
+            <!--  <label>
+        <input type="checkbox" [(ngModel)]="billingSameAsShipping" (change)="onBillingSameAsShippingChange()" />
+        <span>Billing address same as shipping</span>
+      </label> -->
+            <mat-checkbox [(ngModel)]="billingSameAsShipping" (change)="onBillingSameAsShippingChange()">Billing address
+                same as shipping</mat-checkbox>
+            <div *ngIf="!billingSameAsShipping">
+                <h3>Select Billing Address</h3>
+                <div *ngIf="addresses.length > 1; else noBillingAddress">
+                    <ng-container *ngFor="let addr of addresses">
+                        <div *ngIf="!addr.isDefault" class="address-card">
+                            <label>
+                                <input type="radio" name="billingAddress" [value]="addr.id"
+                                    [(ngModel)]="selectedBillingAddressId" [disabled]="addr.id === selectedAddressId" />
+                                {{ addr.fullName}},<br>{{ addr.street }},<br>{{ addr.city }},<br>{{ addr.postalCode }}
+                                {{ addr.state }},<br>{{ addr.country }}
+                            </label>
+                        </div>
+                    </ng-container>
+                </div>
+                <ng-template #noBillingAddress>
+                    <div class="address-action-row">
+                        <p>No other address available for billing.<br>Please add a new address.</p>
+                        <button mat-raised-button color="primary" (click)="addNewAddress()">Add New</button>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Summary -->
+    <section *ngIf="order" class="summary-section">
+        <h3>Order Summary</h3>
+        <div *ngFor="let item of order.items" class="summary-item">
+            <img [src]="item.pet.photoUrls?.[0] || 'assets/default-pet.jpg'" alt="{{ item.pet.name }}" />
+            <div class="item-details">
+                <span class="item-name">{{ item.pet.name }}</span>
+                <span class="item-price">{{ item.price | currency }}</span>
+            </div>
+        </div>
+        <hr />
+        <div *ngIf="order.discount; else noDiscountSummary" class="discount-summary">
+            <div class="summary-row">
+                <span class="label">Subtotal:</span>
+                <span class="value">{{ getSubtotal() | currency }}</span>
+            </div>
+            <div class="summary-row">
+                <span class="label">Discount ({{ order.discount.code }}):</span>
+                <span class="value discount">-{{ getDiscountAmount() | currency }}</span>
+            </div>
+            <div class="summary-row total-row">
+                <span class="label">Total after discount:</span>
+                <span class="value total">{{ order.totalAmount | currency }}</span>
+            </div>
+        </div>
+        <ng-template #noDiscountSummary>
+            <div class="summary-row total-row">
+                <span class="label">Total:</span>
+                <span class="value total">{{ order.totalAmount | currency }}</span>
+            </div>
+        </ng-template>
+    </section>
+
+    <!-- Payment Type Section -->
+    <section class="payment-type-section">
+        <h3>Payment Type</h3>
+        <div class="payment-type-group">
+            <label *ngFor="let type of paymentTypes">
+                <input type="radio" name="paymentType" [value]="type" [(ngModel)]="selectedPaymentType" />
+                {{ type === 'E_WALLET' ? 'E Wallet' : (type.replace('_', ' ') | titlecase) }}
+            </label>
+        </div>
+        <div *ngIf="selectedPaymentType === 'CREDIT_CARD' || selectedPaymentType === 'DEBIT_CARD'"
+            class="card-info-section">
+            <div class="brand-image-wrapper">
+                <img src="assets/images/visa_master.png" alt="Visa/Master" class="brand-image" />
+            </div>
+            <h4>Card Information </h4>
+            <div class="card-info-fields">
+                <mat-form-field appearance="outline">
+                    <mat-label>Card Number</mat-label>
+                    <input matInput maxlength="19" minlength="16" [(ngModel)]="cardNumber" placeholder="1234 5678 9012 3456"
+                        required pattern="^[0-9 ]{19}$" #cardNumberInput="ngModel"
+                        (input)="onCardNumberInput($event)" />
+                    <mat-error *ngIf="cardNumberInput.invalid && cardNumberInput.touched">
+                        Card number must be 16-19 digits.
+                    </mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Cardholder Name</mat-label>
+                    <input matInput maxlength="40" [(ngModel)]="cardHolder" placeholder="Name on Card" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="expiry-field">
+                    <mat-label>Expiry</mat-label>
+                    <input matInput maxlength="5" [(ngModel)]="cardExpiry" placeholder="MM/YY"
+                        required pattern="^(0[1-9]|1[0-2])\/([0-9]{2})$" #cardExpiryInput="ngModel"
+                        (input)="onCardExpiryInput($event)" />
+                    <mat-error *ngIf="cardExpiryInput.invalid && cardExpiryInput.touched">
+                        Expiry must be in MM/YY format.
+                    </mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="cvv-field">
+                    <mat-label>CVV</mat-label>
+                    <input matInput maxlength="4" [(ngModel)]="cardCVV" placeholder="CVV" type="password"
+                        required pattern="^[0-9]{3,4}$" #cardCVVInput="ngModel" />
+                    <mat-error *ngIf="cardCVVInput.invalid && cardCVVInput.touched">
+                        CVV must be 3 or 4 digits.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+        <div *ngIf="selectedPaymentType === 'E_WALLET'" class="ewallet-info-section">
+            <h4>E-Wallet Information</h4>
+            <div class="card-info-fields">
+                <div class="ewallet-row">
+                    <input type="radio" name="ewalletType" value="GRABPAY" [(ngModel)]="selectedEwallet" />
+                    <div class="brand-image-wrapper">
+                        <img src="assets/images/grabpay.png" alt="GrabPay" class="brand-image" />
+                    </div>
+                    <mat-form-field appearance="outline" class="ewallet-field">
+                        <mat-label>GrabPay</mat-label>
+                        <input matInput [(ngModel)]="grabPay" placeholder="Enter GrabPay ID or phone number" [disabled]="selectedEwallet !== 'GRABPAY'" />
+                    </mat-form-field>
+                </div>
+                <div class="ewallet-row">
+                    <input type="radio" name="ewalletType" value="BOOSTPAY" [(ngModel)]="selectedEwallet" />
+                    <div class="brand-image-wrapper">
+                        <img src="assets/images/boostpay.png" alt="BoostPay" class="brand-image" />
+                    </div>
+                    <mat-form-field appearance="outline" class="ewallet-field">
+                        <mat-label>BoostPay</mat-label>
+                        <input matInput [(ngModel)]="boostPay" placeholder="Enter BoostPay ID or phone number" [disabled]="selectedEwallet !== 'BOOSTPAY'" />
+                    </mat-form-field>
+                </div>
+                <div class="ewallet-row">
+                    <input type="radio" name="ewalletType" value="TOUCHNGO" [(ngModel)]="selectedEwallet" />
+                    <div class="brand-image-wrapper">
+                        <img src="assets/images/tng.png" alt="Touch N Go" class="brand-image" />
+                    </div>
+                    <mat-form-field appearance="outline" class="ewallet-field">
+                        <mat-label>Touch N Go</mat-label>
+                        <input matInput [(ngModel)]="touchNGo" placeholder="Enter Touch N Go ID or phone number" [disabled]="selectedEwallet !== 'TOUCHNGO'" />
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="selectedPaymentType === 'PAYPAL'" class="paypal-info-section">
+           
+            <h4>Paypal</h4>
+            <div class="card-info-fields">
+                 <div class="brand-image-wrapper">
+                <img src="assets/images/paypal.png" alt="Visa/Master" class="brand-image" />
+            </div>
+                <mat-form-field appearance="outline" class="paypal-contact-field">
+                    <mat-label>Email or Mobile Number</mat-label>
+                    <input matInput [(ngModel)]="paypalContact"
+                        placeholder="Enter your PayPal email or mobile number" />
+                </mat-form-field>
+            </div>
+        </div>
+    </section>
+
+        <!-- Checkout & Cancel Buttons -->
+            <div class="checkout-actions" style="display: flex; justify-content: flex-end; gap: 16px; margin-top: 24px;">
+                <button color="primary" mat-raised-button (click)="confirmCheckout()" 
+                    [disabled]="loading || !selectedAddressId || (!billingSameAsShipping && !selectedBillingAddressId) || !isPaymentInfoValid()">
+                    {{ loading ? 'Processing...' : 'Confirm Order' }}
+                </button>
+                <button color="warn" mat-stroked-button (click)="cancelOrder()" [disabled]="loading || !order?.id">
+                    Cancel Order
+                </button>
+            </div>
+</div>

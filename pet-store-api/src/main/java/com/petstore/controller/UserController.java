@@ -24,8 +24,11 @@ import java.util.stream.Collectors;
 @Tag(name = "User Management", description = "User management APIs")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

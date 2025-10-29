@@ -7,12 +7,16 @@
   </div>
 
   <div class="image-container" mat-dialog-content>
-    <img [src]="currentImage" 
+    <img #petImage [src]="currentImage" 
          [alt]="data.pet.name" 
          class="modal-image"
+         (load)="updateDescriptionWidth(petImage)"
          loading="lazy">
     <div class="pet-status-badge" [class]="'status-' + data.pet.status.toLowerCase()">
       {{ data.pet.status }}
+    </div>
+    <div class="pet-status-description" [style.width.px]="descriptionWidth">
+      {{ data.pet.description }}
     </div>
     <div class="image-navigation" *ngIf="hasMultipleImages">
       <button mat-icon-button 

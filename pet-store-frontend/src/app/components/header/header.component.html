@@ -6,44 +6,69 @@
       </div>
       <span class="store-name">Pawfect Store</span>
     </div>
-    
+
     <span class="spacer"></span>
-    
-    <div class="nav-links">
-      <!-- <button mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-        <mat-icon>home</mat-icon>
-        Home
-      </button> -->
-      <button mat-button routerLink="/pets" routerLinkActive="active">
-        <mat-icon>pets</mat-icon>
-        Browse Pets
-      </button>
-      <button mat-button routerLink="/categories" routerLinkActive="active" *ngIf="isAdmin()">
-        <mat-icon>category</mat-icon>
-        Categories
-      </button>
-      <button mat-button 
-              routerLink="/users" 
-              routerLinkActive="active"
-              *ngIf="isAdmin()">
-        <mat-icon>people</mat-icon>
-        Users
-      </button>
-    </div>
-    
+
     <span class="spacer"></span>
-    
-    <div class="user-section">
+    <div class="menu-section">
       <ng-container *ngIf="currentUser$ | async as user; else loginButton">
+        <span #cartIcon>
+          <button mat-icon-button
+        *ngIf="cartItemCount$ | async as count"
+        (mouseenter)="onCartHover(cartIcon, cartOverlayTpl); onCartIconMouseEnter()"
+        (mouseleave)="onCartIconMouseLeave()"
+        (click)="openCartDialog()"
+        >
+            <mat-icon>shopping_cart</mat-icon>
+            <span class="cart-count" *ngIf="cartItemCount$ | async as count">{{ count }}</span>
+          </button>
+        </span>
+
+        <ng-template #cartOverlayTpl>
+          <div (mouseenter)="onOverlayMouseEnter()" (mouseleave)="onCartLeave()">
+            <app-cart-overlay [cartItems]="cartItems" (cartItemRemoved)="onCartOverlayAction($event)"></app-cart-overlay>
+          </div>
+        </ng-template>
+
         <span class="user-info">Welcome, {{user.firstName}}!</span>
-        <button mat-button [routerLink]="['/users', user.id, 'edit']" matTooltip="Edit Profile">
-          <mat-icon>person</mat-icon>
-          Profile
+        <button mat-icon-button [matMenuTriggerFor]="mainMenu">
+          <mat-icon>menu</mat-icon>
         </button>
-        <button mat-button (click)="onLogout()">
-          <mat-icon>logout</mat-icon>
-          Logout
-        </button>
+        <mat-menu #mainMenu="matMenu">
+          <button mat-menu-item routerLink="/categories" *ngIf="isAdmin()">
+            <mat-icon>category</mat-icon>
+            <span>Categories</span>
+          </button>
+          <button mat-menu-item routerLink="/discounts" *ngIf="isAdmin()">
+            <mat-icon>local_offer</mat-icon>
+            <span>Discounts</span>
+          </button>
+          <button mat-menu-item routerLink="/pets">
+            <mat-icon>pets</mat-icon>
+            <span>Pets</span>
+          </button>
+          <button mat-menu-item routerLink="/orders">
+            <mat-icon>shopping_bag</mat-icon>
+            <span>{{isAdmin() ? 'Orders' : 'My Orders' }}</span>
+          </button>
+          <button mat-menu-item routerLink="/address-book">
+            <mat-icon>import_contacts</mat-icon>
+            <span>Address Book</span>
+          </button>
+          <button mat-menu-item routerLink="/users" *ngIf="isAdmin()">
+            <mat-icon>people</mat-icon>
+            <span>Users</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item [routerLink]="['/users', user.id, 'edit']">
+            <mat-icon>person</mat-icon>
+            <span>Profile</span>
+          </button>
+          <button mat-menu-item (click)="onLogout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
       </ng-container>
       <ng-template #loginButton>
         <button mat-flat-button color="accent" (click)="navigateToLogin()">

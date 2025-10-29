@@ -1,0 +1,101 @@
+<div class="address-form-container">
+    <button class="address-dialog-close" (click)="onCancel()" aria-label="Close">
+        <mat-icon>close</mat-icon>
+    </button>
+    <mat-card class="address-form-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>{{ isEditMode ? 'in_home_mode' : 'add_home' }}</mat-icon>
+                {{ isEditMode ? 'Edit Address' : 'Create New Address' }}
+            </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+            <div *ngIf="loading" class="loading-container">
+                <mat-spinner diameter="40"></mat-spinner>
+                <p>Loading address...</p>
+            </div>
+
+            <form *ngIf="!loading" [formGroup]="addressForm" (ngSubmit)="onSubmit()" class="address-form">
+                <div class="form-row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Phone Number</mat-label>
+                        <input matInput formControlName="phoneNumber" placeholder="Enter phone number" maxlength="15">
+                        <mat-icon matSuffix>phone</mat-icon>
+                        <mat-error *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
+                            {{ getErrorMessage('phoneNumber') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="form-row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Street</mat-label>
+                        <input matInput formControlName="street" placeholder="Enter street" maxlength="100">
+                        <mat-icon matSuffix>street</mat-icon>
+                        <mat-error *ngIf="street?.invalid && street?.touched">
+                            {{ getErrorMessage('street') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>City</mat-label>
+                        <input matInput formControlName="city" placeholder="Enter city" maxlength="100">
+                        <mat-icon matSuffix>location_city</mat-icon>
+                        <mat-error *ngIf="city?.invalid && city?.touched">
+                            {{ getErrorMessage('city') }}
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>State</mat-label>
+                        <input matInput formControlName="state" placeholder="Enter state" maxlength="100">
+                        <mat-icon matSuffix>map</mat-icon>
+                        <mat-error *ngIf="state?.invalid && state?.touched">
+                            {{ getErrorMessage('state') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Postal Code</mat-label>
+                        <input matInput formControlName="postalCode" placeholder="Enter postal code" maxlength="20">
+                        <mat-icon matSuffix>markunread_mailbox</mat-icon>
+                        <mat-error *ngIf="postalCode?.invalid && postalCode?.touched">
+                            {{ getErrorMessage('postalCode') }}
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Country</mat-label>
+                        <input matInput formControlName="country" placeholder="Enter country" maxlength="100">
+                        <mat-icon matSuffix>public</mat-icon>
+                        <mat-error *ngIf="country?.invalid && country?.touched">
+                            {{ getErrorMessage('country') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <mat-checkbox formControlName="isDefault" class="default-checkbox">
+                    Set as Default Address
+                </mat-checkbox>
+
+                <div class="form-actions">
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="addressForm.invalid || submitting" class="submit-button">
+                        <mat-icon *ngIf="!submitting">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+                        <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
+                        {{ submitting ? 'Saving...' : (isEditMode ? 'Update Address' : 'Create Address') }}
+                    </button>
+
+                    <button mat-button type="button" (click)="onCancel()" [disabled]="submitting" class="cancel-button">
+                        <mat-icon>cancel</mat-icon>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

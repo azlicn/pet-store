@@ -1,0 +1,91 @@
+
+.order-card-subtitle {
+  margin-top: 5px;
+}
+
+.card-actions-bottom {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.title-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  color: #1976d2;
+  font-size: 28px;
+}
+
+.order-details {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-size: 1em;
+  color: #333;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 1.05em;
+}
+
+.status-icon {
+  font-size: 22px;
+  vertical-align: middle;
+}
+
+.PENDING {
+  color: #ffa726;
+}
+.SHIPPED {
+  color: #42a5f5;
+}
+.DELIVERED {
+  color: #66bb6a;
+}
+.CANCELLED {
+  color: #e57373;
+}
+.APPROVED {
+  color: #26a69a;
+}
+.SUCCESS {
+  color: #66bb6a;
+}
+.FAILED {
+  color: #e57373;
+}
+.order-card-inner {
+  display: flex;
+  flex-direction: column;
+  min-width: 340px;
+  max-width: 480px;
+  min-height: 260px;
+  height: 100%;
+  font-size: 1.15em;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+  border-radius: 16px;
+  padding: 32px 24px 24px 24px;
+}
+
+
+mat-card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+mat-card-actions mat-icon {
+  cursor: pointer;
+}
+mat-card-actions button[mat-icon-button] {
+  margin-right: 0;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+mat-card-actions button[mat-icon-button]:hover {
+  background: #e3f2fd;
+}

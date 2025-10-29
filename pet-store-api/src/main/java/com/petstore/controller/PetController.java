@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -30,11 +29,14 @@ public class PetController {
 
     private static final Logger logger = LoggerFactory.getLogger(PetController.class);
 
-    @Autowired
-    private PetService petService;
+    private final PetService petService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public PetController(PetService petService, UserRepository userRepository) {
+        this.petService = petService;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping
     @Operation(summary = "Get available pets", description = "Retrieve pets available for purchase (public access)")

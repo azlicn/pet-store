@@ -6,7 +6,6 @@ import com.petstore.model.Category;
 import com.petstore.model.Pet;
 import com.petstore.repository.CategoryRepository;
 import com.petstore.repository.PetRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,11 +17,14 @@ import java.util.Optional;
 @Service
 public class CategoryService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
-    private PetRepository petRepository;
+    private final PetRepository petRepository;
+
+    public CategoryService(CategoryRepository categoryRepository, PetRepository petRepository) {
+        this.categoryRepository = categoryRepository;
+        this.petRepository = petRepository;
+    }
 
     /**
      * Retrieves all pet categories

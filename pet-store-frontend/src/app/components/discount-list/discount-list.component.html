@@ -1,0 +1,102 @@
+<div class="discount-list-container">
+     <h1>Discounts</h1>
+  <mat-card>
+    <mat-card-header>
+      <div class="header-content">
+        <div class="title-section">
+          <mat-card-title>
+            <mat-icon class="title-icon">local_offer</mat-icon>
+            Discount Management
+          </mat-card-title>
+          <mat-card-subtitle>Manage discounts</mat-card-subtitle>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" routerLink="/discounts/add">
+            <mat-icon>add</mat-icon>
+            Add Discount
+          </button>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading discounts...</p>
+      </div>
+
+      <div *ngIf="!loading && discounts.length > 0" class="table-container">
+  <table mat-table [dataSource]="discounts" class="discount-table">
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>ID</th>
+            <td mat-cell *matCellDef="let discount">{{discount.id}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Discount Code & Description</th>
+            <td mat-cell *matCellDef="let discount">
+              <div class="discount-code">
+                <mat-icon class="discount-icon">local_offer</mat-icon>
+                <strong>{{discount.code}}</strong>
+              </div>
+              <span class="description">{{discount.description}}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="percentage">
+            <th mat-header-cell *matHeaderCellDef class="content-center">Percentage</th>
+            <td mat-cell class="content-center" *matCellDef="let discount">{{discount.percentage}}%</td>
+          </ng-container>
+
+           <ng-container matColumnDef="validFrom">
+            <th mat-header-cell class="content-center" *matHeaderCellDef>Valid From</th>
+            <td mat-cell class="content-center" *matCellDef="let discount">{{discount.validFrom | date}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="validTo">
+            <th mat-header-cell *matHeaderCellDef class="content-center">Valid To</th>
+            <td mat-cell class="content-center" *matCellDef="let discount">{{discount.validTo | date}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef class="content-center">Active</th>
+            <td mat-cell class="content-center" *matCellDef="let discount">
+              <mat-icon color="{{ discount.active ? 'primary' : 'warn' }}">
+                {{ discount.active ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
+            <td mat-cell *matCellDef="let discount" class="actions-cell">
+              <div class="action-buttons">
+                <button mat-icon-button 
+                        color="primary" 
+                        [routerLink]="['/discounts/edit', discount.id]"
+                        matTooltip="Edit Discount">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        color="warn" 
+                        (click)="onDeleteDiscount(discount)"
+                        matTooltip="Delete Discount">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && discounts.length === 0" class="empty-state">
+        <mat-icon class="large-icon">local_offer</mat-icon>
+        <h3>No Discounts Found</h3>
+        <p>Get started by adding your first discount.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
