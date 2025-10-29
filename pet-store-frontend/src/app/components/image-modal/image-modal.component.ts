@@ -18,12 +18,20 @@ export interface ImageModalData {
 @Component({
   selector: "app-image-modal",
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule],
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+  ],
   templateUrl: "./image-modal.component.html",
   styleUrl: "./image-modal.component.scss",
 })
 export class ImageModalComponent {
   currentImageIndex = 0;
+
+  descriptionWidth: number = 0;
 
   constructor(
     public dialogRef: MatDialogRef<ImageModalComponent>,
@@ -46,6 +54,12 @@ export class ImageModalComponent {
 
   get canGoNext(): boolean {
     return this.currentImageIndex < (this.data.pet.photoUrls?.length || 0) - 1;
+  }
+
+  updateDescriptionWidth(img: HTMLImageElement) {
+    if (img && img.clientWidth) {
+      this.descriptionWidth = img.clientWidth - 50;
+    }
   }
 
   getStatusClass(status: PetStatus): string {

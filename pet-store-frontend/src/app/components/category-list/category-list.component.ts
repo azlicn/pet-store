@@ -1,23 +1,26 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule, Router } from "@angular/router";
+import { MatCardModule } from "@angular/material/card";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTableModule } from "@angular/material/table";
+import { MatDialogModule, MatDialog } from "@angular/material/dialog";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatSnackBarModule, MatSnackBar } from "@angular/material/snack-bar";
 
-import { Category } from '../../models/category.model';
-import { HttpErrorResponse } from '../../models/error-response.model';
-import { CategoryService } from '../../services/category.service';
-import { ErrorHandlerService } from '../../services/error-handler.service';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../confirm-dialog/confirm-dialog.component';
+import { Category } from "../../models/category.model";
+import { HttpErrorResponse } from "../../models/error-response.model";
+import { CategoryService } from "../../services/category.service";
+import { ErrorHandlerService } from "../../services/error-handler.service";
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from "../confirm-dialog/confirm-dialog.component";
 
 @Component({
-  selector: 'app-category-list',
+  selector: "app-category-list",
   standalone: true,
   imports: [
     CommonModule,
@@ -29,21 +32,23 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../confirm-dialog/con
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
-  templateUrl: './category-list.component.html',
-  styleUrls: ['./category-list.component.scss']
+  templateUrl: "./category-list.component.html",
+  styleUrls: ["./category-list.component.scss"],
 })
 export class CategoryListComponent implements OnInit {
-  private categoryService = inject(CategoryService);
-  private errorHandler = inject(ErrorHandlerService);
-  private dialog = inject(MatDialog);
-  private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
-
   categories: Category[] = [];
   loading = false;
-  displayedColumns: string[] = ['id', 'name', 'actions'];
+  displayedColumns: string[] = ["id", "name", "actions"];
+
+  constructor(
+    private categoryService: CategoryService,
+    private errorHandler: ErrorHandlerService,
+    private dialog: MatDialog,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -57,16 +62,19 @@ export class CategoryListComponent implements OnInit {
         this.loading = false;
       },
       error: (error: HttpErrorResponse) => {
-        console.error('Error loading categories:', error);
-        
-        const errorMessage = this.errorHandler.extractErrorMessage(error, 'Failed to load categories');
-        
-        this.snackBar.open(errorMessage, 'Close', {
+        console.error("Error loading categories:", error);
+
+        const errorMessage = this.errorHandler.extractErrorMessage(
+          error,
+          "Failed to load categories"
+        );
+
+        this.snackBar.open(errorMessage, "Close", {
           duration: 3000,
-          panelClass: ['error-snackbar']
+          panelClass: ["error-snackbar"],
         });
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -76,27 +84,27 @@ export class CategoryListComponent implements OnInit {
     }
 
     const dialogData: ConfirmDialogData = {
-          title: 'Delete Category',
-          message: `Are you sure you want to delete category "<strong>${category.name}</strong>"?<br>
+      title: "Delete Category",
+      message: `Are you sure you want to delete category "<strong>${category.name}</strong>"?<br>
                    <strong>Warning:</strong> This category cannot be deleted if it is currently being used by any pets. 
                    You will need to reassign or remove those pets first.<br>
                    This action cannot be undone and will permanently remove this category from the system.`,
-          confirmText: 'Delete Category',
-          cancelText: 'Keep Category',
-          icon: 'delete_forever'
-        };
+      confirmText: "Delete Category",
+      cancelText: "Keep Category",
+      icon: "delete_forever",
+    };
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '450px',
-      maxWidth: '90vw',
+      width: "450px",
+      maxWidth: "90vw",
       data: dialogData,
       disableClose: true,
-      panelClass: 'confirm-dialog-container',
+      panelClass: "confirm-dialog-container",
       hasBackdrop: true,
-      backdropClass: 'confirm-dialog-backdrop'
+      backdropClass: "confirm-dialog-backdrop",
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result && category.id) {
         this.deleteCategory(category.id);
       }
@@ -106,23 +114,26 @@ export class CategoryListComponent implements OnInit {
   private deleteCategory(categoryId: number): void {
     this.categoryService.deleteCategory(categoryId).subscribe({
       next: () => {
-        this.snackBar.open('Category deleted successfully', 'Close', {
+        this.snackBar.open("Category deleted successfully", "Close", {
           duration: 3000,
-          panelClass: ['success-snackbar']
+          panelClass: ["success-snackbar"],
         });
-        this.loadCategories(); 
+        this.loadCategories();
       },
       error: (error: HttpErrorResponse) => {
-        console.error('Error deleting category:', error);
-        
-        const errorMessage = this.errorHandler.extractErrorMessage(error, 'Failed to delete category');
+        console.error("Error deleting category:", error);
+
+        const errorMessage = this.errorHandler.extractErrorMessage(
+          error,
+          "Failed to delete category"
+        );
         const duration = this.errorHandler.getErrorDuration(error);
-        
-        this.snackBar.open(errorMessage, 'Close', {
+
+        this.snackBar.open(errorMessage, "Close", {
           duration: duration,
-          panelClass: ['error-snackbar']
+          panelClass: ["error-snackbar"],
         });
-      }
+      },
     });
   }
 }

@@ -1,4 +1,6 @@
 import { ApplicationConfig } from '@angular/core';
+import { MatNativeDateModule } from '@angular/material/core';
+import { importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -70,6 +72,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, unauthorizedInterceptor])),
-    provideAnimationsAsync()
+    provideAnimationsAsync(),
+    importProvidersFrom(MatNativeDateModule)
   ]
 };

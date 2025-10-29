@@ -6,7 +6,6 @@ import com.petstore.model.Category;
 import com.petstore.model.User;
 import com.petstore.repository.PetRepository;
 import com.petstore.repository.CategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,11 +22,14 @@ import java.util.ArrayList;
 @Service
 public class PetService {
 
-    @Autowired
-    private PetRepository petRepository;
+    private final PetRepository petRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+
+    public PetService(PetRepository petRepository, CategoryRepository categoryRepository) {
+        this.petRepository = petRepository;
+        this.categoryRepository = categoryRepository;
+    }
 
     /**
      * Retrieves all pets in the store
@@ -172,6 +174,7 @@ public class PetService {
         if (existingPet.isPresent()) {
             Pet pet = existingPet.get();
             pet.setName(petDetails.getName());
+            pet.setDescription(petDetails.getDescription());
 
             // Handle category properly by looking it up by ID
             if (petDetails.getCategory() != null && petDetails.getCategory().getId() != null) {

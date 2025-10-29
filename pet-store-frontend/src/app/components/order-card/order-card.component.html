@@ -1,0 +1,65 @@
+<mat-card class="order-card-inner">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon class="title-icon">receipt_long</mat-icon>
+      #{{order.orderNumber}}
+    </mat-card-title>
+    <mat-card-subtitle class="order-card-subtitle">
+        <mat-icon class="status-icon" [ngClass]="order.status">
+          {{
+            order.status === 'PLACED' ? 'assignment' :
+            order.status === 'APPROVED' ? 'verified' :
+            order.status === 'DELIVERED' ? 'done_all' :
+            order.status === 'CANCELLED' ? 'cancel' :
+            'help_outline'
+          }}
+        </mat-icon>
+      {{order.status}} &mdash; {{order.createdAt | date:'dd/MM/yy hh:mm a'}}
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="order-details">
+      <div class="status-row"><strong>Total:</strong> {{order.totalAmount | currency}}</div>
+
+      <div class="status-row">
+        <strong>Shipping Status:</strong>
+        <mat-icon class="status-icon" [ngClass]="order.delivery?.status">
+          {{
+            order.delivery?.status === 'PENDING' ? 'local_shipping' :
+            order.delivery?.status === 'SHIPPED' ? 'flight_takeoff' :
+            order.delivery?.status === 'DELIVERED' ? 'check_circle' :
+            'help_outline'
+          }}
+        </mat-icon>
+        <span>{{order.delivery?.status || 'N/A'}}</span>
+        <button *ngIf="canUpdateDeliveryStatus()" mat-icon-button matTooltip="Update Delivery Status" (click)="updateDeliveryStatus(order.id)">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+
+      <div class="status-row">
+        <strong>Payment Status:</strong>
+        <mat-icon class="status-icon" [ngClass]="order.payment?.status">
+          {{
+            order.payment?.status === 'PENDING' ? 'hourglass_empty' :
+            order.payment?.status === 'SUCCESS' ? 'check_circle' :
+            order.payment?.status === 'FAILED' ? 'error' :
+            'help_outline'
+          }}
+        </mat-icon>
+        <span>{{order.payment?.status || 'N/A'}}</span>
+      </div>
+
+      <div class="status-row"><strong>Shipped At:</strong> {{order.delivery?.shippedAt | date:'dd/MM/yy hh:mm a'}}</div>
+      <div class="status-row"><strong>Delivered At:</strong> {{order.delivery?.deliveredAt | date:'dd/MM/yy hh:mm a'}}</div>
+    </div>
+  </mat-card-content>
+  <div class="card-actions-bottom">
+    <mat-card-actions>
+        <mat-icon color="primary" *ngIf="canEditOrder()" matTooltip="Edit Order" [routerLink]="['/checkout/', order.id]">edit</mat-icon>
+        <mat-icon color="primary" *ngIf="canViewOrderDetails()" matTooltip="View Order Details" [routerLink]="['/order-history/', order.id]">visibility</mat-icon>
+       <!--  <mat-icon color="primary" *ngIf="canUpdateDeliveryStatus()" matTooltip="Update Delivery Status" (click)="updateDeliveryStatus(order.id)">trolley</mat-icon>
+        <mat-icon color="warn" *ngIf="canDeleteOrder()" matTooltip="Delete Order" (click)="deleteOrder(order.id)">delete</mat-icon> -->
+    </mat-card-actions>
+  </div>
+</mat-card>

@@ -149,11 +149,12 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Save - Should update existing user")
     void save_ShouldUpdateExistingUser() {
+        
+        User userToUpdate = userRepository.findById(testUser.getId()).get();
+        userToUpdate.setFirstName("UpdatedJohn");
+        userToUpdate.setLastName("UpdatedDoe");
 
-        testUser.setFirstName("UpdatedJohn");
-        testUser.setLastName("UpdatedDoe");
-
-        User updatedUser = userRepository.save(testUser);
+        User updatedUser = userRepository.save(userToUpdate);
 
         assertThat(updatedUser.getId()).isEqualTo(testUser.getId());
         assertThat(updatedUser.getFirstName()).isEqualTo("UpdatedJohn");

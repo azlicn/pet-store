@@ -1,12 +1,15 @@
 package com.petstore.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,6 +33,7 @@ public class User {
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @NotBlank(message = "First name is required")
@@ -45,6 +49,10 @@ public class User {
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role", nullable = false)
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Address> addresses = new ArrayList<>();
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -96,6 +104,10 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.roles.add(Role.USER); // Default role
+    }
+
+    public User(Long userId) {
+        this.id = userId;
     }
 
     /**
@@ -205,6 +217,24 @@ public class User {
      */
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    /**
+     * Gets the user's addresses
+     *
+     * @return list of addresses associated with the user
+     */
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    /**
+     * Sets the user's addresses
+     *
+     * @param addresses the addresses to assign to the user
+     */
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 
     /**

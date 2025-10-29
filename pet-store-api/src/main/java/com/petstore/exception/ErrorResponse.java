@@ -14,6 +14,7 @@ public class ErrorResponse {
     private String error;
     private String message;
     private String path;
+    private String code;
     
     /**
      * Creates an empty error response with current timestamp
@@ -29,13 +30,15 @@ public class ErrorResponse {
      * @param error error type description (e.g., "Not Found", "Bad Request")
      * @param message detailed error message
      * @param path request URI that caused the error
+     * @param code application-specific error code
      */
-    public ErrorResponse(int status, String error, String message, String path) {
+    public ErrorResponse(int status, String error, String message, String path, String code) {
         this.timestamp = LocalDateTime.now();
         this.status = status;
         this.error = error;
         this.message = message;
         this.path = path;
+        this.code = code;
     }
     
     /**
@@ -106,5 +109,19 @@ public class ErrorResponse {
      */
     public void setPath(String path) {
         this.path = path;
+    }
+
+    /**
+     * @return application-specific error code
+     */
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * @param code application-specific error code
+     */
+    public void setCode(String code) {
+        this.code = code;
     }
 }

@@ -5,32 +5,30 @@
         <mat-card-title class="pet-name" style="font-size: 1rem !important;">{{pet.name}}</mat-card-title>
         <mat-card-subtitle class="pet-category">{{pet.category.name}}</mat-card-subtitle>
       </div>
-      
+
       <div class="header-icons">
-        <mat-icon *ngIf="authService.isLoggedIn() && !authService.isAdmin() && (isCreatedByMe() || isOwnedByMe())" 
-                  class="relationship-icon"
-                  [class.created-and-owned]="isCreatedByMe() && isOwnedByMe()"
-                  [class.created-only]="isCreatedByMe() && !isOwnedByMe()"
-                  [class.owned-only]="!isCreatedByMe() && isOwnedByMe()"
-                  [matTooltip]="getPetRelationshipTooltip()"
-                  matTooltipPosition="above">
+        <mat-icon *ngIf="authService.isLoggedIn() && authService.isUser() && (isCreatedByMe() || isOwnedByMe())"
+          class="relationship-icon" [class.created-and-owned]="isCreatedByMe() && isOwnedByMe()"
+          [class.created-only]="isCreatedByMe() && !isOwnedByMe()"
+          [class.owned-only]="!isCreatedByMe() && isOwnedByMe()" [matTooltip]="getPetRelationshipTooltip()"
+          matTooltipPosition="above">
           {{getPetRelationshipIcon()}}
         </mat-icon>
       </div>
     </div>
   </mat-card-header>
-  
+
   <mat-card-content>
     <div class="content-with-image">
       <div class="pet-details">
         <p class="price"><strong>Price:</strong> ${{pet.price}}</p>
-        
+
         <div class="status-chip">
           <mat-chip [class]="getStatusClass(pet.status)">
             {{pet.status}}
           </mat-chip>
         </div>
-        
+
         <div *ngIf="pet.tags && pet.tags.length > 0" class="tags">
           <!-- <mat-chip *ngFor="let tag of pet.tags">{{tag}}</mat-chip> -->
           <span *ngFor="let tag of pet.tags; let isLast = last" class="tags-label">
@@ -38,17 +36,12 @@
           </span>
         </div>
       </div>
-      
+
       <div class="pet-image-container">
-        <img *ngIf="pet.photoUrls && pet.photoUrls.length > 0"
-             [src]="pet.photoUrls[0]" 
-             [alt]="pet.name" 
-             class="pet-image"
-             loading="eager"
-             (click)="onImageClick()"
-             style="cursor: pointer;"
-             title="Click to view full size">
-        
+        <img *ngIf="pet.photoUrls && pet.photoUrls.length > 0" [src]="pet.photoUrls[0]" [alt]="pet.name"
+          class="pet-image" loading="eager" (click)="onImageClick()" style="cursor: pointer;"
+          title="Click to view full size">
+
         <div *ngIf="!pet.photoUrls || pet.photoUrls.length === 0" class="pet-placeholder">
           <mat-icon>pets</mat-icon>
           <span>{{ pet.category.name }}</span>
@@ -56,30 +49,13 @@
       </div>
     </div>
   </mat-card-content>
-  
+
   <mat-card-actions>
-    <button mat-flat-button [routerLink]="['/pets/edit', pet.id]" 
-            *ngIf="canEditPet()">
-      <mat-icon>edit</mat-icon>
-      Edit
-    </button>
-    
-    <button mat-flat-button color="primary" (click)="onUpdateStatus()" 
-            *ngIf="pet.status === 'AVAILABLE' && authService.isAdmin()">
-      <mat-icon>shopping_cart</mat-icon>
-      Mark as Sold
-    </button>
-    
-    <button mat-flat-button color="warn" (click)="onDeletePet()" 
-            *ngIf="canDeletePet()">
-      <mat-icon>delete</mat-icon>
-      Delete
-    </button>
-    
-    <button mat-flat-button color="primary" (click)="onPurchasePet()" 
-            *ngIf="pet.status === 'AVAILABLE' && authService.isLoggedIn() && !authService.isAdmin() && !isOwnPet()">
-      <mat-icon>shopping_cart</mat-icon>
-      Purchase Pet
-    </button>
+    <mat-icon class="action-icon" matTooltip="Edit Pet" color="primary" [routerLink]="['/pets/edit', pet.id]" *ngIf="canEditPet()">edit</mat-icon>
+    <mat-icon class="action-icon" color="primary" matTooltip="Add to Cart" (click)="onAddToCart()"
+      *ngIf="pet.status === 'AVAILABLE' && authService.isLoggedIn() && authService.isUser() && !isOwnPet()">shopping_cart</mat-icon>
+    <mat-icon class="action-icon" color="warn" matTooltip="Delete Pet" (click)="onDeletePet()"
+      *ngIf="canDeletePet()">delete</mat-icon>
+
   </mat-card-actions>
 </mat-card>

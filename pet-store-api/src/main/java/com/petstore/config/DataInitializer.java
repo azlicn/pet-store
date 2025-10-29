@@ -207,6 +207,10 @@ public class DataInitializer implements CommandLineRunner {
     private void createSamplePet(String name, Category category, BigDecimal price,
             List<String> photoUrls, List<String> tags) {
         Pet pet = new Pet(name, category, price);
+        pet.setDescription("""
+                A friendly and playful companion that adapts well to any home. 
+                Easy to care for and full of personality, bringing joy and comfort to families and pet lovers alike.
+                """);
         pet.setStatus(PetStatus.AVAILABLE);
         pet.setPhotoUrls(photoUrls);
         pet.setTags(tags);

@@ -1,0 +1,118 @@
+<mat-card class="order-history-container">
+    <mat-card-header class="order-header">
+        <mat-card-title>
+            <span class="order-number">Order #{{ order?.orderNumber }}</span>
+        </mat-card-title>
+        <mat-card-subtitle class="order-header-subtitle">
+            <mat-icon class="status-icon" [ngClass]="order?.status">
+                {{
+                  order?.status === 'PLACED' ? 'assignment' :
+                  order?.status === 'APPROVED' ? 'verified' :
+                  order?.status === 'DELIVERED' ? 'done_all' :
+                  order?.status === 'CANCELLED' ? 'cancel' :
+                  'help_outline'
+                }}
+            </mat-icon>
+            <span class="order-status" >Status: <strong>{{ order?.status }}</strong></span>
+        </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <section class="order-info">
+            <div class="info-header">
+                <span class="info-text">Order Information</span>
+                <span class="order-date">{{ order?.createdAt | date: 'dd/MM/yyyy hh:mm a' }}</span>
+            </div>
+            <div class="info-row order-info-row">
+                <span>{{ order?.billingAddress.fullName }},<br>
+                    {{ order?.billingAddress.street }}, <br>{{ order?.billingAddress.city }}, {{
+                    order?.billingAddress.state }}<br>
+                    {{ order?.billingAddress.country }} - {{ order?.billingAddress.postalCode }}<br>
+                </span>
+                <span>Phone: {{ order?.billingAddress.phoneNumber }}</span>
+            </div>
+        </section>
+        <mat-divider></mat-divider>
+        <section class="order-items">
+            <h3>Order Items</h3>
+            <mat-card *ngFor="let item of order?.items" class="order-item-row">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span style="display: flex; align-items: center; flex: 1;">
+                        <ng-container *ngIf="item.pet.photoUrls?.length > 0 && item.pet.photoUrls[0]; else petIcon">
+                            <img [src]="item.pet.photoUrls[0]" alt="{{ item.pet.name }}" class="pet-avatar" />
+                        </ng-container>
+                        <ng-template #petIcon>
+                            <mat-icon style="margin-right: 8px; color: #ffa726;">pets</mat-icon>
+                        </ng-template>
+                        <span class="item-name">{{ item.pet.name }}</span>
+                    </span>
+                    <span class="item-price" style="flex: 0; text-align: right;">{{ item.pet.price | currency }}</span>
+                </div>
+            </mat-card>
+            <!-- Total items price -->
+            <div class="info-row" style="margin-top: 12px; font-weight: 600;">
+                <span>Total items price:</span>
+                <span>{{ totalItemsPrice | currency }}</span>
+            </div>
+            <!-- Discounted amount if discount exists -->
+            <div *ngIf="order?.discount" class="info-row" style="font-weight: 600; color: #e53935;">
+                <span>Discounted amount: {{ order?.discount?.code }} ({{ order?.discount?.percentage }}%):</span>
+                <span>-{{ discountedAmount | currency }}</span>
+            </div>
+            <!-- <div *ngIf="order.discount" class="order-discount-row mat-elevation-z1" style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: flex; align-items: center;">
+          <mat-icon color="accent">local_offer</mat-icon>
+          <span class="discount-label">Discounted Amount ({{ order.discount.code }}):</span>
+          <span class="discount-label">({{ order.discount.percentage }}%)</span>
+        </span>
+        <span class="discount-value">-{{ discountedAmount | currency }}</span>
+      </div> -->
+            <div *ngIf="order?.discount" class="order-total-after-discount-row">
+                <span class="total-label">Total after discount:</span>
+                <span class="total-value">{{ order?.payment?.amount | currency }}</span>
+            </div>
+        </section>
+
+        <section class="shipping-info mat-elevation-z1">
+            <h3>Shipping Information</h3>
+            <div class="info-row address"><span>{{ order?.delivery?.name }}</span></div>
+            <div class="info-row address"><span>{{ order?.delivery?.address }}</span></div>
+            <div class="info-row address"><span>{{ order?.delivery?.phone }}</span></div>
+            <div class="info-row"><span>Shipping Status: </span>
+              <span><mat-icon class="status-icon" [ngClass]="order?.delivery?.status">
+                {{
+                  order?.delivery?.status === 'PENDING' ? 'local_shipping' :
+                  order?.delivery?.status === 'SHIPPED' ? 'flight_takeoff' :
+                  order?.delivery?.status === 'DELIVERED' ? 'check_circle' :
+                  'help_outline'
+                }}
+              </mat-icon>{{ order?.delivery?.status }}</span>
+            </div>
+            <div class="info-row"><span>Shipping Date: </span><span>{{ order?.delivery?.shippingDate | date:'dd/MM/yy hh:mm a' }}</span></div>
+            <div class="info-row"><span>Delivery Date: </span><span>{{ order?.delivery?.deliveredAt | date:'dd/MM/yy hh:mm a' }}</span></div>
+
+        </section>
+
+        <section class="payment-info mat-elevation-z1">
+            <h3>Payment Information</h3>
+            <div class="info-row"><span>Payment Type:</span><span>{{ order?.payment?.paymentType }}</span></div>
+            <div class="info-row"><span>Status:</span><span>{{ order?.payment?.status }}</span></div>
+            <div class="info-row"><span>Paid Amount:</span><span>{{ order?.payment?.amount | currency }}</span></div>
+            <div class="info-row"><span>Payment Status:</span>
+              <span><mat-icon class="status-icon" [ngClass]="order?.payment?.status">
+                {{
+                  order?.payment?.status === 'PENDING' ? 'hourglass_empty' :
+                  order?.payment?.status === 'SUCCESS' ? 'check_circle' :
+                  order?.payment?.status === 'FAILED' ? 'error' :
+                  'help_outline'
+                }}
+              </mat-icon>{{ order?.payment?.status }}</span>
+            </div>
+        </section>
+        <div class="back-button-container">
+            <button mat-raised-button color="primary" class="back-btn" (click)="goBack()">Back</button>
+        </div>
+        
+    </mat-card-content>
+</mat-card>
+<div *ngIf="loading" class="loading">Loading order details...</div>
+<div *ngIf="error" class="error">{{ error }}</div>

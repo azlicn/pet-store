@@ -1,0 +1,20 @@
+<div class="cart-overlay-container">
+  <mat-card class="cart-overlay-panel">
+    <h3>Cart Items</h3>
+    <div *ngIf="cartItems.length > 0; else emptyCart">
+      <mat-card *ngFor="let item of cartItems" class="cart-item-row">
+        <div class="cart-item-avatar">
+          <img *ngIf="item.pet.photoUrls && item.pet.photoUrls.length > 0" [src]="item.pet.photoUrls[0]" [alt]="item.pet.name" />
+          <mat-icon *ngIf="!item.pet.photoUrls || item.pet.photoUrls.length === 0">pets</mat-icon>
+        </div>
+        <div class="cart-item-details">
+          <div class="cart-item-name">{{item.pet.name}} | {{item.pet.price | currency}}</div>
+        </div>
+      </mat-card>
+    </div>
+    <ng-template #emptyCart>
+      <div class="empty-cart">No items in cart.</div>
+    </ng-template>
+  </mat-card>
+  <button mat-raised-button color="primary" class="view-cart-btn" (click)="viewCart()">View Cart</button>
+</div>

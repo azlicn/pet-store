@@ -1,5 +1,7 @@
 package com.petstore.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.petstore.enums.PetStatus;
 
@@ -33,6 +35,9 @@ public class Pet {
     @NotBlank(message = "Pet name is required")
     @Column(nullable = false)
     private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
@@ -148,6 +153,24 @@ public class Pet {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Gets the pet description
+     *
+     * @return the pet description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+     /**
+     * Sets the pet description
+     *
+     * @param name the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
@@ -329,4 +352,6 @@ public class Pet {
     public void setLastModifiedBy(Long lastModifiedBy) {
         this.lastModifiedBy = lastModifiedBy;
     }
+
+    
 }

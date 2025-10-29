@@ -1,0 +1,35 @@
+<div class="order-list-container">
+		<h1>{{ isAdmin() ? 'Orders' : 'My Orders' }}</h1>
+	<mat-card>
+		<mat-card-header>
+			<div class="header-content">
+				<div class="title-section">
+					<mat-card-title>
+						<mat-icon class="title-icon">list_alt</mat-icon>
+						Order Management
+					</mat-card-title>
+					<mat-card-subtitle>{{ isAdmin() ? 'View all orders' : 'View all my Orders' }}</mat-card-subtitle>
+				</div>
+			</div>
+		</mat-card-header>
+		<mat-card-content>
+			<div *ngIf="loading" class="loading-container">
+				<mat-spinner diameter="50"></mat-spinner>
+				<p>Loading orders...</p>
+			</div>
+			<div *ngIf="!loading && orders.length > 0" class="card-list">
+				<div class="order-card" *ngFor="let order of orders">
+					<app-order-card
+						[order]="order"
+						[editOrder]="editOrder"
+						[deleteOrder]="deleteOrder"
+					/>
+				</div>
+			</div>
+			<div *ngIf="!loading && orders.length === 0" class="empty-container">
+				<mat-icon>info</mat-icon>
+				<span>No orders found.</span>
+			</div>
+		</mat-card-content>
+	</mat-card>
+</div>

@@ -1,0 +1,20 @@
+<div class="payment-processing-dialog">
+  <div class="logo-row">
+    <img [src]="logo" alt="Payment Logo" class="payment-logo" />
+  </div>
+  <ng-container *ngIf="passwordStep">
+    <h2>Enter Payment Password</h2>
+    <mat-form-field appearance="outline" style="width:100%;margin-top:18px;">
+      <mat-label>Password</mat-label>
+      <input matInput [(ngModel)]="password" type="password" placeholder="Enter password" />
+    </mat-form-field>
+    <button mat-raised-button color="primary" style="margin-top:18px;" (click)="onPasswordProceed()" [disabled]="!password || password.length < 4">Proceed</button>
+  </ng-container>
+  <ng-container *ngIf="animationStep">
+    <h2>
+      {{ data.paymentType === 'CREDIT_CARD' || data.paymentType === 'DEBIT_CARD' ? 'We’re securely connecting to your bank...' : 'Connecting to Payment Gateway...' }}
+    </h2>
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+    <div class="processing-text">Please wait while we process your payment.</div>
+  </ng-container>
+</div>

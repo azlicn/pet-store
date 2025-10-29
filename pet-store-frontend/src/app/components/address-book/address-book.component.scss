@@ -1,0 +1,339 @@
+.address-book-form-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 64px);
+  padding: 2rem 1rem;
+  background-color: #f5f5f5;
+}
+
+.address-book-form-card {
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  mat-card-header {
+    padding-bottom: 1rem;
+    //border-bottom: 1px solid #e0e0e0;
+    //margin-bottom: 1.5rem;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #333;
+
+      mat-icon {
+        color: #1976d2;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 1.0rem;
+  }
+}
+
+.mat-icon-title {
+    color: var(--text-dark) !important ;
+}
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+
+  mat-spinner {
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #666;
+    font-size: 1rem;
+  }
+}
+
+.address-book-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .full-width {
+    width: 100%;
+  }
+
+  mat-form-field {
+    .mat-mdc-form-field-subscript-wrapper {
+      margin-top: 0.5rem;
+    }
+
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-error-wrapper {
+      padding: 0 1rem;
+    }
+
+    input {
+      font-size: 1rem;
+    }
+
+    mat-icon[matSuffix] {
+      color: #666;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+
+  .submit-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 160px;
+    font-weight: 500;
+
+    mat-spinner {
+      margin-right: 0.5rem;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+
+  .cancel-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row > * {
+  flex: 1 1 0;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .address-book-form-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .address-book-form-card {
+    max-width: 100%;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+
+    mat-card-content {
+      padding: 1rem;
+    }
+
+    mat-card-header {
+      mat-card-title {
+        font-size: 1.3rem;
+      }
+    }
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+
+    .submit-button,
+    .cancel-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .address-form-container {
+    padding: 0.5rem;
+  }
+
+  .address-form {
+    gap: 1rem;
+  }
+
+  .form-actions {
+    margin-top: 1rem;
+  }
+}
+
+// Material Design enhancements
+::ng-deep {
+  .success-snackbar {
+    background-color: #4caf50 !important;
+    color: white !important;
+  }
+
+  .error-snackbar {
+    background-color: #f44336 !important;
+    color: white !important;
+  }
+
+  // Form field focus styles
+  .mat-mdc-form-field.mat-focused {
+    .mat-mdc-form-field-outline-thick {
+      border-color: #1976d2;
+    }
+  }
+
+  // Error state styles
+  .mat-mdc-form-field.mat-form-field-invalid {
+    .mat-mdc-form-field-outline-thick {
+      border-color: #f44336;
+    }
+  }
+}
+
+// Loading and disabled states
+.address-book-form.submitting {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+// Focus management
+.address-book-form {
+  mat-form-field:first-child input {
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+// Animation for smooth transitions
+.address-book-form-card {
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.form-actions button {
+  transition: all 0.2s ease-in-out;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+}
+
+.address-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 16px;
+}
+.address-card-wrapper {
+  flex: 1 1 320px;
+  max-width: 400px;
+}
+.address-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  padding: 0;
+  transition: box-shadow 0.2s;
+  border: 1px solid var(--border-light, #eee);
+}
+.address-card:hover {
+  box-shadow: 0 8px 32px rgba(32, 156, 255, 0.18);
+}
+.default-badge {
+  background: #1976d2;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 2px 10px;
+  margin-left: 12px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+.mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mat-card-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.address-book-header-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.address-book-header-row mat-card-title {
+  flex: 1 1 auto;
+  margin-right: 0;
+}
+.add-address-button {
+  margin-left: auto;
+  min-width: 160px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(32,156,255,0.08);
+}
+
+.default-star-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 2;
+  color: #1976d2;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(32,156,255,0.08);
+  border-radius: 50%;
+  cursor: default;
+}
+
+.address-book-card {
+  position: relative;
+  margin-bottom: 10px;
+}
+.card-action {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+}
+
+.default-text {
+    color: #1976d2;
+    text-align: end;
+    font-style: italic;
+}
+
+.no-addresses {
+    margin-top: 10px;
+    text-align: center;
+}

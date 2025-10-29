@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 import { authGuard, adminGuard } from './guards/auth.guard';
 import { userProfileGuard } from './guards/user-profile.guard';
 import { petOwnershipGuard } from './guards/pet-ownership.guard';
+import { checkoutStatusGuard } from './guards/checkout-status.guard';
+import { OrderHistoryComponent } from './components/order-history/order-history.component';
+import { orderOwnershipGuard } from './guards/order-ownership.guard';
 
 export const routes: Routes = [
   {
@@ -12,6 +15,10 @@ export const routes: Routes = [
     path: 'home',
     redirectTo: '',
     pathMatch: 'full'
+  },
+   {
+    path: 'address-book',
+    loadComponent: () => import('./components/address-book/address-book.component').then(m => m.AddressBookComponent)
   },
   {
     path: 'pets',
@@ -61,12 +68,42 @@ export const routes: Routes = [
     canActivate: [adminGuard]
   },
   {
+    path: 'discounts',
+    loadComponent: () => import('./components/discount-list/discount-list.component').then(m => m.DiscountListComponent),
+    canActivate: [adminGuard]
+  },
+  {
+    path: 'discounts/add',
+    loadComponent: () => import('./components/discount-form/discount-form.component').then(m => m.DiscountFormComponent),
+    canActivate: [adminGuard]
+  },
+  {
+    path: 'discounts/edit/:id',
+    loadComponent: () => import('./components/discount-form/discount-form.component').then(m => m.DiscountFormComponent),
+    canActivate: [adminGuard]
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./components/order-list/order-list.component').then(m => m.OrderListComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'checkout/:orderId',
+    loadComponent: () => import('./components/checkout/checkout.component').then(m => m.CheckoutComponent),
+    canActivate: [authGuard, checkoutStatusGuard]
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./components/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },
   {
     path: 'docs',
     loadComponent: () => import('./components/documentation/documentation.component').then(m => m.DocumentationComponent)
+  },
+  {
+    path: 'order-history/:orderId',
+    loadComponent: () => import('./components/order-history/order-history.component').then(m => m.OrderHistoryComponent),
+    canActivate: [orderOwnershipGuard]
   },
   {
     path: '**',

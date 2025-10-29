@@ -52,6 +52,7 @@ export class PetFormComponent implements OnInit {
   ) {
     this.petForm = this.fb.group({
       name: ['', [Validators.required]],
+      description: [''],
       categoryId: ['', [Validators.required]],
       price: ['', [Validators.required, Validators.min(0)]],
       status: [PetStatus.AVAILABLE],
@@ -93,6 +94,7 @@ export class PetFormComponent implements OnInit {
 
         this.petForm.patchValue({
           name: pet.name,
+          description: pet.description ? pet.description : '',
           categoryId: pet.category?.id,
           price: pet.price,
           status: pet.status,
@@ -121,6 +123,10 @@ export class PetFormComponent implements OnInit {
     return this.authService.isAdmin();
   }
 
+  get description() {
+    return this.petForm.get('description');
+  }
+
   getStatusDisplayText(status: PetStatus): string {
     switch (status) {
       case PetStatus.AVAILABLE:
@@ -146,6 +152,7 @@ export class PetFormComponent implements OnInit {
       
       const pet: Pet = {
         name: formValue.name,
+        description: formValue.description,
         category: selectedCategory,
         price: +formValue.price,
         status: formValue.status,
@@ -183,6 +190,20 @@ export class PetFormComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate(['/pets']);
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.petForm.get(controlName);
+    if (control?.hasError('required')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} is required`;
+    }
+    if (control?.hasError('minlength')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
+    }
+    if (control?.hasError('maxlength')) {
+      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must not exceed ${control.errors?.['maxlength'].requiredLength} characters`;
+    }
+    return '';
   }
 
   private parsePhotoUrls(text: string): string[] | undefined {

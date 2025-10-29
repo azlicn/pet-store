@@ -8,12 +8,15 @@ import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.repository.UserRepository;
 import com.petstore.security.JwtTokenProvider;
+import com.petstore.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +35,7 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -48,13 +51,13 @@ public class AuthController {
         try {
             authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        } catch (org.springframework.security.authentication.BadCredentialsException ex) {
+        } catch (BadCredentialsException ex) {
             throw new AuthenticationFailedException("Invalid email or password");
         }
 
         String jwt = tokenProvider.generateToken(authentication);
 
-        User user = userRepository.findByEmail(loginRequest.getEmail())
+        User user = userService.getUserByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Map<String, Object> response = new HashMap<>();
@@ -76,7 +79,7 @@ public class AuthController {
 
         Map<String, String> response = new HashMap<>();
 
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+        if (userService.existsByEmail(signUpRequest.getEmail())) {
             response.put("message", "Email is already in use!");
             return ResponseEntity.badRequest().body(response);
         }
@@ -93,7 +96,7 @@ public class AuthController {
             user.setRoles(Set.of(Role.USER));
         }
 
-        userRepository.save(user);
+        userService.saveUser(user);
 
         response.put("message", "User registered successfully!");
         return ResponseEntity.ok(response);

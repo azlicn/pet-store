@@ -151,8 +151,8 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  justify-content: space-between; /* Spread buttons across the width */
+  gap: 8px;
+  justify-content: flex-end; /* Align all icons to the end */
   align-items: center;
 }
 
@@ -210,6 +210,10 @@
       background: linear-gradient(135deg, #f44336 0%, #c62828 100%) !important;
     }
   }
+}
+
+.action-icon {
+  cursor: pointer;
 }
 
 /* Push primary button to the right */
