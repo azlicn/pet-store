@@ -24,9 +24,12 @@ import com.petstore.model.User;
 import com.petstore.service.AddressService;
 import com.petstore.service.UserService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/api/users/addresses")
+@Tag(name = "Address Controller", description = "Address Management API")
 public class AddressController {
 
     private static final Logger logger = LoggerFactory.getLogger(AddressController.class);
@@ -40,6 +43,7 @@ public class AddressController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @Operation(summary = "Get user addresses", description = "Retrieve all addresses for the authenticated user.")
     public ResponseEntity<List<Address>> getAddresses() {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -59,10 +63,11 @@ public class AddressController {
 
     @PostMapping
     @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Create address", description = "Create a new address for the authenticated user.")
     public ResponseEntity<Address> createAddress(@RequestBody Address address) {
 
         logger.info("Creating address: {}", address.getFullAddress());
-        
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
         Optional<User> userOptional = userService.getUserByEmail(userEmail);
@@ -79,6 +84,7 @@ public class AddressController {
 
     @PutMapping("/{addressId}")
     @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Update address", description = "Update an existing address for the authenticated user.")
     public ResponseEntity<Address> updateAddress(@PathVariable Long addressId, @RequestBody Address address) {
 
         Address updatedAddress = addressService.updateAddress(addressId, address);
@@ -87,9 +93,10 @@ public class AddressController {
 
     @DeleteMapping("/{addressId}")
     @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Delete address", description = "Delete an address for the authenticated user.")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long addressId) {
 
-         addressService.deleteAddress(addressId);
+        addressService.deleteAddress(addressId);
 
         return ResponseEntity.noContent().build();
     }

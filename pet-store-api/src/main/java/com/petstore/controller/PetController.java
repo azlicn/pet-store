@@ -24,7 +24,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pets")
-@Tag(name = "Pawfect Store", description = "Pawfect Store API")
+@Tag(name = "Pet Controller", description = "Pet API")
 public class PetController {
 
     private static final Logger logger = LoggerFactory.getLogger(PetController.class);

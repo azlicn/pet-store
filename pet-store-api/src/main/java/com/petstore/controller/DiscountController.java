@@ -18,11 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.petstore.model.Discount;
 import com.petstore.service.DiscountService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/discounts")
+@Tag(name = "Discount Controller", description = "Discount Management API")
 public class DiscountController {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscountController.class);
@@ -38,12 +43,14 @@ public class DiscountController {
      */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
+    @Operation(summary = "Get all discounts", description = "Retrieves all discounts.")
     public ResponseEntity<List<Discount>> getAllDiscounts() {
         return ResponseEntity.ok(discountService.getAllDiscounts());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get discount by ID", description = "Retrieve a discount by its ID.")
     public ResponseEntity<Discount> getDiscountById(@PathVariable Long id) {
 
         Optional<Discount> discount = discountService.getDiscountById(id);
@@ -56,9 +63,10 @@ public class DiscountController {
      */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
+    @Operation(summary = "Create discount", description = "Create a new discount.")
     public ResponseEntity<Discount> createDiscount(@Valid @RequestBody Discount discount) {
         logger.debug("Creating new discount: {}", discount);
-        //Discount discount = mapDtoToEntity(dto);
+        // Discount discount = mapDtoToEntity(dto);
         Discount saved = discountService.saveDiscount(discount);
         return ResponseEntity.ok(saved);
     }
@@ -67,7 +75,8 @@ public class DiscountController {
      * Update an existing discount.
      */
     @PreAuthorize("hasRole('ADMIN')")
-     @PutMapping("/{id}")
+    @PutMapping("/{id}")
+    @Operation(summary = "Update discount", description = "Update an existing discount.")
     public ResponseEntity<Discount> updateDiscount(@PathVariable Long id, @RequestBody Discount discount) {
 
         Discount updatedDiscount = discountService.updateDiscount(id, discount);
@@ -81,6 +90,7 @@ public class DiscountController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete discount", description = "Delete a discount by its ID.")
     public ResponseEntity<Void> deleteDiscount(@PathVariable Long id) {
 
         boolean deleted = discountService.deleteDiscount(id);
@@ -96,6 +106,7 @@ public class DiscountController {
      * Validate a discount code from the UI before checkout.
      */
     @GetMapping("/validate")
+    @Operation(summary = "Validate discount code", description = "Validate a discount code from the UI before checkout.")
     public ResponseEntity<Discount> validateDiscount(@RequestParam String code) {
         Discount discount = discountService.validateDiscount(code); // throws InvalidDiscountException if invalid
         return ResponseEntity.ok(discount);
@@ -106,6 +117,7 @@ public class DiscountController {
      */
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/active")
+    @Operation(summary = "Get active discounts", description = "List all available active discounts for promo display in the UI.")
     public ResponseEntity<List<Discount>> getAvailableActiveDiscounts() {
         return ResponseEntity.ok(discountService.getAllActiveDiscounts());
     }
