@@ -87,7 +87,7 @@
                 }}
               </mat-icon>{{ order?.delivery?.status }}</span>
             </div>
-            <div class="info-row"><span>Shipping Date: </span><span>{{ order?.delivery?.shippingDate | date:'dd/MM/yy hh:mm a' }}</span></div>
+            <div class="info-row"><span>Shipping Date: </span><span>{{ order?.delivery?.shippedAt | date:'dd/MM/yy hh:mm a' }}</span></div>
             <div class="info-row"><span>Delivery Date: </span><span>{{ order?.delivery?.deliveredAt | date:'dd/MM/yy hh:mm a' }}</span></div>
 
         </section>
@@ -97,6 +97,7 @@
             <div class="info-row"><span>Payment Type:</span><span>{{ order?.payment?.paymentType }}</span></div>
             <div class="info-row"><span>Status:</span><span>{{ order?.payment?.status }}</span></div>
             <div class="info-row"><span>Paid Amount:</span><span>{{ order?.payment?.amount | currency }}</span></div>
+            <div class="info-row"><span>Payment Date: </span><span>{{ order?.payment?.paidAt | date:'dd/MM/yy hh:mm a' }}</span></div>
             <div class="info-row"><span>Payment Status:</span>
               <span><mat-icon class="status-icon" [ngClass]="order?.payment?.status">
                 {{

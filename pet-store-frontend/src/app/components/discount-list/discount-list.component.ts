@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { DiscountService } from "../../services/discount.service";
 import { Discount } from "../../models/discount.model";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
@@ -10,10 +10,8 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTableModule } from "@angular/material/table";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { ActivatedRoute, Router, RouterModule } from "@angular/router";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { RouterModule } from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
-import { CategoryService } from "src/app/services/category.service";
 import { ErrorHandlerService } from "src/app/services/error-handler.service";
 import {
   ConfirmDialogComponent,
@@ -55,7 +53,6 @@ export class DiscountListComponent implements OnInit {
     private discountService: DiscountService,
     private errorHandler: ErrorHandlerService,
     private dialog: MatDialog,
-    private router: Router,
     private snackBar: MatSnackBar
   ) {}
 

@@ -8,9 +8,6 @@ import { PaymentOrderRequest } from '../models/paymentOrder.model';
   providedIn: 'root'
 })
 export class StoreService extends BaseApiService {
-  public clearCartItemCount() {
-    this.cartItemCountSubject.next(0);
-  }
 
   private readonly storesUrl = this.getApiUrl('stores');
   private cartItemCountSubject = new BehaviorSubject<number>(0);
@@ -128,6 +125,10 @@ export class StoreService extends BaseApiService {
    */
   updateDeliveryStatus(orderId: number, status: string, date?: string): Observable<any> {
     return this.http.patch(`${this.storesUrl}/order/${orderId}/delivery-status`, { status, date });
+  }
+
+  public clearCartItemCount() {
+    this.cartItemCountSubject.next(0);
   }
 
 }

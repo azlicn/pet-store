@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterModule, Router } from "@angular/router";
+import { RouterModule } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
@@ -55,7 +55,6 @@ export class UserListComponent implements OnInit {
     private userService: UserService,
     public authService: AuthService,
     private dialog: MatDialog,
-    private router: Router,
     private snackBar: MatSnackBar,
     private errorHandler: ErrorHandlerService
   ) {}

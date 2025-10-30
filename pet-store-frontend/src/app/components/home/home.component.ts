@@ -1,17 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatChipsModule } from '@angular/material/chips';
-import { PetService } from '../../services/pet.service';
-import { Pet } from '../../models/pet.model';
-import { LatestPetCardComponent } from '../latest-pet-card/latest-pet-card.component';
+import { Component, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { MatCardModule } from "@angular/material/card";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatGridListModule } from "@angular/material/grid-list";
+import { MatChipsModule } from "@angular/material/chips";
+import { PetService } from "../../services/pet.service";
+import { Pet } from "../../models/pet.model";
+import { LatestPetCardComponent } from "../latest-pet-card/latest-pet-card.component";
 
 @Component({
-  selector: 'app-home',
+  selector: "app-home",
   standalone: true,
   imports: [
     CommonModule,
@@ -21,10 +21,10 @@ import { LatestPetCardComponent } from '../latest-pet-card/latest-pet-card.compo
     MatIconModule,
     MatGridListModule,
     MatChipsModule,
-    LatestPetCardComponent
+    LatestPetCardComponent,
   ],
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  templateUrl: "./home.component.html",
+  styleUrls: ["./home.component.scss"],
 })
 export class HomeComponent implements OnInit {
   latestPets: Pet[] = [];
@@ -44,9 +44,9 @@ export class HomeComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading latest pets:', error);
+        console.error("Error loading latest pets:", error);
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -58,7 +58,7 @@ export class HomeComponent implements OnInit {
   }
 
   onImageError(event: any): void {
-    event.target.src = 'assets/images/pet-placeholder-default.jpg';
+    event.target.src = "assets/images/pet-placeholder-default.jpg";
   }
 
   trackByPetId(index: number, pet: Pet): number {

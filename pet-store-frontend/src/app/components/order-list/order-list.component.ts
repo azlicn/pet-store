@@ -1,5 +1,5 @@
 import { OrderCardComponent } from "../order-card/order-card.component";
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -9,7 +9,6 @@ import { MatSnackBarModule, MatSnackBar } from "@angular/material/snack-bar";
 import { StoreService } from "../../services/store.service";
 import { MatButtonModule } from "@angular/material/button";
 import { AuthService } from "src/app/services/auth.service";
-import { ActivatedRoute, Router } from "@angular/router";
 
 @Component({
   selector: "app-order-list",
@@ -70,10 +69,6 @@ export class OrderListComponent implements OnInit {
         });
       },
     });
-  }
-
-  editOrder(orderId: number): void {
-    // Implement order editing logic here
   }
 
   deleteOrder(orderId: number): void {

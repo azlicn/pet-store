@@ -94,4 +94,9 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
      */
     @Query("SELECT p FROM Pet p WHERE p.status = :status ORDER BY p.createdAt DESC")
     List<Pet> findLatestPetsByStatus(@Param("status") PetStatus status, Pageable pageable);
+
+    /**
+     * Check if Pet status is still AVAILABLE
+     */
+    boolean existsByIdAndStatus(Long id, PetStatus status);
 }

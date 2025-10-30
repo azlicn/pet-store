@@ -21,7 +21,7 @@ interface PaymentDialogData {
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    MatButtonModule
+    MatButtonModule,
   ],
   templateUrl: "./payment-processing-dialog.component.html",
   styleUrls: ["./payment-processing-dialog.component.scss"],
@@ -33,6 +33,7 @@ export class PaymentProcessingDialogComponent {
   password: string = "";
   passwordStep: boolean = false;
   animationStep: boolean = false;
+  
   constructor(
     public dialogRef: MatDialogRef<PaymentProcessingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PaymentDialogData

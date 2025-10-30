@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { BaseApiService } from './base-api.service';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable, BehaviorSubject } from "rxjs";
+import { tap } from "rxjs/operators";
+import { BaseApiService } from "./base-api.service";
 
 export interface LoginRequest {
   email: string;
@@ -38,14 +38,16 @@ export interface User {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class AuthService extends BaseApiService {
-  private readonly authUrl = this.getApiUrl('auth');
-  private readonly TOKEN_KEY = 'auth-token';
-  private readonly USER_KEY = 'auth-user';
-  
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getCurrentUser());
+  private readonly authUrl = this.getApiUrl("auth");
+  private readonly TOKEN_KEY = "auth-token";
+  private readonly USER_KEY = "auth-user";
+
+  private currentUserSubject = new BehaviorSubject<User | null>(
+    this.getCurrentUser()
+  );
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(http: HttpClient) {
@@ -53,9 +55,10 @@ export class AuthService extends BaseApiService {
   }
 
   login(loginRequest: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.authUrl}/login`, loginRequest)
+    return this.http
+      .post<AuthResponse>(`${this.authUrl}/login`, loginRequest)
       .pipe(
-        tap(response => {
+        tap((response) => {
           this.saveToken(response.token);
           this.saveUser(response.user);
           this.currentUserSubject.next(response.user);
@@ -95,11 +98,11 @@ export class AuthService extends BaseApiService {
   }
 
   isAdmin(): boolean {
-    return this.hasRole('ADMIN');
+    return this.hasRole("ADMIN");
   }
 
   isUser(): boolean {
-    return this.hasRole('USER');
+    return this.hasRole("USER");
   }
 
   updateCurrentUser(updatedUser: User): void {

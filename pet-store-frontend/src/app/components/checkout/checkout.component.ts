@@ -8,7 +8,7 @@ import { AddressService } from "src/app/services/address.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { AddressComponent } from "../address/address.component";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
 import { PaymentProcessingDialogComponent } from "../payment-processing-dialog/payment-processing-dialog.component";
 import { ConfirmDialogComponent } from "../confirm-dialog/confirm-dialog.component";
 import { MatIconModule } from "@angular/material/icon";
@@ -305,7 +305,6 @@ export class CheckoutComponent implements OnInit {
   }
 
   private buildPaymentOrderRequest(): PaymentOrderRequest {
-
     let paymentNote = "";
     if (this.selectedPaymentType === "E_WALLET") {
       let ewalletValue = "";
@@ -316,9 +315,9 @@ export class CheckoutComponent implements OnInit {
       } else if (this.selectedEwallet === "TOUCHNGO") {
         ewalletValue = this.touchNGo;
       }
-      paymentNote = this.selectedEwallet + " by " + ewalletValue;
+      paymentNote = this.selectedEwallet + " Account ID: " + ewalletValue;
     } else if (this.selectedPaymentType === "PAYPAL") {
-      paymentNote = this.selectedEwallet + " by " + this.paypalContact;
+      paymentNote = "PAYPAL Account ID: " + this.paypalContact;
     } else if (
       this.selectedPaymentType === "CREDIT_CARD" ||
       this.selectedPaymentType === "DEBIT_CARD"

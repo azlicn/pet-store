@@ -1,5 +1,17 @@
-import { Component, ElementRef, Input, OnInit, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  Inject,
+  PLATFORM_ID,
+  OnChanges,
+  SimpleChanges,
+} from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 
 declare global {
   interface Window {
@@ -8,34 +20,36 @@ declare global {
 }
 
 @Component({
-  selector: 'app-mermaid-diagram',
+  selector: "app-mermaid-diagram",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './mermaid-diagram.component.html',
-  styleUrls: ['./mermaid-diagram.component.scss']
+  templateUrl: "./mermaid-diagram.component.html",
+  styleUrls: ["./mermaid-diagram.component.scss"],
 })
-export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
-  @ViewChild('mermaidDiv', { static: true }) mermaidDiv!: ElementRef;
-  
+export class MermaidDiagramComponent
+  implements OnInit, AfterViewInit, OnDestroy, OnChanges
+{
+  @ViewChild("mermaidDiv", { static: true }) mermaidDiv!: ElementRef;
+
+  @Input() diagramDefinition: string = "";
+  @Input() title: string = "";
+  @Input() description: string = "";
+  @Input() showActions: boolean = true;
+  @Input() theme: "default" | "dark" | "forest" | "neutral" = "default";
+
   private static renderCounter = 0;
   private static renderQueue: (() => Promise<void>)[] = [];
   private static isProcessingQueue = false;
-  
-  @Input() diagramDefinition: string = '';
-  @Input() title: string = '';
-  @Input() description: string = '';
-  @Input() showActions: boolean = true;
-  @Input() theme: 'default' | 'dark' | 'forest' | 'neutral' = 'default';
-  
-  diagramId: string = '';
-  isFullscreen: boolean = false;
   private mermaidInitialized: boolean = false;
   private mermaidLoaded: boolean = false;
+
+  diagramId: string = "";
+  isFullscreen: boolean = false;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngOnInit() {
-    this.diagramId = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+    this.diagramId = "mermaid-" + Math.random().toString(36).substr(2, 9);
     if (isPlatformBrowser(this.platformId)) {
       this.loadMermaidScript();
     }
@@ -51,7 +65,7 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
         if (this.mermaidDiv.nativeElement.offsetParent !== null) {
           await this.renderDiagram();
         } else {
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
           if (this.mermaidLoaded && this.mermaidDiv?.nativeElement) {
             await this.renderDiagram();
           }
@@ -64,7 +78,10 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private static async processRenderQueue() {
-    if (MermaidDiagramComponent.isProcessingQueue || MermaidDiagramComponent.renderQueue.length === 0) {
+    if (
+      MermaidDiagramComponent.isProcessingQueue ||
+      MermaidDiagramComponent.renderQueue.length === 0
+    ) {
       return;
     }
 
@@ -75,9 +92,9 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
       if (renderFunction) {
         try {
           await renderFunction();
-          await new Promise(resolve => setTimeout(resolve, 250));
+          await new Promise((resolve) => setTimeout(resolve, 250));
         } catch (error) {
-          console.error('Error in queued diagram render:', error);
+          console.error("Error in queued diagram render:", error);
         }
       }
     }
@@ -86,7 +103,10 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['diagramDefinition'] && !changes['diagramDefinition'].firstChange) {
+    if (
+      changes["diagramDefinition"] &&
+      !changes["diagramDefinition"].firstChange
+    ) {
       if (this.mermaidLoaded) {
         this.renderDiagram();
       }
@@ -100,7 +120,6 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private loadMermaidScript() {
-
     if (window.mermaid) {
       this.mermaidLoaded = true;
       this.initializeMermaid();
@@ -108,20 +127,26 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
       return;
     }
 
-    this.loadScriptFromCDN('https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js')
+    this.loadScriptFromCDN(
+      "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"
+    )
       .catch(() => {
-        console.warn('Primary Mermaid CDN failed, trying fallback...');
-        return this.loadScriptFromCDN('https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js');
+        console.warn("Primary Mermaid CDN failed, trying fallback...");
+        return this.loadScriptFromCDN(
+          "https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js"
+        );
       })
       .catch(() => {
-        console.error('All Mermaid CDNs failed');
-        this.showErrorMessage('Failed to load diagram library from CDN. Please check your internet connection.');
+        console.error("All Mermaid CDNs failed");
+        this.showErrorMessage(
+          "Failed to load diagram library from CDN. Please check your internet connection."
+        );
       });
   }
 
   private loadScriptFromCDN(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = src;
       script.onload = () => {
         this.mermaidLoaded = true;
@@ -142,26 +167,26 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
         if (window.mermaid.mermaidAPI) {
           window.mermaid.mermaidAPI.reset();
         }
-        
+
         window.mermaid.initialize({
           startOnLoad: false,
           theme: this.theme,
-          securityLevel: 'loose',
-          fontFamily: 'Arial, sans-serif',
+          securityLevel: "loose",
+          fontFamily: "Arial, sans-serif",
           fontSize: 16,
           htmlLabels: false,
           deterministicIds: true,
-          deterministicIdSeed: 'mermaid-pet-store',
+          deterministicIdSeed: "mermaid-pet-store",
           maxTextSize: 90000,
           maxEdges: 500,
           flowchart: {
             useMaxWidth: true,
             htmlLabels: false,
-            curve: 'linear',
+            curve: "linear",
             diagramPadding: 8,
             nodeSpacing: 50,
             rankSpacing: 50,
-            padding: 15
+            padding: 15,
           },
           sequence: {
             useMaxWidth: true,
@@ -179,27 +204,27 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
             bottomMarginAdj: 1,
             rightAngles: false,
             showSequenceNumbers: false,
-            wrap: true
+            wrap: true,
           },
           gantt: {
             useMaxWidth: true,
             leftPadding: 75,
             gridLineStartPadding: 35,
             fontSize: 11,
-            fontFamily: 'Arial, sans-serif',
+            fontFamily: "Arial, sans-serif",
             sectionFontSize: 24,
-            numberSectionStyles: 4
+            numberSectionStyles: 4,
           },
           er: {
             useMaxWidth: true,
             diagramPadding: 20,
-            layoutDirection: 'TB',
+            layoutDirection: "TB",
             minEntityWidth: 100,
             minEntityHeight: 75,
             entityPadding: 15,
-            stroke: 'gray',
-            fill: 'honeydew',
-            fontSize: 12
+            stroke: "gray",
+            fill: "honeydew",
+            fontSize: 12,
           },
           journey: {
             useMaxWidth: true,
@@ -212,21 +237,21 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
             boxTextMargin: 5,
             noteMargin: 10,
             messageMargin: 35,
-            bottomMarginAdj: 1
+            bottomMarginAdj: 1,
           },
           pie: {
             useMaxWidth: true,
-            textPosition: 0.75
+            textPosition: 0.75,
           },
           quadrantChart: {
             useMaxWidth: true,
             chartWidth: 500,
-            chartHeight: 500
+            chartHeight: 500,
           },
           xyChart: {
             useMaxWidth: true,
             width: 700,
-            height: 500
+            height: 500,
           },
           gitGraph: {
             useMaxWidth: true,
@@ -235,14 +260,14 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
               width: 75,
               height: 100,
               x: -25,
-              y: -8
-            }
+              y: -8,
+            },
           },
           mindmap: {
             useMaxWidth: true,
             padding: 10,
             maxNodeSizeX: 200,
-            maxNodeSizeY: 100
+            maxNodeSizeY: 100,
           },
           timeline: {
             useMaxWidth: true,
@@ -251,55 +276,61 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
             leftMargin: 150,
             width: 150,
             height: 50,
-            padding: 5
+            padding: 5,
           },
           sankey: {
             useMaxWidth: true,
             width: 600,
             height: 400,
-            linkColor: 'gradient',
-            nodeAlignment: 'justify'
+            linkColor: "gradient",
+            nodeAlignment: "justify",
           },
           block: {
             useMaxWidth: true,
-            padding: 8
-          }
+            padding: 8,
+          },
         });
-        
+
         this.mermaidInitialized = true;
-        console.log('Mermaid initialized successfully with safe configuration');
+        console.log("Mermaid initialized successfully with safe configuration");
       } catch (error) {
-        console.error('Failed to initialize Mermaid:', error);
+        console.error("Failed to initialize Mermaid:", error);
         this.mermaidInitialized = false;
       }
     }
   }
 
   private async renderDiagram() {
-    if (!this.diagramDefinition.trim() || !window.mermaid || !this.mermaidLoaded) {
+    if (
+      !this.diagramDefinition.trim() ||
+      !window.mermaid ||
+      !this.mermaidLoaded
+    ) {
       return;
     }
 
     try {
       const element = this.mermaidDiv.nativeElement;
-      
+
       if (!element || !element.parentElement) {
-        console.warn('Mermaid container not properly attached to DOM');
+        console.warn("Mermaid container not properly attached to DOM");
         return;
       }
-      
-      element.innerHTML = '';
-      
+
+      element.innerHTML = "";
+
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substr(2, 12);
-      const instanceId = `${this.title?.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() || 'diagram'}`;
+      const instanceId = `${
+        this.title?.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase() || "diagram"
+      }`;
       const componentId = `comp-${MermaidDiagramComponent.renderCounter++}`;
       const diagramId = `mermaid-${componentId}-${instanceId}-${timestamp}-${randomId}`;
-      
-      const diagramContainer = document.createElement('div');
+
+      const diagramContainer = document.createElement("div");
       diagramContainer.id = diagramId;
-      diagramContainer.className = 'mermaid-isolated';
-      diagramContainer.setAttribute('data-diagram-instance', diagramId);
+      diagramContainer.className = "mermaid-isolated";
+      diagramContainer.setAttribute("data-diagram-instance", diagramId);
       diagramContainer.style.cssText = `
         width: 100%;
         height: auto;
@@ -312,45 +343,50 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
         isolation: isolate;
         contain: layout style paint;
       `;
-      
+
       diagramContainer.textContent = this.diagramDefinition;
       element.appendChild(diagramContainer);
-      
-      element.style.isolation = 'isolate';
-      element.style.contain = 'layout style paint';
-      
-      await new Promise(resolve => setTimeout(resolve, 150));
-      
+
+      element.style.isolation = "isolate";
+      element.style.contain = "layout style paint";
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       const existingContainer = document.getElementById(diagramId);
       if (!existingContainer || existingContainer !== diagramContainer) {
-        console.warn('Container isolation failed, recreating...');
-        element.innerHTML = '';
-        const newContainer = document.createElement('div');
-        newContainer.id = diagramId + '-retry';
-        newContainer.className = 'mermaid-isolated';
-        newContainer.setAttribute('data-diagram-instance', diagramId + '-retry');
+        console.warn("Container isolation failed, recreating...");
+        element.innerHTML = "";
+        const newContainer = document.createElement("div");
+        newContainer.id = diagramId + "-retry";
+        newContainer.className = "mermaid-isolated";
+        newContainer.setAttribute(
+          "data-diagram-instance",
+          diagramId + "-retry"
+        );
         newContainer.style.cssText = diagramContainer.style.cssText;
         newContainer.textContent = this.diagramDefinition;
         element.appendChild(newContainer);
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      
-      const finalContainer = element.querySelector('.mermaid-isolated') as HTMLElement;
+
+      const finalContainer = element.querySelector(
+        ".mermaid-isolated"
+      ) as HTMLElement;
       if (!finalContainer) {
-        throw new Error('Failed to create isolated container');
+        throw new Error("Failed to create isolated container");
       }
-      
+
       try {
         if (window.mermaid.mermaidAPI && window.mermaid.mermaidAPI.reset) {
           window.mermaid.mermaidAPI.reset();
         }
-        
+
         window.mermaid.initialize({
           startOnLoad: false,
           theme: this.theme,
-          securityLevel: 'loose',
-          fontFamily: 'Arial, sans-serif',
+          securityLevel: "loose",
+          fontFamily: "Arial, sans-serif",
           fontSize: 16,
           htmlLabels: false,
           deterministicIds: false,
@@ -359,41 +395,51 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
           flowchart: {
             useMaxWidth: true,
             htmlLabels: false,
-            curve: 'linear',
+            curve: "linear",
             diagramPadding: 8,
             nodeSpacing: 50,
             rankSpacing: 50,
-            padding: 15
-          }
+            padding: 15,
+          },
         });
-        
+
         const rendererId = `${finalContainer.id}-render-${Date.now()}`;
-        const { svg } = await window.mermaid.render(rendererId, this.diagramDefinition);
+        const { svg } = await window.mermaid.render(
+          rendererId,
+          this.diagramDefinition
+        );
         finalContainer.innerHTML = svg;
-        console.log(`Mermaid diagram rendered successfully: ${this.title || 'Untitled'}`);
-        
+        console.log(
+          `Mermaid diagram rendered successfully: ${this.title || "Untitled"}`
+        );
       } catch (renderError) {
-        console.warn('Mermaid render method failed, trying init method:', renderError);
-        
+        console.warn(
+          "Mermaid render method failed, trying init method:",
+          renderError
+        );
+
         try {
           await window.mermaid.init(undefined, finalContainer);
-          console.log(`Mermaid diagram rendered with init method: ${this.title || 'Untitled'}`);
+          console.log(
+            `Mermaid diagram rendered with init method: ${
+              this.title || "Untitled"
+            }`
+          );
         } catch (altError) {
-          console.error('All rendering methods failed:', altError);
+          console.error("All rendering methods failed:", altError);
           throw altError;
         }
       }
-      
     } catch (error) {
-      console.error('Error rendering Mermaid diagram:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Error rendering Mermaid diagram:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.showErrorMessage(`Error rendering diagram: ${errorMessage}`);
     }
   }
 
   private showErrorMessage(message: string) {
-    this.mermaidDiv.nativeElement.innerHTML = 
-      `<div class="error-message">
+    this.mermaidDiv.nativeElement.innerHTML = `<div class="error-message">
         <p>❌ ${message}</p>
         <details>
           <summary>Troubleshooting</summary>
@@ -404,50 +450,55 @@ export class MermaidDiagramComponent implements OnInit, AfterViewInit, OnDestroy
 
   async downloadSVG() {
     try {
-      const svgElement = this.mermaidDiv.nativeElement.querySelector('svg');
+      const svgElement = this.mermaidDiv.nativeElement.querySelector("svg");
       if (svgElement) {
         const svgData = new XMLSerializer().serializeToString(svgElement);
-        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const svgBlob = new Blob([svgData], {
+          type: "image/svg+xml;charset=utf-8",
+        });
         const svgUrl = URL.createObjectURL(svgBlob);
-        
-        const downloadLink = document.createElement('a');
+
+        const downloadLink = document.createElement("a");
         downloadLink.href = svgUrl;
-        downloadLink.download = `${this.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'diagram'}.svg`;
+        downloadLink.download = `${
+          this.title.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "diagram"
+        }.svg`;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(svgUrl);
       }
     } catch (error) {
-      console.error('Error downloading SVG:', error);
-      alert('Failed to download diagram. Please try again.');
+      console.error("Error downloading SVG:", error);
+      alert("Failed to download diagram. Please try again.");
     }
   }
 
   toggleFullscreen() {
     this.isFullscreen = !this.isFullscreen;
-    const container = this.mermaidDiv.nativeElement.closest('.mermaid-container');
-    
+    const container =
+      this.mermaidDiv.nativeElement.closest(".mermaid-container");
+
     if (this.isFullscreen) {
-      container.classList.add('fullscreen');
-      document.body.style.overflow = 'hidden';
+      container.classList.add("fullscreen");
+      document.body.style.overflow = "hidden";
     } else {
-      container.classList.remove('fullscreen');
-      document.body.style.overflow = 'auto';
+      container.classList.remove("fullscreen");
+      document.body.style.overflow = "auto";
     }
   }
 
   async copyToClipboard() {
     try {
       await navigator.clipboard.writeText(this.diagramDefinition);
-      console.log('Diagram definition copied to clipboard');
+      console.log("Diagram definition copied to clipboard");
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      const textArea = document.createElement('textarea');
+      console.error("Failed to copy to clipboard:", error);
+      const textArea = document.createElement("textarea");
       textArea.value = this.diagramDefinition;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
     }
   }

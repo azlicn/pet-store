@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from "@angular/router";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -41,17 +41,15 @@ import { TemplatePortal } from "@angular/cdk/portal";
   styleUrl: "./header.component.scss",
 })
 export class HeaderComponent {
-  onCartOverlayAction(event: any) {
-    if (event?.action === 'viewCart') {
-      this.openCartDialog();
-      this.onCartLeave(); // Optionally close overlay after opening dialog
-    }
-  }
+  @ViewChild("cartIcon", { static: false }) cartIcon!: ElementRef;
+
   currentUser$: Observable<User | null> = this.authService.currentUser$;
   cartItemCount$ = this.storeService.cartItemCount$;
   overlayRef: OverlayRef | null = null;
   cartItems: any[] = [];
-  @ViewChild("cartIcon", { static: false }) cartIcon!: ElementRef;
+
+  private overlayMouseInside = false;
+  private cartIconMouseInside = false;
 
   constructor(
     private authService: AuthService,
@@ -88,6 +86,13 @@ export class HeaderComponent {
     return this.authService.isAdmin();
   }
 
+  onCartOverlayAction(event: any) {
+    if (event?.action === "viewCart") {
+      this.openCartDialog();
+      this.onCartLeave();
+    }
+  }
+
   openCartDialog(): void {
     const dialogRef = this.dialog.open(CartComponent, {
       width: "500px",
@@ -104,9 +109,6 @@ export class HeaderComponent {
       }
     });
   }
-
-    private overlayMouseInside = false;
-    private cartIconMouseInside = false;
 
   onCartHover(cartIcon: HTMLElement, cartOverlayTpl: TemplateRef<any>): void {
     if (this.overlayRef) return;
@@ -143,17 +145,17 @@ export class HeaderComponent {
     }, 50);
   }
 
-    onOverlayMouseEnter(): void {
-      this.overlayMouseInside = true;
-    }
+  onOverlayMouseEnter(): void {
+    this.overlayMouseInside = true;
+  }
 
   onCartLeave(): void {
-      if (this.overlayRef) {
-        this.overlayRef.detach();
-        this.overlayRef.dispose();
-        this.overlayRef = null;
-      }
-      this.overlayMouseInside = false;
-      this.cartIconMouseInside = false;
+    if (this.overlayRef) {
+      this.overlayRef.detach();
+      this.overlayRef.dispose();
+      this.overlayRef = null;
+    }
+    this.overlayMouseInside = false;
+    this.cartIconMouseInside = false;
   }
 }

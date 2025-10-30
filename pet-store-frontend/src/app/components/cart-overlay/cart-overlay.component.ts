@@ -12,7 +12,6 @@ import { MatButtonModule } from "@angular/material/button";
   imports: [CommonModule, MatIconModule, MatCardModule, MatButtonModule],
 })
 export class CartOverlayComponent {
-  
   @Input() cartItems: any[] = [];
   @Output() cartItemRemoved = new EventEmitter<any>();
 

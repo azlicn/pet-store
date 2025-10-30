@@ -13,6 +13,7 @@ import com.petstore.enums.PaymentStatus;
 import com.petstore.enums.PetStatus;
 import com.petstore.exception.AddressNotFoundException;
 import com.petstore.exception.OrderNotFoundException;
+import com.petstore.exception.PetAlreadySoldException;
 import com.petstore.exception.UserCartNotFoundException;
 import com.petstore.model.Address;
 import com.petstore.model.AuditLog;
@@ -111,7 +112,11 @@ public class OrderService {
         order.setTotalAmount(total);
         order.setStatus(OrderStatus.PLACED);
 
+        // Check pet availability and create order items in one pass
         for (CartItem cartItem : cart.getItems()) {
+            if (!petRepository.existsByIdAndStatus(cartItem.getPet().getId(), PetStatus.AVAILABLE)) {
+                throw new PetAlreadySoldException(cartItem.getPet().getId());
+            }
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setPet(cartItem.getPet());

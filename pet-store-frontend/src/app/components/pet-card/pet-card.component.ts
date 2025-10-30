@@ -32,7 +32,6 @@ import {
 export class PetCardComponent {
   @Input({ required: true }) pet!: Pet;
 
-  // Event emitters for parent component to handle actions
   @Output() statusUpdate = new EventEmitter<Pet>();
   @Output() petDelete = new EventEmitter<Pet>();
   @Output() petPurchase = new EventEmitter<Pet>();
@@ -64,9 +63,10 @@ export class PetCardComponent {
 
   isOwnedByMe(): boolean {
     const currentUser = this.authService.getCurrentUser();
-    const ownedByMe = (currentUser && this.pet.owner)
-      ? this.pet.owner.id === currentUser.id
-      : false;
+    const ownedByMe =
+      currentUser && this.pet.owner
+        ? this.pet.owner.id === currentUser.id
+        : false;
     return ownedByMe;
   }
 
@@ -74,7 +74,7 @@ export class PetCardComponent {
     if (this.isCreatedByMe() && this.isOwnedByMe()) {
       return "favorite";
     } else if (this.isCreatedByMe()) {
-      return "person";
+      return "article_person";
     } else if (this.isOwnedByMe()) {
       return "shopping_bag";
     }
@@ -83,9 +83,9 @@ export class PetCardComponent {
 
   getPetRelationshipTooltip(): string {
     if (this.isCreatedByMe() && this.isOwnedByMe()) {
-      return "Created by you and owned by you";
+      return "Listed for sale by you and owned by you";
     } else if (this.isCreatedByMe()) {
-      return "Created by you";
+      return "Listed for sale by you";
     } else if (this.isOwnedByMe()) {
       return "Purchased by you";
     }
