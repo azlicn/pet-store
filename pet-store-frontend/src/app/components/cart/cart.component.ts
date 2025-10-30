@@ -1,6 +1,6 @@
 import { DiscountService } from "../../services/discount.service";
 import { Component, OnInit } from "@angular/core";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import { MatDialogRef } from "@angular/material/dialog";
 import { StoreService } from "../../services/store.service";
 import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
@@ -14,7 +14,6 @@ import { FormsModule } from "@angular/forms";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { AddressComponent } from "../address/address.component";
 
 @Component({
   selector: "app-cart",
@@ -34,7 +33,6 @@ import { AddressComponent } from "../address/address.component";
   styleUrl: "./cart.component.scss",
 })
 export class CartComponent implements OnInit {
-  
   availableDiscounts: any[] = [];
   cart: any;
   userId = this.authService.getCurrentUser()?.id;
@@ -47,8 +45,7 @@ export class CartComponent implements OnInit {
     private snackBar: MatSnackBar,
     public authService: AuthService,
     private dialogRef: MatDialogRef<CartComponent>,
-    private discountService: DiscountService,
-    private dialog: MatDialog
+    private discountService: DiscountService
   ) {}
 
   ngOnInit() {

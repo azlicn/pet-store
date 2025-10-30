@@ -1,24 +1,29 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { Pet, PetStatus } from '../../models/pet.model';
-import { Category } from '../../models/category.model';
-import { PetService } from '../../services/pet.service';
-import { CategoryService } from '../../services/category.service';
-import { AuthService } from '../../services/auth.service';
+import { Component, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatSelectModule } from "@angular/material/select";
+import { MatButtonModule } from "@angular/material/button";
+import { MatCardModule } from "@angular/material/card";
+import { MatChipsModule } from "@angular/material/chips";
+import { MatIconModule } from "@angular/material/icon";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { Pet, PetStatus } from "../../models/pet.model";
+import { Category } from "../../models/category.model";
+import { PetService } from "../../services/pet.service";
+import { CategoryService } from "../../services/category.service";
+import { AuthService } from "../../services/auth.service";
 
 @Component({
-  selector: 'app-pet-form',
+  selector: "app-pet-form",
   standalone: true,
   imports: [
     CommonModule,
@@ -30,10 +35,10 @@ import { AuthService } from '../../services/auth.service';
     MatCardModule,
     MatChipsModule,
     MatIconModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
-  templateUrl: './pet-form.component.html',
-  styleUrls: ['./pet-form.component.scss']
+  templateUrl: "./pet-form.component.html",
+  styleUrls: ["./pet-form.component.scss"],
 })
 export class PetFormComponent implements OnInit {
   petForm: FormGroup;
@@ -51,19 +56,19 @@ export class PetFormComponent implements OnInit {
     private authService: AuthService
   ) {
     this.petForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: [''],
-      categoryId: ['', [Validators.required]],
-      price: ['', [Validators.required, Validators.min(0)]],
+      name: ["", [Validators.required]],
+      description: [""],
+      categoryId: ["", [Validators.required]],
+      price: ["", [Validators.required, Validators.min(0)]],
       status: [PetStatus.AVAILABLE],
-      photoUrlsText: [''],
-      tagsText: ['']
+      photoUrlsText: [""],
+      tagsText: [""],
     });
   }
 
   ngOnInit(): void {
     this.loadCategories();
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get("id");
     if (id) {
       this.isEdit = true;
       this.petId = +id;
@@ -77,9 +82,11 @@ export class PetFormComponent implements OnInit {
         this.categories = categories;
       },
       error: (error: any) => {
-        this.snackBar.open('Error loading categories', 'Close', { duration: 3000 });
-        console.error('Error loading categories:', error);
-      }
+        this.snackBar.open("Error loading categories", "Close", {
+          duration: 3000,
+        });
+        console.error("Error loading categories:", error);
+      },
     });
   }
 
@@ -87,26 +94,30 @@ export class PetFormComponent implements OnInit {
     this.petService.getPetById(id).subscribe({
       next: (pet) => {
         if (!this.canEditPet(pet)) {
-          this.snackBar.open('You do not have permission to edit this pet', 'Close', { duration: 3000 });
-          this.router.navigate(['/pets']);
+          this.snackBar.open(
+            "You do not have permission to edit this pet",
+            "Close",
+            { duration: 3000 }
+          );
+          this.router.navigate(["/pets"]);
           return;
         }
 
         this.petForm.patchValue({
           name: pet.name,
-          description: pet.description ? pet.description : '',
+          description: pet.description ? pet.description : "",
           categoryId: pet.category?.id,
           price: pet.price,
           status: pet.status,
-          photoUrlsText: pet.photoUrls ? pet.photoUrls.join('\n') : '',
-          tagsText: pet.tags ? pet.tags.join(', ') : ''
+          photoUrlsText: pet.photoUrls ? pet.photoUrls.join("\n") : "",
+          tagsText: pet.tags ? pet.tags.join(", ") : "",
         });
       },
       error: (error: any) => {
-        this.snackBar.open('Error loading pet', 'Close', { duration: 3000 });
-        console.error('Error loading pet:', error);
-        this.router.navigate(['/pets']);
-      }
+        this.snackBar.open("Error loading pet", "Close", { duration: 3000 });
+        console.error("Error loading pet:", error);
+        this.router.navigate(["/pets"]);
+      },
     });
   }
 
@@ -114,7 +125,7 @@ export class PetFormComponent implements OnInit {
     if (this.authService.isAdmin()) {
       return true;
     }
-    
+
     const currentUser = this.authService.getCurrentUser();
     return currentUser ? pet.createdBy === currentUser.id : false;
   }
@@ -124,17 +135,17 @@ export class PetFormComponent implements OnInit {
   }
 
   get description() {
-    return this.petForm.get('description');
+    return this.petForm.get("description");
   }
 
   getStatusDisplayText(status: PetStatus): string {
     switch (status) {
       case PetStatus.AVAILABLE:
-        return 'Available';
+        return "Available";
       case PetStatus.PENDING:
-        return 'Pending';
+        return "Pending";
       case PetStatus.SOLD:
-        return 'Sold';
+        return "Sold";
       default:
         return status;
     }
@@ -143,13 +154,17 @@ export class PetFormComponent implements OnInit {
   onSubmit(): void {
     if (this.petForm.valid) {
       const formValue = this.petForm.value;
-      
-      const selectedCategory = this.categories.find(c => c.id === formValue.categoryId);
+
+      const selectedCategory = this.categories.find(
+        (c) => c.id === formValue.categoryId
+      );
       if (!selectedCategory) {
-        this.snackBar.open('Please select a valid category', 'Close', { duration: 3000 });
+        this.snackBar.open("Please select a valid category", "Close", {
+          duration: 3000,
+        });
         return;
       }
-      
+
       const pet: Pet = {
         name: formValue.name,
         description: formValue.description,
@@ -157,66 +172,83 @@ export class PetFormComponent implements OnInit {
         price: +formValue.price,
         status: formValue.status,
         photoUrls: this.parsePhotoUrls(formValue.photoUrlsText),
-        tags: this.parseTags(formValue.tagsText)
+        tags: this.parseTags(formValue.tagsText),
       };
 
       if (this.isEdit && this.petId) {
-
         this.petService.updatePet(this.petId, pet).subscribe({
           next: () => {
-            this.snackBar.open('Pet updated successfully', 'Close', { duration: 2000 });
-            this.router.navigate(['/pets']);
+            this.snackBar.open("Pet updated successfully", "Close", {
+              duration: 2000,
+            });
+            this.router.navigate(["/pets"]);
           },
           error: (error: any) => {
-            console.error('Full error object:', error);
-            this.snackBar.open('Error updating pet', 'Close', { duration: 3000 });
-            console.error('Error updating pet:', error);
-          }
+            console.error("Full error object:", error);
+            this.snackBar.open("Error updating pet", "Close", {
+              duration: 3000,
+            });
+            console.error("Error updating pet:", error);
+          },
         });
       } else {
         this.petService.addPet(pet).subscribe({
           next: () => {
-            this.snackBar.open('Pet added successfully', 'Close', { duration: 2000 });
-            this.router.navigate(['/pets']);
+            this.snackBar.open("Pet added successfully", "Close", {
+              duration: 2000,
+            });
+            this.router.navigate(["/pets"]);
           },
           error: (error: any) => {
-            this.snackBar.open('Error adding pet', 'Close', { duration: 3000 });
-            console.error('Error adding pet:', error);
-          }
+            this.snackBar.open("Error adding pet", "Close", { duration: 3000 });
+            console.error("Error adding pet:", error);
+          },
         });
       }
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/pets']);
+    this.router.navigate(["/pets"]);
   }
 
   getErrorMessage(controlName: string): string {
     const control = this.petForm.get(controlName);
-    if (control?.hasError('required')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} is required`;
+    if (control?.hasError("required")) {
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } is required`;
     }
-    if (control?.hasError('minlength')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must be at least ${control.errors?.['minlength'].requiredLength} characters`;
+    if (control?.hasError("minlength")) {
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } must be at least ${
+        control.errors?.["minlength"].requiredLength
+      } characters`;
     }
-    if (control?.hasError('maxlength')) {
-      return `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} must not exceed ${control.errors?.['maxlength'].requiredLength} characters`;
+    if (control?.hasError("maxlength")) {
+      return `${
+        controlName.charAt(0).toUpperCase() + controlName.slice(1)
+      } must not exceed ${
+        control.errors?.["maxlength"].requiredLength
+      } characters`;
     }
-    return '';
+    return "";
   }
 
   private parsePhotoUrls(text: string): string[] | undefined {
     if (!text.trim()) return undefined;
-    return text.split('\n')
-               .map(url => url.trim())
-               .filter(url => url.length > 0);
+    return text
+      .split("\n")
+      .map((url) => url.trim())
+      .filter((url) => url.length > 0);
   }
 
   private parseTags(text: string): string[] | undefined {
     if (!text.trim()) return undefined;
-    return text.split(',')
-               .map(tag => tag.trim())
-               .filter(tag => tag.length > 0);
+    return text
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
   }
 }

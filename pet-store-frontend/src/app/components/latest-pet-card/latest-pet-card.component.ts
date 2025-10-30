@@ -1,15 +1,14 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-
-import { Pet } from '../../models/pet.model';
+import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { MatCardModule } from "@angular/material/card";
+import { MatChipsModule } from "@angular/material/chips";
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
+import { Pet } from "../../models/pet.model";
 
 @Component({
-  selector: 'app-latest-pet-card',
+  selector: "app-latest-pet-card",
   standalone: true,
   imports: [
     CommonModule,
@@ -17,10 +16,10 @@ import { Pet } from '../../models/pet.model';
     MatCardModule,
     MatChipsModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
   ],
-  templateUrl: './latest-pet-card.component.html',
-  styleUrl: './latest-pet-card.component.scss'
+  templateUrl: "./latest-pet-card.component.html",
+  styleUrl: "./latest-pet-card.component.scss",
 })
 export class LatestPetCardComponent {
   @Input() pet!: Pet;

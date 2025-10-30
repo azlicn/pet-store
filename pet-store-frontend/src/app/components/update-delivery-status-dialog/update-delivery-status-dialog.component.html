@@ -1,13 +1,22 @@
 <div class="update-delivery-status-dialog">
-  <div class="dialog-header">
+  <!-- <div class="dialog-header">
     <h2 class="dialog-title">Update Delivery Status</h2>
-  </div>
+  </div> -->
   <div class="dialog-content">
     <form>
+      <div class="order-number-title">
+        <span class="order-number">#{{ data.orderNumber }}</span>
+      </div>
       <mat-form-field appearance="fill">
         <mat-label>Status</mat-label>
           <mat-select [formControl]="statusControl">
-            <mat-option *ngFor="let status of deliveryStatuses" [value]="status">{{ status }}</mat-option>
+            <mat-option *ngFor="let status of deliveryStatuses" [value]="status"
+              [disabled]="
+                (data.status === 'PENDING' && (status === 'PENDING' || status === 'DELIVERED')) ||
+                (data.status === 'SHIPPED' && (status === 'SHIPPED' || status === 'PENDING'))
+              ">
+              {{ status }}
+            </mat-option>
           </mat-select>
       </mat-form-field>
       <mat-form-field appearance="fill">
@@ -15,7 +24,12 @@
         <input matInput [matDatepicker]="picker" [formControl]="dateControl" />
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
+        </mat-form-field>
+        <!-- Use a separate <input type="time"> for the time -->
+        <div class="time-input-row">
+          <label for="delivery-time" class="material-time-label">Time</label>
+          <input id="delivery-time" type="time" [formControl]="timeControl" class="material-time-input" />
+        </div>
     </form>
   </div>
   <div class="dialog-actions">

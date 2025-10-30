@@ -32,9 +32,6 @@
           }}
         </mat-icon>
         <span>{{order.delivery?.status || 'N/A'}}</span>
-        <button *ngIf="canUpdateDeliveryStatus()" mat-icon-button matTooltip="Update Delivery Status" (click)="updateDeliveryStatus(order.id)">
-          <mat-icon>edit</mat-icon>
-        </button>
       </div>
 
       <div class="status-row">
@@ -58,8 +55,8 @@
     <mat-card-actions>
         <mat-icon color="primary" *ngIf="canEditOrder()" matTooltip="Edit Order" [routerLink]="['/checkout/', order.id]">edit</mat-icon>
         <mat-icon color="primary" *ngIf="canViewOrderDetails()" matTooltip="View Order Details" [routerLink]="['/order-history/', order.id]">visibility</mat-icon>
-       <!--  <mat-icon color="primary" *ngIf="canUpdateDeliveryStatus()" matTooltip="Update Delivery Status" (click)="updateDeliveryStatus(order.id)">trolley</mat-icon>
-        <mat-icon color="warn" *ngIf="canDeleteOrder()" matTooltip="Delete Order" (click)="deleteOrder(order.id)">delete</mat-icon> -->
+        <mat-icon color="primary" *ngIf="canUpdateDeliveryStatus()" matTooltip="Update Delivery Status" (click)="updateDeliveryStatus(order.id)">trolley</mat-icon>
+        <mat-icon color="warn" *ngIf="canDeleteOrder()" matTooltip="Delete Order" (click)="deleteOrder(order.id)">delete</mat-icon>
     </mat-card-actions>
   </div>
 </mat-card>

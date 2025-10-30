@@ -6,7 +6,6 @@ import com.petstore.exception.AuthenticationFailedException;
 import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Role;
 import com.petstore.model.User;
-import com.petstore.repository.UserRepository;
 import com.petstore.security.JwtTokenProvider;
 import com.petstore.service.UserService;
 

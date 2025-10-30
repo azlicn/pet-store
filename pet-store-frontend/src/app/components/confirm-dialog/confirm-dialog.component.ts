@@ -1,8 +1,12 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, Inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+} from "@angular/material/dialog";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
 
 export interface ConfirmDialogData {
   title: string;
@@ -14,16 +18,11 @@ export interface ConfirmDialogData {
 }
 
 @Component({
-  selector: 'app-confirm-dialog',
+  selector: "app-confirm-dialog",
   standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule
-  ],
-  templateUrl: './confirm-dialog.component.html',
-  styleUrls: ['./confirm-dialog.component.scss']
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
+  templateUrl: "./confirm-dialog.component.html",
+  styleUrls: ["./confirm-dialog.component.scss"],
 })
 export class ConfirmDialogComponent {
   constructor(
@@ -40,6 +39,6 @@ export class ConfirmDialogComponent {
   }
 
   formatMessage(message: string): string {
-    return message.replace(/\n/g, '<br>');
+    return message.replace(/\n/g, "<br>");
   }
 }

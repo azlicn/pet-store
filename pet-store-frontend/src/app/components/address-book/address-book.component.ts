@@ -6,20 +6,16 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatExpansionModule } from "@angular/material/expansion";
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-} from "@angular/forms";
-import { Router, ActivatedRoute } from "@angular/router";
-import { MatDialog, MatDialogRef } from "@angular/material/dialog";
-import { MatSnackBarModule, MatSnackBar } from "@angular/material/snack-bar";
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { AddressService } from "src/app/services/address.service";
 import { Address } from "src/app/models/address.model";
 import { AuthService } from "src/app/services/auth.service";
 import { AddressComponent } from "../address/address.component";
-import { ConfirmDialogComponent, ConfirmDialogData } from "../confirm-dialog/confirm-dialog.component";
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from "../confirm-dialog/confirm-dialog.component";
 
 @Component({
   selector: "app-address-book",
@@ -38,12 +34,9 @@ import { ConfirmDialogComponent, ConfirmDialogData } from "../confirm-dialog/con
 })
 export class AddressBookComponent implements OnInit {
   constructor(
-    private fb: FormBuilder,
     private addressService: AddressService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private router: Router,
-    private route: ActivatedRoute,
     private dialog: MatDialog
   ) {}
 
@@ -75,40 +68,37 @@ export class AddressBookComponent implements OnInit {
   }
 
   onDeleteAddress(addressId: number | undefined): void {
-      if (!addressId) {
-        return;
-      }
-  
-      const dialogData: ConfirmDialogData = {
-            title: 'Delete Address',
-            message: `Are you sure you want to delete this address?<br>
-                     This action cannot be undone and will permanently remove this address from the system.`,
-            confirmText: 'Delete Address',
-            cancelText: 'Keep Address',
-            icon: 'delete_forever'
-          };
-  
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-        width: '450px',
-        maxWidth: '90vw',
-        data: dialogData,
-        disableClose: true,
-        panelClass: 'confirm-dialog-container',
-        hasBackdrop: true,
-        backdropClass: 'confirm-dialog-backdrop'
-      });
-  
-      dialogRef.afterClosed().subscribe(result => {
-        if (result && addressId) {
-          this.deleteAddress(addressId);
-        }
-      });
+    if (!addressId) {
+      return;
     }
 
-  
+    const dialogData: ConfirmDialogData = {
+      title: "Delete Address",
+      message: `Are you sure you want to delete this address?<br>
+                     This action cannot be undone and will permanently remove this address from the system.`,
+      confirmText: "Delete Address",
+      cancelText: "Keep Address",
+      icon: "delete_forever",
+    };
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "450px",
+      maxWidth: "90vw",
+      data: dialogData,
+      disableClose: true,
+      panelClass: "confirm-dialog-container",
+      hasBackdrop: true,
+      backdropClass: "confirm-dialog-backdrop",
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && addressId) {
+        this.deleteAddress(addressId);
+      }
+    });
+  }
 
   private deleteAddress(addressId: number | undefined) {
-
     if (addressId) {
       this.addressService.deleteAddress(addressId).subscribe({
         next: () => {
@@ -125,7 +115,6 @@ export class AddressBookComponent implements OnInit {
       });
     }
   }
-
 
   openAddressForm(address?: Address) {
     if (address) {

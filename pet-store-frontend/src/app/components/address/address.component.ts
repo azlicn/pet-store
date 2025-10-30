@@ -70,7 +70,6 @@ export class AddressComponent implements OnInit {
     this.authService.getCurrentUser()?.lastName;
 
   ngOnInit(): void {
-    // If dialog data contains address, populate form for edit
     if (this.data?.address) {
       this.isEditMode = true;
       this.addressForm.patchValue({
