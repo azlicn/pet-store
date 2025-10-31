@@ -1,6 +1,7 @@
 package com.petstore.service;
 
 import com.petstore.exception.EmailAlreadyInUseException;
+import com.petstore.exception.InvalidUserException;
 import com.petstore.exception.UserInUseException;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
@@ -27,6 +28,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link UserService} covering user CRUD operations, edge cases,
+ * and exception scenarios.
+ */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("User Service Tests")
 class UserServiceTest {
@@ -46,6 +51,9 @@ class UserServiceTest {
     private User testUser;
     private User testAdmin;
 
+    /**
+     * Initializes test users before each test.
+     */
     @BeforeEach
     void setUp() {
         testUser = new User();
@@ -65,6 +73,9 @@ class UserServiceTest {
         testAdmin.setRoles(Set.of(Role.ADMIN, Role.USER));
     }
 
+    /**
+     * Tests that all users are returned from the service.
+     */
     @Test
     @DisplayName("Get all users - Should return all users")
     void getAllUsers_ShouldReturnAllUsers() {
@@ -78,6 +89,9 @@ class UserServiceTest {
         verify(userRepository).findAll();
     }
 
+    /**
+     * Tests getting a user by ID when the user exists.
+     */
     @Test
     @DisplayName("Get user by ID - Should return user when exists")
     void getUserById_WhenUserExists_ShouldReturnUser() {
@@ -91,6 +105,9 @@ class UserServiceTest {
         verify(userRepository).findById(1L);
     }
 
+    /**
+     * Tests getting a user by ID when the user does not exist.
+     */
     @Test
     @DisplayName("Get user by ID - Should return empty when user does not exist")
     void getUserById_WhenUserDoesNotExist_ShouldReturnEmpty() {
@@ -102,6 +119,9 @@ class UserServiceTest {
         verify(userRepository).findById(999L);
     }
 
+    /**
+     * Tests getting a user by email when the user exists.
+     */
     @Test
     @DisplayName("Get user by email - Should return user when exists")
     void getUserByEmail_WhenUserExists_ShouldReturnUser() {
@@ -115,6 +135,9 @@ class UserServiceTest {
         verify(userRepository).findByEmail("user@test.com");
     }
 
+    /**
+     * Tests getting a user by email when the user does not exist.
+     */
     @Test
     @DisplayName("Get user by email - Should return empty when user does not exist")
     void getUserByEmail_WhenUserDoesNotExist_ShouldReturnEmpty() {
@@ -126,6 +149,9 @@ class UserServiceTest {
         verify(userRepository).findByEmail("nonexistent@test.com");
     }
 
+    /**
+     * Tests updating all fields of a user when the user exists.
+     */
     @Test
     @DisplayName("Update user - Should update all fields when user exists")
     void updateUser_WhenUserExists_ShouldUpdateAllFields() {
@@ -162,6 +188,9 @@ class UserServiceTest {
         verify(userRepository).save(any(User.class));
     }
 
+    /**
+     * Tests that updating a non-existent user throws an exception.
+     */
     @Test
     @DisplayName("Update user - Should throw exception when user does not exist")
     void updateUser_WhenUserDoesNotExist_ShouldThrowException() {
@@ -178,6 +207,9 @@ class UserServiceTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    /**
+     * Tests that updating a user with an email already in use throws an exception.
+     */
     @Test
     @DisplayName("Update user - Should throw exception when email already in use")
     void updateUser_WhenEmailAlreadyInUse_ShouldThrowException() {
@@ -196,6 +228,9 @@ class UserServiceTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    /**
+     * Tests that updating a user with their current email is allowed.
+     */
     @Test
     @DisplayName("Update user - Should allow update when email is same as current user")
     void updateUser_WhenEmailIsSameAsCurrentUser_ShouldAllowUpdate() {
@@ -222,6 +257,9 @@ class UserServiceTest {
         verify(userRepository).save(any(User.class));
     }
 
+    /**
+     * Tests that only non-null fields are updated for a user.
+     */
     @Test
     @DisplayName("Update user - Should only update non-null fields")
     void updateUser_WithNullFields_ShouldOnlyUpdateNonNullFields() {
@@ -248,6 +286,9 @@ class UserServiceTest {
         verify(userRepository, never()).findByEmail(anyString());
     }
 
+    /**
+     * Tests that password is not updated when the new password is empty.
+     */
     @Test
     @DisplayName("Update user - Should not update password when empty")
     void updateUser_WithEmptyPassword_ShouldNotUpdatePassword() {
@@ -272,6 +313,9 @@ class UserServiceTest {
         verify(passwordEncoder, never()).encode(anyString());
     }
 
+    /**
+     * Tests deleting a user who exists and has no pets.
+     */
     @Test
     @DisplayName("Delete user - Should delete user when exists and has no pets")
     void deleteUser_WhenUserExistsAndHasNoPets_ShouldDeleteUser() {
@@ -287,6 +331,9 @@ class UserServiceTest {
         verify(userRepository).delete(testUser);
     }
 
+    /**
+     * Tests that deleting a non-existent user throws an exception.
+     */
     @Test
     @DisplayName("Delete user - Should throw exception when user does not exist")
     void deleteUser_WhenUserDoesNotExist_ShouldThrowException() {
@@ -302,6 +349,9 @@ class UserServiceTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
+    /**
+     * Tests that deleting a user who owns pets throws a UserInUseException.
+     */
     @Test
     @DisplayName("Delete user - Should throw exception when user owns pets")
     void deleteUser_WhenUserOwnsPets_ShouldThrowUserInUseException() {
@@ -330,6 +380,9 @@ class UserServiceTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
+    /**
+     * Tests that deleting a user who created pets throws a UserInUseException.
+     */
     @Test
     @DisplayName("Delete user - Should throw exception when user created pets")
     void deleteUser_WhenUserCreatedPets_ShouldThrowUserInUseException() {
@@ -354,6 +407,10 @@ class UserServiceTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
+    /**
+     * Tests that deleting a user who owns and created pets throws a
+     * UserInUseException.
+     */
     @Test
     @DisplayName("Delete user - Should throw exception when user owns and created pets")
     void deleteUser_WhenUserOwnsAndCreatedPets_ShouldThrowUserInUseException() {
@@ -383,6 +440,9 @@ class UserServiceTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
+    /**
+     * Tests that existsById returns true when the user exists.
+     */
     @Test
     @DisplayName("Exists by ID - Should return true when user exists")
     void existsById_WhenUserExists_ShouldReturnTrue() {
@@ -394,6 +454,9 @@ class UserServiceTest {
         verify(userRepository).existsById(1L);
     }
 
+    /**
+     * Tests that existsById returns false when the user does not exist.
+     */
     @Test
     @DisplayName("Exists by ID - Should return false when user does not exist")
     void existsById_WhenUserDoesNotExist_ShouldReturnFalse() {
@@ -405,4 +468,66 @@ class UserServiceTest {
         verify(userRepository).existsById(999L);
     }
 
+    /**
+     * Tests that getUserByEmail returns empty when email is null.
+     */
+    @Test
+    @DisplayName("Get user by email - Should return empty when email is null")
+    void getUserByEmail_WhenEmailIsNull_ShouldReturnEmpty() {
+        Optional<User> actualUser = userService.getUserByEmail(null);
+        assertThat(actualUser).isEmpty();
+        verify(userRepository, never()).findByEmail(anyString());
+    }
+
+    /**
+     * Tests that getUserByEmail returns empty when email is an empty string.
+     */
+    @Test
+    @DisplayName("Get user by email - Should return empty when email is empty string")
+    void getUserByEmail_WhenEmailIsEmpty_ShouldReturnEmpty() {
+        Optional<User> actualUser = userService.getUserByEmail("");
+        assertThat(actualUser).isEmpty();
+        verify(userRepository, never()).findByEmail(anyString());
+    }
+
+    /**
+     * Tests that updating a user with a null ID throws an exception.
+     */
+    @Test
+    @DisplayName("Update user - Should throw exception when ID is null")
+    void updateUser_WhenIdIsNull_ShouldThrowException() {
+        User userDetails = new User();
+        userDetails.setFirstName("Jane");
+        assertThatThrownBy(() -> userService.updateUser(null, userDetails))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("User not found with id: null");
+        verify(userRepository, never()).findById(any());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    /**
+     * Tests that updating a user with null details throws an exception.
+     */
+    @Test
+    @DisplayName("Update user - Should throw exception when details are null")
+    void updateUser_WhenDetailsAreNull_ShouldThrowException() {
+        assertThatThrownBy(() -> userService.updateUser(1L, null))
+                .isInstanceOf(InvalidUserException.class)
+                .hasMessageContaining("Updated user cannot be null");
+        verify(userRepository, never()).findById(any());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    /**
+     * Tests that deleting a user with a null ID throws an exception.
+     */
+    @Test
+    @DisplayName("Delete user - Should throw exception when ID is null")
+    void deleteUser_WhenIdIsNull_ShouldThrowException() {
+        assertThatThrownBy(() -> userService.deleteUser(null))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("User not found with id: null");
+        verify(userRepository, never()).findById(any());
+        verify(userRepository, never()).delete(any(User.class));
+    }
 }

@@ -11,7 +11,7 @@ public class CategoryAlreadyExistsException extends RuntimeException {
      * @param categoryName name of the category that already exists
      */
     public CategoryAlreadyExistsException(String categoryName) {
-        super(String.format("Category with name '%s' already exists", categoryName));
+        super(String.format("Category with name '%s' already exists.", categoryName));
     }
     
     /**

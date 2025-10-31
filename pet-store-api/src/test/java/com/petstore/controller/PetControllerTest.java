@@ -1,466 +1,485 @@
 package com.petstore.controller;
 
-import com.petstore.model.Pet;
-import com.petstore.enums.PetStatus;
-import com.petstore.model.Category;
-import com.petstore.model.User;
-import com.petstore.model.Role;
 import com.petstore.service.PetService;
-import com.petstore.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.petstore.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.hamcrest.Matchers.containsString;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("Pet Controller Tests")
+import com.petstore.security.JwtTokenProvider;
+import com.petstore.service.UserDetailsServiceImpl;
+import com.petstore.model.Category;
+import com.petstore.model.Pet;
+import com.petstore.model.User;
+import com.petstore.model.Role;
+import com.petstore.enums.PetStatus;
+
+import com.petstore.exception.GlobalExceptionHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petstore.config.TestSecurityConfig;
+
+/**
+ * WebMvcTest for PetController.
+ * <p>
+ * This test class covers all controller endpoints for pet management, including
+ * CRUD operations,
+ * status updates, purchase, user-specific queries, and authentication checks.
+ * It uses MockMvc for HTTP request simulation
+ * and mocks the service and repository layers to isolate controller logic.
+ * Security filters are enabled for realistic access control testing.
+ */
+@WebMvcTest(PetController.class)
+@Import({ GlobalExceptionHandler.class, TestSecurityConfig.class })
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("Pet Controller WebMvcTest")
 class PetControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private PetService petService;
 
-    @Mock
-    private UserRepository userRepository;
+    @MockBean
+    private UserService userService;
 
-    @InjectMocks
-    private PetController petController;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
 
-    private Pet testPet;
-    private Category testCategory;
-    private User testUser;
-    private List<Pet> testPets;
+    @MockBean
+    private UserDetailsServiceImpl userDetailsServiceImpl;
 
-    @BeforeEach
-    void setUp() {
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        testCategory = new Category();
-        testCategory.setId(1L);
-        testCategory.setName("Dogs");
-        testCategory.setCreatedAt(LocalDateTime.now());
-        testCategory.setUpdatedAt(LocalDateTime.now());
+    /**
+     * Test: GET /api/pets
+     * Verifies that all pets are returned successfully, with and without filters.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    @DisplayName("GET /api/pets - should return all pets")
+    void shouldReturnAllPets() throws Exception {
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("Buddy");
+        pet.setPrice(BigDecimal.valueOf(100.0));
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setDescription("Friendly dog");
+        pet.setPhotoUrls(List.of("/images/dog1.jpg"));
 
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setEmail("test@example.com");
-        testUser.setPassword("password");
-        testUser.setRoles(Set.of(Role.USER));
-        testUser.setCreatedAt(LocalDateTime.now());
-        testUser.setUpdatedAt(LocalDateTime.now());
+        List<Pet> pets = List.of(pet);
+        Page<Pet> petPage = new PageImpl<>(pets);
+        when(petService.findPetsByFiltersPaginated(
+                any(),
+                any(),
+                any(),
+                nullable(Long.class),
+                anyInt(),
+                anyInt())).thenReturn(petPage);
 
-        testPet = new Pet();
-        testPet.setId(1L);
-        testPet.setName("Buddy");
-        testPet.setCategory(testCategory);
-        testPet.setPrice(new BigDecimal("299.99"));
-        testPet.setStatus(PetStatus.AVAILABLE);
-        testPet.setCreatedBy(testUser.getId());
-        testPet.setCreatedAt(LocalDateTime.now());
-        testPet.setUpdatedAt(LocalDateTime.now());
+        mockMvc.perform(get("/api/pets?page=0&size=10")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.pets[0].id").value(1))
+                .andExpect(jsonPath("$.pets[0].name").value("Buddy"))
+                .andExpect(jsonPath("$.pets[0].status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.pets[0].price").value(100.0))
+                .andExpect(jsonPath("$.pets[0].description").value("Friendly dog"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
 
-        Pet secondPet = new Pet();
-        secondPet.setId(2L);
-        secondPet.setName("Max");
-        secondPet.setCategory(testCategory);
-        secondPet.setPrice(new BigDecimal("399.99"));
-        secondPet.setStatus(PetStatus.AVAILABLE);
-        secondPet.setCreatedBy(testUser.getId());
-        secondPet.setCreatedAt(LocalDateTime.now());
-        secondPet.setUpdatedAt(LocalDateTime.now());
-
-        testPets = Arrays.asList(testPet, secondPet);
+        verify(petService, times(1)).findPetsByFiltersPaginated(
+                any(),
+                any(),
+                any(),
+                nullable(Long.class),
+                anyInt(),
+                anyInt());
     }
 
+    /**
+     * Test: GET /api/pets/my-pets
+     * Verifies that all users's pets are returned successfully, with and without filters.
+     */
     @Test
-    @DisplayName("GET /api/pets - Should return all pets")
-    void shouldReturnAllPets() {
+    @WithMockUser(roles = "USER", username = "user@test.com")
+    @DisplayName("GET /api/pets/my-pets - should return all user's pets")
+    void shouldReturnMyPets() throws Exception {
 
-        when(petService.getAllPets()).thenReturn(testPets);
+        User user = new User();
+        user.setEmail("user@test.com");
+        user.setId(1L);
+        user.setRoles(Set.of(Role.USER));
 
-        ResponseEntity<List<Pet>> response = petController.getAllPets(null, null, null, null);
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("Buddy");
+        pet.setPrice(BigDecimal.valueOf(100.0));
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setOwner(user);
+        pet.setDescription("Friendly dog");
+        pet.setPhotoUrls(List.of("/images/dog1.jpg"));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody().get(0).getName()).isEqualTo("Buddy");
-        assertThat(response.getBody().get(1).getName()).isEqualTo("Max");
+        List<Pet> pets = List.of(pet);
+        Page<Pet> petPage = new PageImpl<>(pets);
+        when(petService.findPetsByFiltersPaginated(
+                any(),
+                any(),
+                any(),
+                anyLong(),
+                anyInt(),
+                anyInt())).thenReturn(petPage);
+        when(userService.getUserByEmail("user@test.com")).thenReturn(Optional.of(user));
+
+        mockMvc.perform(get("/api/pets/my-pets?page=0&size=10")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.pets[0].id").value(1))
+                .andExpect(jsonPath("$.pets[0].name").value("Buddy"))
+                .andExpect(jsonPath("$.pets[0].status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.pets[0].price").value(100.0))
+                .andExpect(jsonPath("$.pets[0].description").value("Friendly dog"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+
+        verify(petService, times(1)).findPetsByFiltersPaginated(
+                any(),
+                any(),
+                any(),
+                anyLong(),
+                anyInt(),
+                anyInt());
     }
 
+    /**
+     * Test: GET /api/pets/latest
+     * Verifies that the latest pets are returned successfully.
+     */
     @Test
-    @DisplayName("GET /api/pets with filters - Should return filtered pets")
-    void shouldReturnFilteredPets() {
+    @WithMockUser(roles = "USER")
+    @DisplayName("GET /api/pets/latest - should return latest pets")
+    void shouldReturnLatestPets() throws Exception {
 
-        when(petService.findPetsByFilters("Buddy", 1L, PetStatus.AVAILABLE, 10))
-                .thenReturn(Arrays.asList(testPet));
+        Pet pet = new Pet();
+        pet.setId(10L);
+        pet.setName("Milo");
+        pet.setPrice(BigDecimal.valueOf(200.0));
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setDescription("Playful kitten");
+        pet.setPhotoUrls(List.of("/images/cat1.jpg"));
 
-        ResponseEntity<List<Pet>> response = petController.getAllPets("Buddy", 1L, PetStatus.AVAILABLE, 10);
+        when(petService.getLatestAvailablePets(6)).thenReturn(List.of(pet));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody().get(0).getName()).isEqualTo("Buddy");
+        mockMvc.perform(get("/api/pets/latest?limit=6")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(10))
+                .andExpect(jsonPath("$[0].name").value("Milo"))
+                .andExpect(jsonPath("$[0].status").value("AVAILABLE"))
+                .andExpect(jsonPath("$[0].price").value(200.0))
+                .andExpect(jsonPath("$[0].description").value("Playful kitten"));
+
+        verify(petService, times(1)).getLatestAvailablePets(6);
     }
 
+    /**
+     * Test: GET /api/pets/{id}
+     * Verifies that a pet is returned by ID.
+     */
     @Test
-    @DisplayName("GET /api/pets/latest - Should return latest pets with default limit")
-    void shouldReturnLatestPetsWithDefaultLimit() {
+    @WithMockUser(roles = "USER")
+    @DisplayName("GET /api/pets/{id} - should return pet by ID")
+    void shouldReturnPetById() throws Exception {
 
-        when(petService.getLatestAvailablePets(6)).thenReturn(testPets);
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("Buddy");
+        pet.setPrice(BigDecimal.valueOf(150.0));
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setDescription("Friendly Labrador");
+        pet.setPhotoUrls(List.of("/images/dog1.jpg"));
 
-        ResponseEntity<List<Pet>> response = petController.getLatestPets(6);
+        Category category = new Category();
+        category.setId(1L);
+        category.setName("Dog");
+        pet.setCategory(category);
+        pet.setCreatedBy(1L);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(2);
+        when(petService.getPetById(1L)).thenReturn(Optional.of(pet));
+
+        mockMvc.perform(get("/api/pets/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Buddy"))
+                .andExpect(jsonPath("$.price").value(150.0))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.description").value("Friendly Labrador"));
+
+        verify(petService, times(1)).getPetById(1L);
     }
 
+    /**
+     * Test: PUT /api/pets/{id}
+     * Verifies that updating a pet that does not exist returns Not Found.
+     */
     @Test
-    @DisplayName("GET /api/pets/latest - Should return latest pets with custom limit")
-    void shouldReturnLatestPetsWithCustomLimit() {
+    @WithMockUser(username = "user@example.com", roles = "USER")
+    @DisplayName("PUT /api/pets/{id} - should return 404 when pet not found")
+    void shouldReturnNotFoundWhenPetDoesNotExist() throws Exception {
 
-        when(petService.getLatestAvailablePets(3)).thenReturn(testPets);
+        when(petService.getPetById(1L)).thenReturn(Optional.empty());
+        when(userService.getUserByEmail("user@example.com"))
+                .thenReturn(Optional.of(new User()));
 
-        ResponseEntity<List<Pet>> response = petController.getLatestPets(3);
+        Pet pet = new Pet();
+        pet.setName("Buddy");
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setPrice(BigDecimal.valueOf(100.0));
+        pet.setDescription("Friendly dog");
+        pet.setPhotoUrls(List.of("/images/dog1.jpg"));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(2);
+        Category category = new Category();
+        category.setId(1L);
+        category.setName("Dog");
+
+        pet.setCategory(category);
+
+        mockMvc.perform(put("/api/pets/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pet)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
     }
 
+    /**
+     * Test: PUT /api/pets/{id}
+     * Verifies that updating a pet with invalid data returns Bad Request.
+     */
     @Test
-    @DisplayName("GET /api/pets/{id} - Should return pet by ID when found")
-    void shouldReturnPetByIdWhenFound() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/pets/{id} - should return 400 for invalid data")
+    void shouldReturnBadRequestWhenInvalidData() throws Exception {
 
-        when(petService.getPetById(1L)).thenReturn(Optional.of(testPet));
+        Pet invalidPet = new Pet();
 
-        ResponseEntity<Pet> response = petController.getPetById(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(1L);
-        assertThat(response.getBody().getName()).isEqualTo("Buddy");
-        assertThat(response.getBody().getPrice()).isEqualTo(new BigDecimal("299.99"));
-        assertThat(response.getBody().getStatus()).isEqualTo(PetStatus.AVAILABLE);
+        mockMvc.perform(put("/api/pets/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidPet)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test: POST /api/pets
+     * Verifies that a new pet is added successfully by a user or admin.
+     */
     @Test
-    @DisplayName("GET /api/pets/{id} - Should return 404 when pet not found")
-    void shouldReturn404WhenPetNotFound() {
+    @WithMockUser(roles = "USER")
+    @DisplayName("POST /api/pets - should add pet")
+    void shouldAddPet() throws Exception {
 
-        when(petService.getPetById(999L)).thenReturn(Optional.empty());
+        Pet pet = new Pet();
+        pet.setName("Buddy");
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setCategory(new com.petstore.model.Category("Dog"));
+        pet.setPrice(java.math.BigDecimal.valueOf(100.0));
+        pet.setDescription("Friendly dog");
+        pet.setPhotoUrls(List.of("/images/dog1.jpg"));
 
-        ResponseEntity<Pet> response = petController.getPetById(999L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNull();
+        when(petService.savePet(any())).thenReturn(pet);
+        mockMvc.perform(post("/api/pets")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pet)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Buddy"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.category.name").value("Dog"))
+                .andExpect(jsonPath("$.price").value(100.0));
     }
 
+    /**
+     * Test: PUT /api/pets/{id}
+     * Verifies that an existing pet is updated successfully by owner or admin.
+     */
     @Test
-    @DisplayName("GET /api/pets/findByStatus - Should return pets by status")
-    void shouldReturnPetsByStatus() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/pets/{id} - should update pet")
+    void shouldUpdatePet() throws Exception {
 
-        when(petService.getPetsByStatus(PetStatus.AVAILABLE)).thenReturn(testPets);
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("Buddy");
+        pet.setStatus(PetStatus.AVAILABLE);
+        pet.setPrice(BigDecimal.valueOf(100.0));
+        pet.setCategory(new Category("Dog"));
+        pet.setDescription("Friendly dog");
 
-        ResponseEntity<List<Pet>> response = petController.findPetsByStatus(PetStatus.AVAILABLE);
+        User adminUser = new User();
+        adminUser.setEmail("admin@example.com");
+        adminUser.setId(10L);
+        adminUser.setRoles(Set.of(Role.ADMIN));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(2);
+        when(petService.getPetById(1L)).thenReturn(Optional.of(pet));
+        when(userService.getUserByEmail(anyString())).thenReturn(Optional.of(adminUser));
+        when(petService.updatePet(eq(1L), any(Pet.class))).thenReturn(pet);
+
+        mockMvc.perform(put("/api/pets/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(pet)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Buddy"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+
+        verify(petService, times(1)).updatePet(eq(1L), any(Pet.class));
     }
 
+    /**
+     * Test: DELETE /api/pets/{id}
+     * Verifies that a pet is deleted successfully by an admin.
+     */
     @Test
-    @DisplayName("POST /api/pets - Should create new pet successfully")
-    void shouldCreateNewPetSuccessfully() {
+    @WithMockUser(roles = "ADMIN")
 
-        Pet newPet = new Pet();
-        newPet.setName("Charlie");
-        newPet.setCategory(testCategory);
-        newPet.setPrice(new BigDecimal("199.99"));
-        newPet.setStatus(PetStatus.AVAILABLE);
+    void shouldDeletePet() throws Exception {
 
-        Pet savedPet = new Pet();
-        savedPet.setId(3L);
-        savedPet.setName("Charlie");
-        savedPet.setCategory(testCategory);
-        savedPet.setPrice(new BigDecimal("199.99"));
-        savedPet.setStatus(PetStatus.AVAILABLE);
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("Buddy");
 
-        when(petService.savePet(any(Pet.class))).thenReturn(savedPet);
-
-        ResponseEntity<Pet> response = petController.addPet(newPet);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(3L);
-        assertThat(response.getBody().getName()).isEqualTo("Charlie");
-        assertThat(response.getBody().getPrice()).isEqualTo(new BigDecimal("199.99"));
-    }
-
-    @Test
-    @DisplayName("DELETE /api/pets/{id} - Should delete pet successfully")
-    void shouldDeletePetSuccessfully() {
-
+        when(petService.getPetById(1L)).thenReturn(Optional.of(pet));
         when(petService.deletePet(1L)).thenReturn(true);
 
-        ResponseEntity<Void> response = petController.deletePet(1L);
+        mockMvc.perform(delete("/api/pets/1"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNoContent());
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNull();
+        verify(petService, times(1)).deletePet(1L);
     }
 
+    /**
+     * Test: POST /api/pets/{id}/status
+     * Verifies that a pet's status is updated successfully by an admin.
+     */
     @Test
-    @DisplayName("DELETE /api/pets/{id} - Should return 404 when pet not found for deletion")
-    void shouldReturn404WhenPetNotFoundForDeletion() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/pets/{id} - should update pet")
+    void shouldUpdatePetStatus() throws Exception {
 
-        when(petService.deletePet(999L)).thenReturn(false);
+        Pet pet = new Pet();
+        pet.setId(1L);
+        pet.setName("Buddy");
+        pet.setStatus(PetStatus.SOLD);
 
-        ResponseEntity<Void> response = petController.deletePet(999L);
+        when(petService.updatePetStatus(1L, PetStatus.SOLD)).thenReturn(pet);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNull();
+        mockMvc.perform(post("/api/pets/1/status")
+                .param("status", "SOLD"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+        verify(petService, times(1)).updatePetStatus(1L, PetStatus.SOLD);
     }
 
+    /**
+     * Test: GET /api/pets/auth-test
+     * Verifies that authentication test endpoint returns user details.
+     */
     @Test
-    @DisplayName("POST /api/pets/{id}/status - Should update pet status successfully")
-    void shouldUpdatePetStatusSuccessfully() {
+    @WithMockUser(roles = "USER", username = "user@test.com")
+    @DisplayName("GET /api/pets/auth-test - should return auth test")
+    void shouldReturnAuthTest() throws Exception {
 
-        Pet updatedPet = new Pet();
-        updatedPet.setId(1L);
-        updatedPet.setName("Buddy");
-        updatedPet.setStatus(PetStatus.SOLD);
+        User user = new User();
+        user.setEmail("user@test.com");
+        user.setId(1L);
+        user.setRoles(Set.of(Role.USER));
 
-        when(petService.updatePetStatus(1L, PetStatus.SOLD)).thenReturn(updatedPet);
+        when(userService.getUserByEmail("user@test.com"))
+                .thenReturn(Optional.of(user));
 
-        ResponseEntity<Pet> response = petController.updatePetStatus(1L, PetStatus.SOLD);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(1L);
-        assertThat(response.getBody().getStatus()).isEqualTo(PetStatus.SOLD);
+        mockMvc.perform(get("/api/pets/auth-test"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(
+                        content().string(containsString("user@test.com")));
     }
 
+    /**
+     * Test: GET /api/pets/my-pets without authentication
+     * Verifies that accessing /api/pets/my-pets without login returns 401 Unauthorized.
+     */
     @Test
-    @DisplayName("POST /api/pets/{id}/status - Should return 404 when pet not found for status update")
-    void shouldReturn404WhenPetNotFoundForStatusUpdate() {
-
-        when(petService.updatePetStatus(999L, PetStatus.SOLD)).thenReturn(null);
-
-        ResponseEntity<Pet> response = petController.updatePetStatus(999L, PetStatus.SOLD);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNull();
+    @DisplayName("GET /api/pets/my-pets - should return 401 when unauthenticated")
+    void shouldReturnUnauthorizedForMyPets() throws Exception {
+        mockMvc.perform(get("/api/pets/my-pets?page=0&size=10")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
+    /**
+     * Test: DELETE /api/pets/{id} without ADMIN role
+     * Verifies that deleting a pet without admin role returns 403 Forbidden.
+     */
     @Test
-    @DisplayName("PUT /api/pets/{id} - Should update pet successfully when user is owner")
-    void shouldUpdatePetSuccessfullyWhenUserIsOwner() {
-
-        Pet updatedPet = new Pet();
-        updatedPet.setId(1L);
-        updatedPet.setName("Buddy Updated");
-        updatedPet.setCategory(testCategory);
-        updatedPet.setPrice(new BigDecimal("349.99"));
-        updatedPet.setStatus(PetStatus.AVAILABLE);
-
-        Pet updateRequest = new Pet();
-        updateRequest.setName("Buddy Updated");
-        updateRequest.setPrice(new BigDecimal("349.99"));
-
-        // Mock SecurityContext
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-            when(petService.getPetById(1L)).thenReturn(Optional.of(testPet));
-            when(petService.updatePet(eq(1L), any(Pet.class))).thenReturn(updatedPet);
-
-            ResponseEntity<Pet> response = petController.updatePet(1L, updateRequest);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getId()).isEqualTo(1L);
-            assertThat(response.getBody().getName()).isEqualTo("Buddy Updated");
-            assertThat(response.getBody().getPrice()).isEqualTo(new BigDecimal("349.99"));
-        }
+    @WithMockUser(roles = "USER")
+    @DisplayName("DELETE /api/pets/{id} - should return 403 for non-admin")
+    void shouldReturnForbiddenWhenDeletingPetAsUser() throws Exception {
+        mockMvc.perform(delete("/api/pets/1"))
+                .andExpect(status().isForbidden());
     }
 
+    /**
+     * Test: GET /api/pets/{id} with invalid ID format
+     * Verifies that requesting a pet with invalid ID returns 400 Bad Request.
+     */
     @Test
-    @DisplayName("PUT /api/pets/{id} - Should return 404 when pet not found for update")
-    void shouldReturn404WhenPetNotFoundForUpdate() {
-
-        Pet updateRequest = new Pet();
-        updateRequest.setName("Updated Name");
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-            when(petService.getPetById(999L)).thenReturn(Optional.empty());
-
-            ResponseEntity<Pet> response = petController.updatePet(999L, updateRequest);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-            assertThat(response.getBody()).isNull();
-        }
-    }
-
-    @Test
-    @DisplayName("POST /api/pets/{id}/purchase - Should purchase pet successfully")
-    void shouldPurchasePetSuccessfully() {
-
-        Pet purchasedPet = new Pet();
-        purchasedPet.setId(1L);
-        purchasedPet.setName("Buddy");
-        purchasedPet.setStatus(PetStatus.SOLD);
-        purchasedPet.setOwner(testUser);
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-            when(petService.purchasePet(1L, testUser)).thenReturn(purchasedPet);
-
-            ResponseEntity<Pet> response = petController.purchasePet(1L);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getId()).isEqualTo(1L);
-            assertThat(response.getBody().getStatus()).isEqualTo(PetStatus.SOLD);
-        }
-    }
-
-    @Test
-    @DisplayName("POST /api/pets/{id}/purchase - Should return 400 when purchase fails")
-    void shouldReturn400WhenPurchaseFails() {
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-            when(petService.purchasePet(1L, testUser)).thenReturn(null);
-
-            ResponseEntity<Pet> response = petController.purchasePet(1L);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(response.getBody()).isNull();
-        }
-    }
-
-    @Test
-    @DisplayName("GET /api/pets/my-pets - Should return user's pets")
-    void shouldReturnUsersPets() {
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-            when(petService.getPetsByUser(testUser)).thenReturn(Arrays.asList(testPet));
-            when(petService.getPetsByOwner(testUser)).thenReturn(Arrays.asList(testPet));
-            when(petService.getPetsByCreator(testUser.getId())).thenReturn(Arrays.asList());
-
-            ResponseEntity<List<Pet>> response = petController.getMyPets();
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody()).hasSize(1);
-            assertThat(response.getBody().get(0).getId()).isEqualTo(1L);
-        }
-    }
-
-    @Test
-    @DisplayName("GET /api/pets/auth-test - Should return authentication details")
-    void shouldReturnAuthenticationDetails() {
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-
-            ResponseEntity<?> response = petController.testAuth();
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isNotNull();
-        }
-    }
-
-    @Test
-    @DisplayName("GET /api/pets/auth-test - Should return 400 when user not found")
-    void shouldReturn400WhenUserNotFoundInAuthTest() {
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getName()).thenReturn("test@example.com");
-
-            when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
-
-            ResponseEntity<?> response = petController.testAuth();
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            assertThat(response.getBody()).isEqualTo("User not found");
-        }
+    @WithMockUser(roles = "USER")
+    @DisplayName("GET /api/pets/{id} - should return 400 for invalid ID format")
+    void shouldReturnBadRequestForInvalidPetId() throws Exception {
+        mockMvc.perform(get("/api/pets/invalid-id")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

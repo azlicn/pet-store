@@ -263,7 +263,7 @@ npm run build
 
 # Build backend
 cd ../pet-store-api
-mvn clean package -DskipTests
+mvn clean package
 ```
 
 ### 2. Database Setup

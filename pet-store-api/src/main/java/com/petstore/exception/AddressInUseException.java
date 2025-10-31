@@ -1,5 +1,8 @@
 package com.petstore.exception;
 
+/**
+ * Exception thrown when an address is in use in the system.
+ */
 public class AddressInUseException extends RuntimeException {
 
     /**

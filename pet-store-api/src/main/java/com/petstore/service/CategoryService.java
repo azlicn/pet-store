@@ -2,6 +2,8 @@ package com.petstore.service;
 
 import com.petstore.exception.CategoryAlreadyExistsException;
 import com.petstore.exception.CategoryInUseException;
+import com.petstore.exception.CategoryNotFoundException;
+import com.petstore.exception.InvalidCategoryException;
 import com.petstore.model.Category;
 import com.petstore.model.Pet;
 import com.petstore.repository.CategoryRepository;
@@ -9,7 +11,6 @@ import com.petstore.repository.PetRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service for managing pet categories
@@ -41,8 +42,10 @@ public class CategoryService {
      * @param id the category ID
      * @return the category if found
      */
-    public Optional<Category> getCategoryById(Long id) {
-        return categoryRepository.findById(id);
+    public Category getCategoryById(Long id) {
+
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
     /**
@@ -50,12 +53,16 @@ public class CategoryService {
      *
      * @param category the category to create
      * @return the created category
+     * @throws InvalidCategoryException       if the category is invalid
      * @throws CategoryAlreadyExistsException if the category name is already in use
      */
     public Category saveCategory(Category category) {
+
+        if (category == null) {
+            throw new InvalidCategoryException("Category cannot be null");
+        }
         if (categoryRepository.existsByName(category.getName())) {
-            throw new CategoryAlreadyExistsException(
-                String.format("Category with name '%s' already exists.", category.getName()));
+            throw new CategoryAlreadyExistsException(category.getName());
         }
         return categoryRepository.save(category);
     }
@@ -63,27 +70,32 @@ public class CategoryService {
     /**
      * Updates an existing category
      *
-     * @param id the category ID to update
-     * @param categoryDetails the new category details
+     * @param id          the category ID to update
+     * @param newCategory the new category details
      * @return the updated category, or null if not found
      * @throws CategoryAlreadyExistsException if the new name is already in use
      */
-    public Category updateCategory(Long id, Category categoryDetails) {
-        Optional<Category> existingCategory = categoryRepository.findById(id);
+    public Category updateCategory(Long id, Category newCategory) {
 
-        if (existingCategory.isPresent()) {
-            // Check for duplicate name (excluding current category)
-            if (categoryRepository.existsByName(categoryDetails.getName()) &&
-                !existingCategory.get().getName().equals(categoryDetails.getName())) {
-                throw new CategoryAlreadyExistsException(
-                    String.format("Category with name '%s' already exists.", categoryDetails.getName()));
-            }
-            Category category = existingCategory.get();
-            category.setName(categoryDetails.getName());
-            return categoryRepository.save(category);
+        if (newCategory == null) {
+            throw new InvalidCategoryException("Category cannot be null");
         }
 
-        return null;
+        Category existing = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
+
+        String newName = newCategory.getName().trim();
+
+        // Check for duplicate name excluding the current category
+        if (categoryRepository.existsByName(newName) &&
+                !existing.getName().equalsIgnoreCase(newName)) {
+            throw new CategoryAlreadyExistsException(
+                    String.format("Category with name '%s' already exists.", newName));
+        }
+
+        existing.setName(newName);
+
+        return categoryRepository.save(existing);
     }
 
     /**
@@ -93,25 +105,18 @@ public class CategoryService {
      * @return true if deleted, false if not found
      * @throws CategoryInUseException if the category is being used by pets
      */
-    public boolean deleteCategory(Long id) {
-        Optional<Category> categoryOpt = categoryRepository.findById(id);
+    public void deleteCategory(Long id) {
+        
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
 
-        if (categoryOpt.isEmpty()) {
-            return false;
-        }
-
-        Category category = categoryOpt.get();
-
-        // Check if the category can be safely deleted
         if (!canDeleteCategory(id)) {
             int usageCount = getCategoryUsageCount(id);
             throw new CategoryInUseException(category.getName(), usageCount);
         }
 
-        categoryRepository.deleteById(id);
-        return true;
+        categoryRepository.delete(category);
     }
-
 
     /**
      * Counts how many pets are using a category
@@ -123,7 +128,6 @@ public class CategoryService {
         List<Pet> petsUsingCategory = petRepository.findByCategoryId(categoryId);
         return petsUsingCategory.size();
     }
-
 
     /**
      * Checks if a category can be safely deleted

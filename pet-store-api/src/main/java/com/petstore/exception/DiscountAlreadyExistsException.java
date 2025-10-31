@@ -1,5 +1,8 @@
 package com.petstore.exception;
 
+/**
+ * Exception thrown when a discount is already exists in the system.
+ */
 public class DiscountAlreadyExistsException extends RuntimeException {
 
 

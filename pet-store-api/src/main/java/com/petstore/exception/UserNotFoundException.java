@@ -4,8 +4,6 @@ package com.petstore.exception;
  * Exception thrown when a user cannot be found in the system.
  * This can occur when searching by user ID or email address.
  * 
- * <p>This is a runtime exception typically thrown during user lookup operations
- * such as authentication, profile updates, or user management tasks.</p>
  */
 public class UserNotFoundException extends RuntimeException {
     

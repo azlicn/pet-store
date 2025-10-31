@@ -1,5 +1,6 @@
 package com.petstore.repository;
 
+
 import com.petstore.model.Pet;
 import com.petstore.enums.PetStatus;
 import com.petstore.model.Category;
@@ -11,10 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
-
+import com.petstore.config.LocalJpaAuditingConfig;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +25,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Test class for PetRepository.
+ */
 @DataJpaTest
+@Import(LocalJpaAuditingConfig.class)
 @ActiveProfiles("test")
 @DisplayName("Pet Repository Tests")
 class PetRepositoryTest {
@@ -101,6 +108,9 @@ class PetRepositoryTest {
         entityManager.clear();
     }
 
+    /**
+     * Find by status - Should return pets with specific status
+     */
     @Test
     @DisplayName("Find by status - Should return pets with specific status")
     void findByStatus_ShouldReturnPetsWithSpecificStatus() {
@@ -117,6 +127,9 @@ class PetRepositoryTest {
         assertThat(soldPets).allMatch(pet -> pet.getStatus() == PetStatus.SOLD);
     }
 
+    /**
+     * Find by category ID - Should return pets in specific category
+     */
     @Test
     @DisplayName("Find by category ID - Should return pets in specific category")
     void findByCategoryId_ShouldReturnPetsInSpecificCategory() {
@@ -133,6 +146,9 @@ class PetRepositoryTest {
         assertThat(cats.get(0).getCategory().getId()).isEqualTo(catsCategory.getId());
     }
 
+    /**
+     * Find by name containing ignoring case - Should return matching pets ignoring case
+     */
     @Test
     @DisplayName("Find by name containing - Should return matching pets ignoring case")
     void findByNameContainingIgnoreCase_ShouldReturnMatchingPets() {
@@ -150,6 +166,9 @@ class PetRepositoryTest {
         assertThat(emptyResults).isEmpty();
     }
 
+    /**
+     * Find by owner is null and status - Should return store inventory pets
+     */
     @Test
     @DisplayName("Find by owner is null and status - Should return store inventory pets")
     void findByOwnerIsNullAndStatus_ShouldReturnStoreInventoryPets() {
@@ -162,22 +181,9 @@ class PetRepositoryTest {
         assertThat(storeInventory.get(0).getStatus()).isEqualTo(PetStatus.AVAILABLE);
     }
 
-    @Test
-    @DisplayName("Find by owner - Should return pets owned by specific user")
-    void findByOwner_ShouldReturnPetsOwnedBySpecificUser() {
-
-        List<Pet> testUserPets = petRepository.findByOwner(testUser);
-        List<Pet> anotherUserPets = petRepository.findByOwner(anotherUser);
-
-        assertThat(testUserPets).hasSize(1);
-        assertThat(testUserPets.get(0).getName()).isEqualTo("Whiskers");
-        assertThat(testUserPets.get(0).getOwner().getId()).isEqualTo(testUser.getId());
-
-        assertThat(anotherUserPets).hasSize(1);
-        assertThat(anotherUserPets.get(0).getName()).isEqualTo("Max");
-        assertThat(anotherUserPets.get(0).getOwner().getId()).isEqualTo(anotherUser.getId());
-    }
-
+    /**
+     * Find pets by filters - With name filter should return matching pets
+     */
     @Test
     @DisplayName("Find pets by filters - With name filter should return matching pets")
     void findPetsByFilters_WithNameFilter_ShouldReturnMatchingPets() {
@@ -188,6 +194,9 @@ class PetRepositoryTest {
         assertThat(results.get(0).getName()).isEqualTo("Buddy");
     }
 
+    /**
+     * Find pets by filters - With category filter should return matching pets
+     */
     @Test
     @DisplayName("Find pets by filters - With category filter should return matching pets")
     void findPetsByFilters_WithCategoryFilter_ShouldReturnMatchingPets() {
@@ -199,6 +208,9 @@ class PetRepositoryTest {
         assertThat(results).allMatch(pet -> pet.getCategory().getId().equals(dogsCategory.getId()));
     }
 
+    /**
+     * Find pets by filters - With status filter should return matching pets
+     */
     @Test
     @DisplayName("Find pets by filters - With status filter should return matching pets")
     void findPetsByFilters_WithStatusFilter_ShouldReturnMatchingPets() {
@@ -214,6 +226,9 @@ class PetRepositoryTest {
         assertThat(soldResults).allMatch(pet -> pet.getStatus() == PetStatus.SOLD);
     }
 
+    /**
+     * Find pets by filters - With multiple filters should return matching pets
+     */
     @Test
     @DisplayName("Find pets by filters - With multiple filters should return matching pets")
     void findPetsByFilters_WithMultipleFilters_ShouldReturnMatchingPets() {
@@ -227,6 +242,9 @@ class PetRepositoryTest {
         assertThat(results.get(0).getStatus()).isEqualTo(PetStatus.SOLD);
     }
 
+    /**
+     * Find pets by filters - With limit should respect pageable
+     */
     @Test
     @DisplayName("Find pets by filters - With limit should respect pageable")
     void findPetsByFilters_WithLimit_ShouldRespectPageable() {
@@ -237,6 +255,9 @@ class PetRepositoryTest {
         assertThat(results).hasSize(1);
     }
 
+    /**
+     * Find pets by filters - With null filters should return all pets
+     */
     @Test
     @DisplayName("Find pets by filters - With null filters should return all pets")
     void findPetsByFilters_WithNullFilters_ShouldReturnAllPets() {
@@ -247,6 +268,9 @@ class PetRepositoryTest {
         assertThat(results).extracting(Pet::getName).containsExactlyInAnyOrder("Buddy", "Whiskers", "Max");
     }
 
+    /**
+     * Find latest pets by status - Should return pets ordered by created date descending
+     */
     @Test
     @DisplayName("Find latest pets by status - Should return pets ordered by created date descending")
     void findLatestPetsByStatus_ShouldReturnPetsOrderedByCreatedAtDesc() {
@@ -274,6 +298,9 @@ class PetRepositoryTest {
         assertThat(results.get(1).getName()).isEqualTo("OlderPet");
     }
 
+    /**
+     * Find latest pets by status - With limit should respect pageable
+     */
     @Test
     @DisplayName("Find latest pets by status - With limit should respect pageable")
     void findLatestPetsByStatus_WithLimit_ShouldRespectPageable() {
@@ -294,6 +321,9 @@ class PetRepositoryTest {
         assertThat(results).hasSize(3);
     }
 
+    /**
+     * Find by owner is null and status - Should filter different statuses correctly
+     */
     @Test
     @DisplayName("Find by owner is null and status - Should filter different statuses correctly")
     void findByOwnerIsNullAndStatus_WithDifferentStatuses_ShouldFilterCorrectly() {
@@ -321,6 +351,9 @@ class PetRepositoryTest {
         assertThat(soldStoreInventory).isEmpty();
     }
 
+    /**
+     * Save - Should persist pet with all fields
+     */
     @Test
     @DisplayName("Save - Should persist pet with all fields")
     void save_ShouldPersistPetWithAllFields() {
@@ -346,6 +379,9 @@ class PetRepositoryTest {
         assertThat(savedPet.getUpdatedAt()).isNotNull();
     }
 
+    /**
+     * Delete by ID - Should remove pet from database
+     */
     @Test
     @DisplayName("Delete by ID - Should remove pet from database")
     void deleteById_ShouldRemovePetFromDatabase() {
@@ -356,5 +392,90 @@ class PetRepositoryTest {
         petRepository.deleteById(petId);
 
         assertThat(petRepository.findById(petId)).isEmpty();
+    }
+
+    /**
+     * Find pets by filters paginated - Should return paginated pets for user
+     */
+    @Test
+    @DisplayName("Find pets by filters paginated - Should return paginated pets for user")
+    void findPetsByFiltersPaginated_ShouldReturnPaginatedPetsForUser() {
+
+        Pageable pageable = PageRequest.of(0, 2);
+
+        Page<Pet> page = petRepository.findPetsByFiltersPaginated(
+            null, null, null, testUser.getId(), pageable);
+        assertThat(page.getContent()).extracting(Pet::getName).contains("Whiskers");
+        assertThat(page.getContent()).allMatch(pet -> pet.getOwner() == null || pet.getOwner().getId().equals(testUser.getId()) || pet.getCreatedBy() == testUser.getId());
+    }
+
+    /**
+     * Exists by ID and status - Should return true if pet exists with status
+     */
+    @Test
+    @DisplayName("Exists by ID and status - Should return true if pet exists with status")
+    void existsByIdAndStatus_ShouldReturnTrueIfPetExistsWithStatus() {
+
+        boolean existsAvailable = petRepository.existsByIdAndStatus(availableDog.getId(), PetStatus.AVAILABLE);
+        boolean existsSold = petRepository.existsByIdAndStatus(soldCat.getId(), PetStatus.SOLD);
+        boolean notExists = petRepository.existsByIdAndStatus(availableDog.getId(), PetStatus.SOLD);
+
+        assertThat(existsAvailable).isTrue();
+        assertThat(existsSold).isTrue();
+        assertThat(notExists).isFalse();
+    }
+    /**
+     * Test: Should find pets by owner.
+     */
+    @Test
+    @DisplayName("Find pets by owner - Should return pets for given owner")
+    void findByOwner_ShouldReturnPetsForOwner() {
+        
+
+        Pet pet1 = new Pet();
+        pet1.setName("Buddy");
+        pet1.setPrice(new BigDecimal("200.00"));
+        pet1.setOwner(testUser);
+        pet1.setCategory(dogsCategory);
+
+        petRepository.save(pet1);
+
+        entityManager.persistAndFlush(pet1);
+
+        entityManager.clear();
+
+        List<Pet> pets = petRepository.findByOwner(testUser);
+        assertThat(pets).hasSize(2);
+        assertThat(pets).extracting(Pet::getName).containsExactlyInAnyOrder("Whiskers", "Buddy");
+    }
+
+    /**
+     * Test: Should find pets by createdBy.
+     */
+    @Test
+    @DisplayName("Find pets by createdBy - Should return pets for given creator")
+    void findByCreatedBy_ShouldReturnPetsForCreator() {
+
+        Pet pet1 = new Pet();
+        pet1.setName("Maggie");
+        pet1.setCategory(dogsCategory);
+        pet1.setPrice(new BigDecimal("250.00"));
+        pet1.setCreatedBy(1L);
+        Pet pet2 = new Pet();
+        pet2.setName("Maxi");
+        pet2.setCategory(dogsCategory);
+        pet2.setPrice(new BigDecimal("300.00"));
+        pet2.setCreatedBy(1L);
+        petRepository.save(pet1);
+        petRepository.save(pet2);
+
+        entityManager.persistAndFlush(pet1);
+        entityManager.persistAndFlush(pet2);
+
+        entityManager.clear();
+
+        List<Pet> pets = petRepository.findByCreatedBy(1L);
+        assertThat(pets).hasSize(2);
+        assertThat(pets).extracting(Pet::getName).containsExactlyInAnyOrder("Maggie", "Maxi");
     }
 }

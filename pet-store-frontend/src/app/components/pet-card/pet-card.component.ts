@@ -34,7 +34,6 @@ export class PetCardComponent {
 
   @Output() statusUpdate = new EventEmitter<Pet>();
   @Output() petDelete = new EventEmitter<Pet>();
-  @Output() petPurchase = new EventEmitter<Pet>();
   @Output() petAddToCart = new EventEmitter<Pet>();
 
   constructor(public authService: AuthService, private dialog: MatDialog) {}
@@ -118,10 +117,6 @@ export class PetCardComponent {
 
   onDeletePet(): void {
     this.petDelete.emit(this.pet);
-  }
-
-  onPurchasePet(): void {
-    this.petPurchase.emit(this.pet);
   }
 
   onAddToCart() {

@@ -2,10 +2,17 @@ package com.petstore.dto;
 
 import com.petstore.enums.PaymentType;
 
+import jakarta.validation.constraints.NotNull;
+
 public class PaymentOrderRequest {
 
+    @NotNull(message = "Shipping address ID must not be null")
     private Long shippingAddressId;
+
+    @NotNull(message = "Billing address ID must not be null")
     private Long billingAddressId;
+
+    @NotNull(message = "Payment type must not be null")
     private PaymentType paymentType;
     private String paymentNote;
 

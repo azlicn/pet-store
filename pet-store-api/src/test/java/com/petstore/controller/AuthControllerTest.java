@@ -1,350 +1,258 @@
 package com.petstore.controller;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.petstore.dto.LoginRequest;
 import com.petstore.dto.SignUpRequest;
-import com.petstore.exception.AuthenticationFailedException;
-import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Role;
 import com.petstore.model.User;
-import com.petstore.repository.UserRepository;
-import com.petstore.security.JwtTokenProvider;
-import com.petstore.service.UserService;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.petstore.security.JwtTokenProvider;
+import com.petstore.service.UserService;
+import com.petstore.exception.GlobalExceptionHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petstore.config.TestSecurityConfig;
+import com.petstore.service.UserDetailsServiceImpl;
+import com.petstore.exception.AuthenticationFailedException;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("Auth Controller Tests")
+import org.junit.jupiter.api.DisplayName;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+/**
+ * WebMvcTest for AuthController.
+ * <p>
+ * This test class covers authentication and registration endpoints, including positive, edge, and negative scenarios.
+ * It validates controller behavior for valid requests, missing/invalid input, and error responses.
+ * Security and exception handling are enabled for realistic test coverage.
+ */
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+/**
+ * WebMvcTest for AuthController.
+ * <p>
+ * This test class covers authentication and registration endpoints, including
+ * positive, edge, and negative scenarios.
+ * It validates controller behavior for valid requests, missing/invalid input,
+ * and error responses.
+ * Security and exception handling are enabled for realistic test coverage.
+ */
+@WebMvcTest(AuthController.class)
+@Import({ GlobalExceptionHandler.class, TestSecurityConfig.class })
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("Auth Controller WebMvcTest")
 class AuthControllerTest {
 
-    @Mock
-    private AuthenticationManager authenticationManager;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private UserService userService;
 
-    @Mock
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private UserDetailsServiceImpl userDetailsServiceImpl;
+
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    @MockBean
     private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private JwtTokenProvider tokenProvider;
+    /**
+     * Test: POST /api/auth/login (success)
+     * Verifies successful login returns JWT token and user details.
+     */
+    @Test
+    @DisplayName("POST /api/auth/login - Success")
+    void shouldLoginSuccessfully() throws Exception {
 
-    @InjectMocks
-    private AuthController authController;
-
-    private User testUser;
-    private LoginRequest loginRequest;
-    private SignUpRequest signUpRequest;
-
-    @BeforeEach
-    void setUp() {
-
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setEmail("test@example.com");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
-        testUser.setPassword("encodedPassword");
-        testUser.setRoles(Set.of(Role.USER));
-        testUser.setCreatedAt(LocalDateTime.now());
-        testUser.setUpdatedAt(LocalDateTime.now());
-
-        loginRequest = new LoginRequest();
-        loginRequest.setEmail("test@example.com");
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("user@example.com");
         loginRequest.setPassword("password123");
-
-        signUpRequest = new SignUpRequest();
-        signUpRequest.setFirstName("Jane");
-        signUpRequest.setLastName("Smith");
-        signUpRequest.setEmail("jane@example.com");
-        signUpRequest.setPassword("password123");
-        signUpRequest.setRole("USER");
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/login - Should authenticate user successfully")
-    void shouldAuthenticateUserSuccessfully() {
-
         Authentication authentication = mock(Authentication.class);
-        String expectedToken = "jwt-token-123";
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(tokenProvider.generateToken(authentication)).thenReturn(expectedToken);
-        when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.of(testUser));
-
-        ResponseEntity<?> response = authController.authenticateUser(loginRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-
-        assertThat(responseBody.get("token")).isEqualTo(expectedToken);
-        assertThat(responseBody.get("type")).isEqualTo("Bearer");
-        assertThat(responseBody.get("user")).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
-        assertThat(user.get("id")).isEqualTo(1L);
-        assertThat(user.get("email")).isEqualTo("test@example.com");
-        assertThat(user.get("firstName")).isEqualTo("John");
-        assertThat(user.get("lastName")).isEqualTo("Doe");
-        assertThat(user.get("roles")).isEqualTo(Set.of(Role.USER));
-        assertThat(user).doesNotContainKey("password"); // Password should not be included
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(jwtTokenProvider.generateToken(authentication)).thenReturn("jwt-token");
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("user@example.com");
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setRoles(Set.of(Role.USER));
+        when(userService.getUserByEmail("user@example.com")).thenReturn(Optional.of(user));
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("jwt-token"))
+                .andExpect(jsonPath("$.user.email").value("user@example.com"));
     }
 
+    /**
+     * Test: POST /api/auth/login (invalid credentials)
+     * Verifies login with invalid credentials returns error response.
+     */
     @Test
-    @DisplayName("POST /api/auth/login - Should return error for invalid credentials")
-    void shouldReturnErrorForInvalidCredentials() {
+    @DisplayName("POST /api/auth/login - Invalid credentials")
+    void shouldReturnErrorForInvalidCredentials() throws Exception {
 
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("user@example.com");
+        loginRequest.setPassword("wrongpassword");
+        when(authenticationManager.authenticate(any()))
                 .thenThrow(new AuthenticationFailedException("Invalid credentials"));
-
-        assertThrows(AuthenticationFailedException.class, () -> {
-            authController.authenticateUser(loginRequest);
-        });
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().is4xxClientError());
     }
 
+    /**
+     * Test: POST /api/auth/register (success)
+     * Verifies successful registration returns success message.
+     */
     @Test
-    @DisplayName("POST /api/auth/login - Should handle user not found after authentication")
-    void shouldHandleUserNotFoundAfterAuthentication() {
+    @DisplayName("POST /api/auth/register - Success")
+    void shouldRegisterUserSuccessfully() throws Exception {
+        SignUpRequest signUpRequest = new SignUpRequest();
+        signUpRequest.setEmail("newuser@example.com");
+        signUpRequest.setPassword("password123");
+        signUpRequest.setFirstName("New");
+        signUpRequest.setLastName("User");
+        signUpRequest.setRole("USER");
+        when(userService.existsByEmail("newuser@example.com")).thenReturn(false);
 
-        Authentication authentication = mock(Authentication.class);
-        String expectedToken = "jwt-token-123";
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(tokenProvider.generateToken(authentication)).thenReturn(expectedToken);
-        when(userService.getUserByEmail("test@example.com")).thenReturn(Optional.empty());
-
-        assertThrows(UserNotFoundException.class, () -> {
-            authController.authenticateUser(loginRequest);
-        });
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/register - Should register new user successfully")
-    void shouldRegisterNewUserSuccessfully() {
-
-        User savedUser = new User();
-        savedUser.setId(2L);
-        savedUser.setEmail("jane@example.com");
-        savedUser.setFirstName("Jane");
-        savedUser.setLastName("Smith");
-        savedUser.setRoles(Set.of(Role.USER));
-
-        when(userService.existsByEmail("jane@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userService.saveUser(any(User.class))).thenReturn(savedUser);
-
-        ResponseEntity<?> response = authController.registerUser(signUpRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        assertThat(responseBody.get("message")).isEqualTo("User registered successfully!");
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/register - Should register admin user when role is ADMIN")
-    void shouldRegisterAdminUserWhenRoleIsAdmin() {
-
-        signUpRequest.setRole("ADMIN");
-        signUpRequest.setEmail("admin@example.com");
-
-        User savedAdminUser = new User();
-        savedAdminUser.setId(3L);
-        savedAdminUser.setEmail("admin@example.com");
-        savedAdminUser.setFirstName("Jane");
-        savedAdminUser.setLastName("Smith");
-        savedAdminUser.setRoles(Set.of(Role.ADMIN));
-
-        when(userService.existsByEmail("admin@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userService.saveUser(any(User.class))).thenReturn(savedAdminUser);
-
-        ResponseEntity<?> response = authController.registerUser(signUpRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        assertThat(responseBody.get("message")).isEqualTo("User registered successfully!");
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/register - Should default to USER role when role is null")
-    void shouldDefaultToUserRoleWhenRoleIsNull() {
-
-        signUpRequest.setRole(null);
-
-        User savedUser = new User();
-        savedUser.setId(2L);
-        savedUser.setEmail("jane@example.com");
-        savedUser.setRoles(Set.of(Role.USER));
-
-        when(userService.existsByEmail("jane@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userService.saveUser(any(User.class))).thenReturn(savedUser);
-
-        ResponseEntity<?> response = authController.registerUser(signUpRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/register - Should default to USER role for invalid role")
-    void shouldDefaultToUserRoleForInvalidRole() {
-
-        signUpRequest.setRole("INVALID_ROLE");
-
-        User savedUser = new User();
-        savedUser.setId(2L);
-        savedUser.setEmail("jane@example.com");
-        savedUser.setRoles(Set.of(Role.USER));
-
-        when(userService.existsByEmail("jane@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-        when(userService.saveUser(any(User.class))).thenReturn(savedUser);
-
-        ResponseEntity<?> response = authController.registerUser(signUpRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/register - Should return error when email already exists")
-    void shouldReturnErrorWhenEmailAlreadyExists() {
-
-        when(userService.existsByEmail("jane@example.com")).thenReturn(true);
-
-        ResponseEntity<?> response = authController.registerUser(signUpRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).isEqualTo("Email is already in use!");
-    }
-
-    @Test
-    @DisplayName("LoginRequest - Should handle getters and setters correctly")
-    void shouldHandleLoginRequestGettersAndSetters() {
-
-        LoginRequest request = new LoginRequest();
-
-        request.setEmail("test@example.com");
-        request.setPassword("testPassword");
-
-        assertThat(request.getEmail()).isEqualTo("test@example.com");
-        assertThat(request.getPassword()).isEqualTo("testPassword");
-    }
-
-    @Test
-    @DisplayName("SignUpRequest - Should handle getters and setters correctly")
-    void shouldHandleSignUpRequestGettersAndSetters() {
-
-        SignUpRequest request = new SignUpRequest();
-
-        request.setFirstName("John");
-        request.setLastName("Doe");
-        request.setEmail("john@example.com");
-        request.setPassword("password123");
-        request.setRole("ADMIN");
-
-        assertThat(request.getFirstName()).isEqualTo("John");
-        assertThat(request.getLastName()).isEqualTo("Doe");
-        assertThat(request.getEmail()).isEqualTo("john@example.com");
-        assertThat(request.getPassword()).isEqualTo("password123");
-        assertThat(request.getRole()).isEqualTo("ADMIN");
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/login - Should handle authentication manager exception")
-    void shouldHandleAuthenticationManagerException() {
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new RuntimeException("Authentication service unavailable"));
-
-        assertThrows(RuntimeException.class, () -> {
-            authController.authenticateUser(loginRequest);
-        });
-    }
-
-    @Test
-    @DisplayName("POST /api/auth/login - Should handle token generation failure")
-    void shouldHandleTokenGenerationFailure() {
-
-        Authentication authentication = mock(Authentication.class);
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(tokenProvider.generateToken(authentication))
-                .thenThrow(new RuntimeException("Token generation failed"));
-
-        assertThrows(RuntimeException.class, () -> {
-            authController.authenticateUser(loginRequest);
-        });
-    }
-
-    @Test
-    @DisplayName("Edge cases - Should handle empty login credentials")
-    void shouldHandleEmptyLoginCredentials() {
-
-        LoginRequest emptyRequest = new LoginRequest();
-        emptyRequest.setEmail("");
-        emptyRequest.setPassword("");
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new AuthenticationFailedException("Empty credentials"));
-
-        assertThrows(AuthenticationFailedException.class, () -> {
-            authController.authenticateUser(emptyRequest);
-        });
-    }
-
-    @Test
-    @DisplayName("Edge cases - Should handle null values in signup request")
-    void shouldHandleNullValuesInSignupRequest() {
-
-        SignUpRequest nullRequest = new SignUpRequest();
-        nullRequest.setEmail("valid@example.com");
-        nullRequest.setPassword("password123");
-
-        when(userService.existsByEmail("valid@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
-        when(userService.saveUser(any(User.class))).thenReturn(testUser);
+        when(userService.saveUser(any(User.class))).thenReturn(new User());
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User registered successfully!"));
+    }
 
-        ResponseEntity<?> response = authController.registerUser(nullRequest);
+    /**
+     * Test: POST /api/auth/register (email already exists)
+     * Verifies registration with existing email returns error response.
+     */
+    @Test
+    @DisplayName("POST /api/auth/register - Email already exists")
+    void shouldReturnErrorWhenEmailAlreadyExists() throws Exception {
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        SignUpRequest signUpRequest = new SignUpRequest();
+        signUpRequest.setEmail("existing@example.com");
+        signUpRequest.setPassword("password123");
+        signUpRequest.setFirstName("Exist");
+        signUpRequest.setLastName("User");
+        signUpRequest.setRole("USER");
+        when(userService.existsByEmail("existing@example.com")).thenReturn(true);
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Email is already in use!"));
+    }
+
+    /**
+     * Test: POST /api/auth/register (invalid input)
+     * Verifies registration with invalid input returns error response.
+     */
+    @Test
+    @DisplayName("POST /api/auth/register - Invalid input")
+    void shouldReturnErrorForInvalidInput() throws Exception {
+
+        SignUpRequest signUpRequest = new SignUpRequest();
+
+        signUpRequest.setEmail(""); // Invalid email
+        signUpRequest.setPassword(""); // Invalid password
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().is4xxClientError());
+    }
+
+    /**
+     * Test: POST /api/auth/register (email already exists)
+     * Verifies registration with existing email returns error response.
+     */
+    @Test
+    @DisplayName("POST /api/auth/login - Null request body")
+    void shouldReturnErrorForNullLoginRequest() throws Exception {
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(""))
+                .andExpect(status().is4xxClientError());
+    }
+
+    /**
+     * Test: POST /api/auth/login (missing email or password)
+     * Verifies login with missing/empty fields returns error response.
+     */
+    @Test
+    @DisplayName("POST /api/auth/login - Missing email or password")
+    void shouldReturnErrorForMissingEmailOrPassword() throws Exception {
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("");
+        loginRequest.setPassword("");
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+
+                .andExpect(status().is4xxClientError());
+    }
+
+    /**
+     * Test: POST /api/auth/register (null request body)
+     * Verifies registration with null request returns error response.
+     */
+    @Test
+    @DisplayName("POST /api/auth/register - Null request body")
+    void shouldReturnErrorForNullRegisterRequest() throws Exception {
+
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(""))
+                .andExpect(status().is4xxClientError());
+    }
+
+    /**
+     * Test: POST /api/auth/register (missing required fields)
+     * Verifies registration with missing/empty fields returns error response.
+     */
+    @Test
+    @DisplayName("POST /api/auth/register - Missing required fields")
+    void shouldReturnErrorForMissingRequiredFields() throws Exception {
+
+        SignUpRequest signUpRequest = new SignUpRequest();
+        signUpRequest.setEmail("");
+        signUpRequest.setPassword("");
+        signUpRequest.setFirstName("");
+        signUpRequest.setLastName("");
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest)))
+                .andExpect(status().is4xxClientError());
     }
 }

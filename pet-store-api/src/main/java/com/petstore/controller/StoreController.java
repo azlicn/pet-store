@@ -35,8 +35,14 @@ import com.petstore.service.OrderService;
 import com.petstore.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 
+
+/**
+ * REST controller for store and order management operations.
+ * Provides endpoints for cart management, order processing, payment, discount validation, and delivery status updates.
+ */
 @RestController
 @RequestMapping("/api/stores")
 @Tag(name = "Store Controller", description = "Store and Order Management API")
@@ -57,10 +63,10 @@ public class StoreController {
         this.discountService = discountService;
     }
 
-    /*
-     * Get all the orders for the authenticated user, if they are ADMIN role, return
-     * all orders, else only their own orders
-     * GET /api/stores/orders
+    /**
+     * Retrieves all orders for the authenticated user. If the user is an admin, returns all orders; otherwise, only their own orders.
+     *
+     * @return ResponseEntity containing the list of orders
      */
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/orders")
@@ -89,7 +95,10 @@ public class StoreController {
     }
 
     /**
-     * Add a pet to the user's cart.
+     * Adds a pet to the authenticated user's cart.
+     *
+     * @param petId the ID of the pet to add
+     * @return ResponseEntity containing the updated cart
      */
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/cart/add/{petId}")
@@ -111,7 +120,10 @@ public class StoreController {
     }
 
     /**
-     * Get the user's cart.
+     * Retrieves the cart for the specified user ID.
+     *
+     * @param userId the ID of the user whose cart to retrieve
+     * @return ResponseEntity containing the user's cart
      */
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/cart/{userId}")
@@ -121,7 +133,10 @@ public class StoreController {
     }
 
     /**
-     * Get the user's cart.
+     * Retrieves the order for the specified order ID. Admins can get any order; users can get only their own.
+     *
+     * @param orderId the ID of the order to retrieve
+     * @return ResponseEntity containing the order
      */
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/order/{orderId}")
@@ -150,26 +165,36 @@ public class StoreController {
     }
 
     /**
-     * Remove a specific item from the user's cart.
+     * Removes a specific item from the authenticated user's cart.
+     *
+     * @param cartItemId the ID of the cart item to remove
+     * @return ResponseEntity with no content if successful
      */
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/cart/item/{cartItemId}")
         @Operation(summary = "Remove item from cart", description = "Remove a specific item from the user's cart.")
     public ResponseEntity<Void> removeItem(@PathVariable Long cartItemId) {
+
         cartService.removeCartItem(cartItemId);
+
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Validates a discount code for the user's cart and calculates the new total.
+     *
+     * @param code the discount code to validate
+     * @param total the current total amount
+     * @return ResponseEntity containing discount details and new total
+     */
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/cart/discount/validate")
-        @Operation(summary = "Validate discount", description = "Validate a discount code for the user's cart.")
+    @Operation(summary = "Validate discount", description = "Validate a discount code for the user's cart.")
     public ResponseEntity<?> validateDiscount(@RequestParam String code, @RequestParam BigDecimal total) {
 
         Discount discount = discountService.validateDiscount(code);
-
         BigDecimal discountAmount = total.multiply(discount.getPercentage().divide(BigDecimal.valueOf(100)));
         BigDecimal newTotal = total.subtract(discountAmount);
-
         Map<String, Object> response = new HashMap<>();
         response.put("code", discount.getCode());
         response.put("percentage", discount.getPercentage());
@@ -180,8 +205,10 @@ public class StoreController {
     }
 
     /**
-     * Checkout a user's cart into an order.
-     * Allows optional discount code and optional address ID.
+     * Checks out the authenticated user's cart into an order. Allows optional discount code.
+     *
+     * @param discountCode optional discount code to apply
+     * @return ResponseEntity containing the created order
      */
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/checkout")
@@ -205,13 +232,17 @@ public class StoreController {
     }
 
     /**
-     * Make payment for a specific order.
+     * Makes payment for a specific order.
+     *
+     * @param orderId the ID of the order to pay for
+     * @param paymentOrderRequest the payment request details
+     * @return ResponseEntity containing the payment information
      */
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/order/{orderId}/pay")
         @Operation(summary = "Make payment for order", description = "Make payment for a specific order.")
     public ResponseEntity<Payment> makePayment(@PathVariable Long orderId,
-            @RequestBody PaymentOrderRequest paymentOrderRequest) {
+            @Valid @RequestBody PaymentOrderRequest paymentOrderRequest) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
@@ -233,8 +264,10 @@ public class StoreController {
     }
 
     /**
-     * Cancel a specific order
-     * DELETE /api/stores/order/{orderId}
+     * Cancels a specific order for the authenticated user.
+     *
+     * @param orderId the ID of the order to cancel
+     * @return ResponseEntity containing a cancellation message
      */
     @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/order/{orderId}")
@@ -266,8 +299,10 @@ public class StoreController {
     }
 
     /**
-     * Delete a specific order
-     * DELETE /api/stores/order/{orderId}/delete
+     * Deletes a specific order. Admins can delete any order; users can delete their own.
+     *
+     * @param orderId the ID of the order to delete
+     * @return ResponseEntity containing a deletion message
      */
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/order/{orderId}/delete")
@@ -305,15 +340,18 @@ public class StoreController {
         return ResponseEntity.ok(response);
     }
 
-    /*
-     * Update delivery status of an order (ADMIN only)
-     * PATCH /api/stores/order/{orderId}/delivery-status
+    /**
+     * Updates the delivery status of an order. Only admins can perform this operation.
+     *
+     * @param orderId the ID of the order to update
+     * @param body the request body containing status and date
+     * @return ResponseEntity containing a status update message
      */
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/order/{orderId}/delivery-status")
         @Operation(summary = "Update order delivery status", description = "Update delivery status of an order (ADMIN only).")
     public ResponseEntity<?> updateOrderDeliveryStatus(@PathVariable Long orderId,
-            @RequestBody Map<String, String> body) {
+            @Valid @RequestBody Map<String, String> body) {
 
         DeliveryStatus status = DeliveryStatus.valueOf(body.get("status"));
         String dateString = body.get("date");
@@ -321,6 +359,7 @@ public class StoreController {
         orderService.updateOrderDeliveryStatus(orderId, status, dateString);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Order delivery status updated successfully");
+        
         return ResponseEntity.ok(response);
     }
 

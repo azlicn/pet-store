@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -103,7 +104,27 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
 
-         /**
+        /**
+         * Handles cart empty errors (404 Not Found)
+         *
+         * @param ex      the cart empty exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(CartEmptyException.class)
+        public ResponseEntity<ErrorResponse> handleCartEmptyException(
+                        CartEmptyException ex, HttpServletRequest request) {
+                logger.warn("Cart is empty: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Cart Is Empty",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.CART_IS_EMPTY);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+        /**
          * Handles order not found errors (404 Not Found)
          *
          * @param ex      the order not found exception
@@ -120,6 +141,26 @@ public class GlobalExceptionHandler {
                                 ex.getMessage(),
                                 request.getRequestURI(),
                                 ErrorCodes.ORDER_NOT_FOUND);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+
+        /**
+         * Handles address not found errors (404 Not Found)
+         *
+         * @param ex      the address not found exception
+         * @param request the current HTTP request
+         * @return error response with NOT_FOUND status
+         */
+        @ExceptionHandler(PetNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handlePetNotFoundException(
+                        PetNotFoundException ex, HttpServletRequest request) {
+                logger.warn("Pet not found: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.NOT_FOUND.value(),
+                                "Pet Not Found",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.PET_NOT_FOUND);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
 
@@ -224,6 +265,46 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handles category not found errors (404 Not Found)
+         *
+         * @param ex      the category not found exception
+         * @param request the current HTTP request
+         * @return error response with NOT_FOUND status
+         */
+        @ExceptionHandler(CategoryNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleCategoryNotFoundException(
+                        CategoryNotFoundException ex, HttpServletRequest request) {
+                logger.warn("Category not found: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.NOT_FOUND.value(),
+                                "Category Not Found",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.CATEGORY_NOT_FOUND);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+
+        /**
+         * Handles invalid category errors (400 Bad Request)
+         *
+         * @param ex      the invalid category exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(InvalidCategoryException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidCategoryException(
+                        InvalidCategoryException ex, HttpServletRequest request) {
+                logger.warn("Invalid category: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Invalid Category",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.INVALID_CATEGORY);
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
          * Handles category deletion when it's still in use (409 Conflict)
          *
          * @param ex      the category in use exception
@@ -267,6 +348,46 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handles discount not found errors (404 Not Found)
+         *
+         * @param ex      the discount not found exception
+         * @param request the current HTTP request
+         * @return error response with NOT_FOUND status
+         */
+        @ExceptionHandler(DiscountNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleDiscountNotFoundException(
+                        DiscountNotFoundException ex, HttpServletRequest request) {
+                logger.warn("Discount not found: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.NOT_FOUND.value(),
+                                "Discount Not Found",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.DISCOUNT_NOT_FOUND);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+
+         /**
+         * Handles discount in use errors (409 Conflict)
+         *
+         * @param ex      the discount in use exception
+         * @param request the current HTTP request
+         * @return error response with CONFLICT status
+         */
+        @ExceptionHandler(DiscountInUseException.class)
+        public ResponseEntity<ErrorResponse> handleDiscountInUseException(
+                        DiscountInUseException ex, HttpServletRequest request) {
+                logger.warn("Discount in use: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.CONFLICT.value(),
+                                "Discount In Use",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.DISCOUNT_IN_USE);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+
+        /**
          * Handles category already exists errors (409 Conflict)
          *
          * @param ex      the category already exists exception
@@ -304,6 +425,42 @@ public class GlobalExceptionHandler {
                                 request.getRequestURI(),
                                 ErrorCodes.ORDER_ACCESS_DENIED);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        /**
+         * Handles invalid pet errors (400 Bad Request)
+         *
+         * @param ex      the invalid pet exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(InvalidPetException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidPetException(
+                        InvalidPetException ex, HttpServletRequest request) {
+                logger.warn("Invalid pet: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Invalid Pet",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.INVALID_PET);
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /*
+         * Handles invalid user errors (400 Bad Request)
+         */
+        @ExceptionHandler(InvalidUserException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidUserException(
+                        InvalidUserException ex, HttpServletRequest request) {
+                logger.warn("Invalid user: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Invalid User",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.INVALID_USER);
+                return ResponseEntity.badRequest().body(errorResponse);
         }
 
         /**
@@ -355,6 +512,29 @@ public class GlobalExceptionHandler {
                                 "Invalid input data: " + errors.toString(),
                                 request.getRequestURI(),
                                 ErrorCodes.VALIDATION_FAILED);
+
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
+         * Handles malformed JSON in request bodies (400 Bad Request)
+         *
+         * @param ex      the HTTP message not readable exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(HttpMessageNotReadableException.class)
+        public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+                        HttpMessageNotReadableException ex, HttpServletRequest request) {
+
+                logger.warn("Invalid JSON: {}", ex.getMessage());
+
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Invalid Request Body",
+                                "Request body is missing or malformed",
+                                request.getRequestURI(),
+                                ErrorCodes.INVALID_REQUEST_BODY);
 
                 return ResponseEntity.badRequest().body(errorResponse);
         }

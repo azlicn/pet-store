@@ -5,9 +5,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Unit tests for UserNotFoundException.
+ */
 @DisplayName("UserNotFoundException Tests")
 class UserNotFoundExceptionTest {
 
+    /**
+     * Test creating the exception with a user ID.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with user ID")
     void constructor_WithUserId_ShouldCreateCorrectMessage() {
@@ -18,6 +24,9 @@ class UserNotFoundExceptionTest {
         assertThat(exception.getMessage()).isEqualTo(expectedMessage);
     }
 
+    /**
+     * Test creating the exception with an email.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with email")
     void constructor_WithEmail_ShouldCreateCorrectMessage() {
@@ -28,6 +37,9 @@ class UserNotFoundExceptionTest {
         assertThat(exception.getMessage()).isEqualTo(expectedMessage);
     }
 
+    /**
+     * Test creating the exception with a custom message.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with custom message")
     void constructor_WithCustomMessage_ShouldUseCustomMessage() {

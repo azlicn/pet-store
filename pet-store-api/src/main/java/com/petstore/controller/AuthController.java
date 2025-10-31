@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * REST controller for user authentication and registration.
+ * Provides endpoints for login and registration, returning JWT tokens and user
+ * info.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "User authentication and registration APIs")
@@ -42,23 +47,27 @@ public class AuthController {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    /**
+     * Authenticates a user and returns a JWT token and user info.
+     *
+     * @param loginRequest the login request containing email and password
+     * @return ResponseEntity with JWT token and user details
+     * @throws AuthenticationFailedException if credentials are invalid
+     * @throws UserNotFoundException         if the user does not exist
+     */
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user and return JWT token")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         } catch (BadCredentialsException ex) {
             throw new AuthenticationFailedException("Invalid email or password");
         }
-
         String jwt = tokenProvider.generateToken(authentication);
-
         User user = userService.getUserByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-
         Map<String, Object> response = new HashMap<>();
         response.put("token", jwt);
         response.put("type", "Bearer");
@@ -68,35 +77,34 @@ public class AuthController {
                 "firstName", user.getFirstName(),
                 "lastName", user.getLastName(),
                 "roles", user.getRoles()));
-
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Registers a new user account.
+     *
+     * @param signUpRequest the registration request containing user details
+     * @return ResponseEntity with registration status message
+     */
     @PostMapping("/register")
     @Operation(summary = "User registration", description = "Register a new user account")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-
         Map<String, String> response = new HashMap<>();
-
         if (userService.existsByEmail(signUpRequest.getEmail())) {
             response.put("message", "Email is already in use!");
             return ResponseEntity.badRequest().body(response);
         }
-
         User user = new User(
                 signUpRequest.getEmail(),
                 passwordEncoder.encode(signUpRequest.getPassword()),
                 signUpRequest.getFirstName(),
                 signUpRequest.getLastName());
-
         if (signUpRequest.getRole() != null && signUpRequest.getRole().equals("ADMIN")) {
             user.setRoles(Set.of(Role.ADMIN));
         } else {
             user.setRoles(Set.of(Role.USER));
         }
-
         userService.saveUser(user);
-
         response.put("message", "User registered successfully!");
         return ResponseEntity.ok(response);
     }

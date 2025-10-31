@@ -5,19 +5,28 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Unit tests for CategoryAlreadyExistsException.
+ */
 @DisplayName("CategoryAlreadyExistsException Tests")
 class CategoryAlreadyExistsExceptionTest {
 
+    /**
+     * Test creating CategoryAlreadyExistsException with a category name.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with category name")
     void constructor_WithCategoryName_ShouldCreateCorrectMessage() {
         String categoryName = "Dogs";
-        String expectedMessage = String.format("Category with name '%s' already exists", categoryName);
+        String expectedMessage = String.format("Category with name '%s' already exists.", categoryName);
         CategoryAlreadyExistsException exception = new CategoryAlreadyExistsException(categoryName);
 
         assertThat(exception.getMessage()).isEqualTo(expectedMessage);
     }
 
+    /**
+     * Test creating CategoryAlreadyExistsException with a custom message.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with custom message")
     void constructor_WithCustomMessage_ShouldUseCustomMessage() {

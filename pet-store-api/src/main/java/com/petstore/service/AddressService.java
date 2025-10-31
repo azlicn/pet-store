@@ -10,12 +10,13 @@ import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Address;
 import com.petstore.model.User;
 import com.petstore.repository.AddressRepository;
-import com.petstore.repository.OrderRepository;
 import com.petstore.repository.UserRepository;
 
+/**
+ * Service for managing addresses in the store
+ */
 @Service
 public class AddressService {
-    
 
     private final AddressRepository addressRepository;
 
@@ -29,13 +30,27 @@ public class AddressService {
         this.orderService = orderService;
     }
 
+    /**
+     * Retrieves all addresses for a user
+     *
+     * @param userId the user ID
+     * @return list of addresses belonging to the user
+     */
     public List<Address> getUserAddresses(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         return addressRepository.findByUser(user);
     }
 
+    /**
+     * Creates a new address for a user
+     *
+     * @param userId the user ID
+     * @param address the address to create
+     * @return the created address
+     */
     public Address createAddress(Long userId, Address address) {
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         address.setUser(user);
@@ -48,6 +63,7 @@ public class AddressService {
     }
 
     public Address updateAddress(Long addressId, Address newAddress) {
+
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AddressNotFoundException(addressId));
 
@@ -64,6 +80,7 @@ public class AddressService {
     }
 
     public void deleteAddress(Long addressId) {
+        
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AddressNotFoundException(addressId));
 

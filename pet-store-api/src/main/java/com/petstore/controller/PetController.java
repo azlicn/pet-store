@@ -5,23 +5,36 @@ import com.petstore.model.Pet;
 import com.petstore.model.User;
 import com.petstore.model.Role;
 import com.petstore.service.PetService;
-import com.petstore.repository.UserRepository;
+import com.petstore.service.UserService;
+import com.petstore.dto.PetPageResponse;
+import com.petstore.exception.PetNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
+/**
+ * REST controller for managing pets in the store.
+ * Provides endpoints for CRUD operations, status updates, purchase, and
+ * user-specific pet queries.
+ */
 @RestController
 @RequestMapping("/api/pets")
 @Tag(name = "Pet Controller", description = "Pet API")
@@ -31,90 +44,104 @@ public class PetController {
 
     private final PetService petService;
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public PetController(PetService petService, UserRepository userRepository) {
+    public PetController(PetService petService, UserService userService) {
         this.petService = petService;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
+    /**
+     * Retrieves all pets, optionally filtered by name, category, status,
+     * or limit.
+     *
+     * @param name       optional pet name filter
+     * @param categoryId optional category ID filter
+     * @param status     optional pet status filter
+     * @param limit      optional limit on number of results
+     * @return ResponseEntity containing the list of pets
+     */
     @GetMapping
-    @Operation(summary = "Get available pets", description = "Retrieve pets available for purchase (public access)")
-    public ResponseEntity<List<Pet>> getAllPets(
+    @Operation(summary = "Get pets", description = "Retrieve pets for purchase (public access)")
+    public ResponseEntity<?> getAllPets(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PetStatus status,
-            @RequestParam(required = false) Integer limit) {
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        logger.info(
-                "Received request to get available pets with filters - name: '{}', categoryId: {}, status: {}, limit: {}",
-                name, categoryId, status, limit);
+        Page<Pet> petPage = petService.findPetsByFiltersPaginated(name, categoryId, status, null, page, size);
+        PetPageResponse response = new PetPageResponse(
+                petPage.getContent(),
+                petPage.getNumber(),
+                petPage.getSize(),
+                petPage.getTotalElements(),
+                petPage.getTotalPages());
 
-        List<Pet> pets;
-        if (name != null || categoryId != null || status != null || limit != null) {
-            logger.debug("Applying filters to pet search");
-            pets = petService.findPetsByFilters(name, categoryId, status, limit);
-            logger.info("Found {} pets matching filter criteria", pets.size());
-        } else {
-            logger.debug("No filters provided, returning all available pets");
-            pets = petService.getAllPets();
-            logger.info("Retrieved {} available pets from store inventory", pets.size());
-        }
-        return ResponseEntity.ok(pets);
+        return ResponseEntity.ok(response);
     }
 
+    /**
+     * Retrieves the latest available pets, limited by the specified number.
+     *
+     * @param limit the maximum number of pets to return
+     * @return ResponseEntity containing the list of latest pets
+     */
     @GetMapping("/latest")
     @Operation(summary = "Get latest available pets", description = "Retrieve the latest available pets (useful for home page)")
-    public ResponseEntity<List<Pet>> getLatestPets(
-            @RequestParam(defaultValue = "6") int limit) {
+    public ResponseEntity<?> getLatestPets(
+            @RequestParam(required = false) Integer limit) {
+
         List<Pet> pets = petService.getLatestAvailablePets(limit);
         return ResponseEntity.ok(pets);
     }
 
+    /**
+     * Retrieves a pet by its ID.
+     *
+     * @param id the ID of the pet to retrieve
+     * @return ResponseEntity containing the pet if found, or not found status
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Find pet by ID", description = "Returns a single pet")
     public ResponseEntity<Pet> getPetById(
             @Parameter(description = "ID of pet to return") @PathVariable Long id) {
 
-        logger.info("Received request to get pet by ID: {}", id);
+        return ResponseEntity.of(petService.getPetById(id));
 
-        Optional<Pet> pet = petService.getPetById(id);
-        if (pet.isPresent()) {
-            logger.info("Pet found with ID: {} - '{}'", id, pet.get().getName());
-            return ResponseEntity.ok(pet.get());
-        } else {
-            logger.warn("Pet not found with ID: {}", id);
-            return ResponseEntity.notFound().build();
-        }
     }
 
-    @GetMapping("/findByStatus")
-    @Operation(summary = "Finds pets by status", description = "Multiple status values can be provided")
-    public ResponseEntity<List<Pet>> findPetsByStatus(
-            @Parameter(description = "Status values that need to be considered for filter") @RequestParam PetStatus status) {
-        List<Pet> pets = petService.getPetsByStatus(status);
-        return ResponseEntity.ok(pets);
-    }
-
+    /**
+     * Adds a new pet to the store.
+     *
+     * @param pet the pet to add
+     * @return ResponseEntity containing the added pet
+     */
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Add a new pet", description = "Add a new pet to the store")
     public ResponseEntity<Pet> addPet(@Valid @RequestBody Pet pet) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth != null ? auth.getName() : "anonymous";
-
-        logger.info("User '{}' attempting to add new pet: '{}' in category: '{}' with price: ${}",
-                username, pet.getName(),
-                pet.getCategory() != null ? pet.getCategory().getName() : "unknown",
-                pet.getPrice());
-
         Pet savedPet = petService.savePet(pet);
-        logger.info("Successfully added new pet with ID: {} - '{}' by user: '{}'",
-                savedPet.getId(), savedPet.getName(), username);
-        return ResponseEntity.ok(savedPet);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedPet.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(savedPet);
     }
 
+    /**
+     * Updates an existing pet by its ID.
+     * Only the owner or an admin can update a pet.
+     *
+     * @param id         the ID of the pet to update
+     * @param petDetails the updated pet details
+     * @return ResponseEntity containing the updated pet if successful, or error
+     *         status
+     */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Update an existing pet", description = "Update an existing pet by Id")
@@ -122,72 +149,51 @@ public class PetController {
             @Parameter(description = "ID of pet to update") @PathVariable Long id,
             @Valid @RequestBody Pet petDetails) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userService.getUserByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
 
-        logger.info("User '{}' attempting to update pet with ID: {}", username, id);
+        Pet existingPet = petService.getPetById(id)
+                .orElseThrow(() -> new PetNotFoundException(id));
 
-        Optional<User> currentUserOpt = userRepository.findByEmail(username);
-        if (!currentUserOpt.isPresent()) {
-            logger.warn("User '{}' not found in database during pet update attempt for ID: {}", username, id);
-            return ResponseEntity.status(401).build(); // Unauthorized
-        }
-
-        User currentUser = currentUserOpt.get();
-        Optional<Pet> existingPetOpt = petService.getPetById(id);
-        if (!existingPetOpt.isPresent()) {
-            logger.warn("Pet with ID: {} not found during update attempt by user: '{}'", id, username);
-            return ResponseEntity.notFound().build();
-        }
-
-        Pet existingPet = existingPetOpt.get();
         boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
         boolean isOwner = existingPet.getCreatedBy() != null &&
                 existingPet.getCreatedBy().equals(currentUser.getId());
 
-        logger.debug("User '{}' permission check for pet ID: {} - isAdmin: {}, isOwner: {}",
-                username, id, isAdmin, isOwner);
-
         if (!isAdmin && !isOwner) {
-            logger.warn("User '{}' denied access to update pet ID: {} - insufficient permissions", username, id);
-            return ResponseEntity.status(403).build(); // Forbidden
+            throw new AccessDeniedException("You are not allowed to update this pet");
         }
 
         Pet updatedPet = petService.updatePet(id, petDetails);
-        if (updatedPet != null) {
-            logger.info("Successfully updated pet ID: {} - '{}' by user: '{}'",
-                    updatedPet.getId(), updatedPet.getName(), username);
-            return ResponseEntity.ok(updatedPet);
-        } else {
-            logger.error("Failed to update pet ID: {} by user: '{}' - service returned null", id, username);
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(updatedPet);
+
     }
 
+    /**
+     * Deletes a pet by its ID. Only admins can delete pets.
+     *
+     * @param id the ID of the pet to delete
+     * @return ResponseEntity with status OK if deleted, or not found status
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Deletes a pet", description = "Delete a pet by ID")
     public ResponseEntity<Void> deletePet(
             @Parameter(description = "Pet id to delete") @PathVariable Long id) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth != null ? auth.getName() : "anonymous";
+        petService.deletePet(id);
 
-        logger.info("Admin user '{}' attempting to delete pet with ID: {}", username, id);
-
-        Optional<Pet> petToDelete = petService.getPetById(id);
-
-        boolean deleted = petService.deletePet(id);
-        if (deleted) {
-            String petName = petToDelete.isPresent() ? petToDelete.get().getName() : "unknown";
-            logger.info("Successfully deleted pet ID: {} - '{}' by admin: '{}'", id, petName, username);
-            return ResponseEntity.ok().build();
-        } else {
-            logger.warn("Failed to delete pet ID: {} by admin: '{}' - pet not found", id, username);
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Updates the status of a pet by its ID. Only admins can update status.
+     *
+     * @param id     the ID of the pet to update
+     * @param status the new status to set
+     * @return ResponseEntity containing the updated pet if successful, or not found
+     *         status
+     */
     @PostMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Updates a pet status", description = "Update pet status by ID")
@@ -195,72 +201,49 @@ public class PetController {
             @Parameter(description = "ID of pet to update") @PathVariable Long id,
             @Parameter(description = "New status of pet") @RequestParam PetStatus status) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth != null ? auth.getName() : "anonymous";
-
-        logger.info("Admin user '{}' attempting to update status of pet ID: {} to: {}", username, id, status);
-
         Pet updatedPet = petService.updatePetStatus(id, status);
-        if (updatedPet != null) {
-            logger.info("Successfully updated pet ID: {} - '{}' status to: {} by admin: '{}'",
-                    id, updatedPet.getName(), status, username);
-            return ResponseEntity.ok(updatedPet);
-        } else {
-            logger.warn("Failed to update status for pet ID: {} by admin: '{}' - pet not found", id, username);
-            return ResponseEntity.notFound().build();
-        }
+
+        return ResponseEntity.ok(updatedPet);
     }
 
-    @PostMapping("/{id}/purchase")
-    @PreAuthorize("hasAnyRole('USER')")
-    @Operation(summary = "Purchase a pet", description = "Purchase an available pet (requires authentication)")
-    public ResponseEntity<Pet> purchasePet(
-            @Parameter(description = "ID of pet to purchase") @PathVariable Long id) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = auth.getName();
-        Optional<User> userOptional = userRepository.findByEmail(userEmail);
-
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Pet purchasedPet = petService.purchasePet(id, userOptional.get());
-        return purchasedPet != null ? ResponseEntity.ok(purchasedPet) : ResponseEntity.badRequest().build();
-    }
-
+    /**
+     * Retrieves pets owned and created by the current authenticated user.
+     *
+     * @return ResponseEntity containing the list of user's pets
+     */
     @GetMapping("/my-pets")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Get user's pets", description = "Get pets owned and created by the current user (requires authentication)")
-    public ResponseEntity<List<Pet>> getMyPets() {
+    public ResponseEntity<?> getMyPets(
 
-        logger.info("Received request to get user's pets (owned and created)");
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) PetStatus status,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = auth.getName();
-        Optional<User> userOptional = userRepository.findByEmail(userEmail);
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if (userOptional.isEmpty()) {
-            logger.warn("User with email '{}' not found during getMyPets request", userEmail);
-            return ResponseEntity.badRequest().build();
-        }
+        User user = userService.getUserByEmail(userEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
-        User user = userOptional.get();
-        List<Pet> userPets = petService.getPetsByUser(user);
+        Page<Pet> petPage = petService.findPetsByFiltersPaginated(name, categoryId, status, user.getId(), page, size);
+        PetPageResponse response = new PetPageResponse(
+                petPage.getContent(),
+                petPage.getNumber(),
+                petPage.getSize(),
+                petPage.getTotalElements(),
+                petPage.getTotalPages());
 
-        List<Pet> ownedPets = petService.getPetsByOwner(user);
-        List<Pet> createdPets = petService.getPetsByCreator(user.getId());
-
-        logger.info(
-                "Found {} total pets for user '{}': {} owned pets + {} created pets (total {} after deduplication)",
-                userPets.size(), userEmail, ownedPets.size(), createdPets.size(), userPets.size());
-        logger.debug("Owned pets: {}, Created pets: {}",
-                ownedPets.stream().map(Pet::getName).toList(),
-                createdPets.stream().map(Pet::getName).toList());
-
-        return ResponseEntity.ok(userPets);
+        return ResponseEntity.ok(response);
     }
 
+    /**
+     * Test endpoint to verify authentication is working for the current user.
+     *
+     * @return ResponseEntity containing authentication details for the user
+     */
     @GetMapping("/auth-test")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Test authentication", description = "Test endpoint to verify authentication is working")
@@ -268,13 +251,10 @@ public class PetController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
-        Optional<User> userOptional = userRepository.findByEmail(userEmail);
 
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
-        }
+        User user = userService.getUserByEmail(userEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
-        User user = userOptional.get();
         return ResponseEntity.ok(Map.of(
                 "message", "Authentication successful",
                 "user", user.getEmail(),

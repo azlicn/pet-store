@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "cart_items", uniqueConstraints = @UniqueConstraint(columnNames = { "cart_id", "pet_id" }))
@@ -28,13 +29,16 @@ public class CartItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     @JsonIgnore
+    @NotNull(message = "Cart is required")
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "pet_id", nullable = false)
+    @NotNull(message = "Pet is required")
     private Pet pet;
 
     @Column(nullable = false)
+    @NotNull(message = "Price is required")
     private BigDecimal price;
 
     public Long getId() {

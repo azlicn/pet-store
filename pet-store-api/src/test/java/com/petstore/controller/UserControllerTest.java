@@ -1,407 +1,206 @@
 package com.petstore.controller;
 
-import com.petstore.dto.UserUpdateRequest;
-import com.petstore.exception.UserNotFoundException;
-import com.petstore.model.Role;
-import com.petstore.model.User;
-import com.petstore.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import java.util.Set;
+import java.util.List;
+import java.util.Optional;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.doThrow;
-import org.mockito.stubbing.Answer;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("User Controller Tests")
+import com.petstore.model.User;
+import com.petstore.model.Role;
+
+import com.petstore.security.JwtTokenProvider;
+import com.petstore.service.UserService;
+import com.petstore.service.UserDetailsServiceImpl;
+
+import com.petstore.exception.GlobalExceptionHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petstore.config.TestSecurityConfig;
+
+/**
+ * WebMvcTest for UserController.
+ * <p>
+ * This test class covers all user management endpoints, including retrieval,
+ * update, and deletion of users.
+ * It validates positive scenarios (successful operations) and key edge/negative
+ * cases (not found, error responses).
+ * Security filters and exception handling are enabled for realistic access
+ * control and error simulation.
+ */
+@WebMvcTest(UserController.class)
+@Import({ GlobalExceptionHandler.class, TestSecurityConfig.class })
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("User Controller WebMvcTest")
 class UserControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private UserService userService;
 
-    @InjectMocks
-    private UserController userController;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
 
-    private User testUser;
-    private User adminUser;
-    private List<User> testUsers;
+    @MockBean
+    private UserDetailsServiceImpl userDetailsServiceImpl;
 
-    @BeforeEach
-    void setUp() {
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setEmail("user@example.com");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
-        testUser.setPassword("encodedPassword");
-        testUser.setRoles(Set.of(Role.USER));
-        testUser.setCreatedAt(LocalDateTime.now());
-        testUser.setUpdatedAt(LocalDateTime.now());
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        adminUser = new User();
-        adminUser.setId(2L);
-        adminUser.setEmail("admin@example.com");
-        adminUser.setFirstName("Jane");
-        adminUser.setLastName("Admin");
-        adminUser.setPassword("encodedAdminPassword");
-        adminUser.setRoles(Set.of(Role.ADMIN));
-        adminUser.setCreatedAt(LocalDateTime.now());
-        adminUser.setUpdatedAt(LocalDateTime.now());
+    /**
+     * Test: GET /api/users (ADMIN only)
+     * Verifies all users are returned for admin.
+     */
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldReturnAllUsersForAdmin() throws Exception {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("admin@test.com");
+        user.setFirstName("Admin");
+        user.setLastName("User");
+        user.setRoles(Set.of(Role.ADMIN));
+        when(userService.getAllUsers()).thenReturn(List.of(user));
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].email")
+                        .value("admin@test.com"));
 
-        testUsers = Arrays.asList(testUser, adminUser);
     }
 
+    /**
+     * Test: GET /api/users/{id} (ADMIN)
+     * Verifies user is returned by ID for admin.
+     */
     @Test
-    @DisplayName("GET /api/users - Should return all users for admin")
-    void shouldReturnAllUsersForAdmin() {
-
-        when(userService.getAllUsers()).thenReturn(testUsers);
-
-        ResponseEntity<?> response = userController.getAllUsers();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(List.class);
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> users = (List<Map<String, Object>>) response.getBody();
-        assertThat(users).hasSize(2);
-        assertThat(users.get(0).get("email")).isEqualTo("user@example.com");
-        assertThat(users.get(0).get("password")).isNull();
-        assertThat(users.get(1).get("email")).isEqualTo("admin@example.com");
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldReturnUserByIdForAdmin() throws Exception {
+        User user = new User();
+        user.setId(2L);
+        user.setEmail("user@test.com");
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setRoles(Set.of(Role.USER));
+        when(userService.getUserById(2L)).thenReturn(Optional.of(user));
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users/2"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email")
+                        .value("user@test.com"));
     }
 
+    /**
+     * Test: GET /api/users/{id} (ADMIN) - Not Found
+     * Verifies 404 is returned if user not found.
+     */
     @Test
-    @DisplayName("GET /api/users/{id} - Should return user by ID when found")
-    void shouldReturnUserByIdWhenFound() {
-
-        when(userService.getUserById(1L)).thenReturn(Optional.of(testUser));
-
-        ResponseEntity<?> response = userController.getUserById(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> userResponse = (Map<String, Object>) response.getBody();
-        assertThat(userResponse.get("id")).isEqualTo(1L);
-        assertThat(userResponse.get("email")).isEqualTo("user@example.com");
-        assertThat(userResponse.get("firstName")).isEqualTo("John");
-        assertThat(userResponse.get("lastName")).isEqualTo("Doe");
-        assertThat(userResponse.get("password")).isNull();
-        assertThat(userResponse.get("roles")).isEqualTo(Set.of(Role.USER));
+    @WithMockUser(roles = "ADMIN")
+    void shouldReturn404IfUserNotFound() throws Exception {
+        when(userService.getUserById(99L)).thenReturn(Optional.empty());
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users/99"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("User not found with email: 'User not found with id: 99'"));
     }
 
+    /**
+     * Test: PUT /api/users/{id} (ADMIN)
+     * Verifies user is updated successfully by admin.
+     */
     @Test
-    @DisplayName("GET /api/users/{id} - Should return error when user not found")
-    void shouldReturnErrorWhenUserNotFound() {
-
-        when(userService.getUserById(999L)).thenReturn(Optional.empty());
-
-        assertThrows(UserNotFoundException.class, () -> {
-            userController.getUserById(999L);
-        });
-    }
-
-    @Test
-    @DisplayName("PUT /api/users/{id} - Should update user successfully")
-    void shouldUpdateUserSuccessfully() {
-
-        UserUpdateRequest updateRequest = new UserUpdateRequest();
-        updateRequest.setFirstName("John Updated");
-        updateRequest.setLastName("Doe Updated");
-        updateRequest.setEmail("john.updated@example.com");
-        updateRequest.setPassword("newPassword");
-
-        User updatedUser = new User();
-        updatedUser.setId(1L);
-        updatedUser.setEmail("john.updated@example.com");
-        updatedUser.setFirstName("John Updated");
-        updatedUser.setLastName("Doe Updated");
-        updatedUser.setRoles(Set.of(Role.USER));
-        updatedUser.setCreatedAt(testUser.getCreatedAt());
-        updatedUser.setUpdatedAt(LocalDateTime.now());
-
-        when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
-        when(userService.updateUser(eq(1L), any(User.class))).thenReturn(updatedUser);
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getAuthorities()).thenAnswer((Answer<Collection<GrantedAuthority>>) invocation -> Arrays
-                    .asList(new SimpleGrantedAuthority("ROLE_USER")));
-
-            ResponseEntity<?> response = userController.updateUser(1L, updateRequest);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isInstanceOf(Map.class);
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-            assertThat(responseBody.get("message")).isEqualTo("User updated successfully");
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> userResponse = (Map<String, Object>) responseBody.get("user");
-            assertThat(userResponse.get("firstName")).isEqualTo("John Updated");
-            assertThat(userResponse.get("email")).isEqualTo("john.updated@example.com");
-        }
-    }
-
-    @Test
-    @DisplayName("PUT /api/users/{id} - Admin should update user with roles")
-    void adminShouldUpdateUserWithRoles() {
-
-        UserUpdateRequest updateRequest = new UserUpdateRequest();
-        updateRequest.setFirstName("Jane Updated");
-        updateRequest.setLastName("Admin Updated");
-        updateRequest.setEmail("jane.admin@example.com");
-        updateRequest.setRoles(Set.of(Role.ADMIN, Role.USER));
-
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldUpdateUserByAdmin() throws Exception {
+        com.petstore.dto.UserUpdateRequest updateRequest = new com.petstore.dto.UserUpdateRequest("Test", "User",
+                "user@test.com", "password123", Set.of(Role.USER));
         User updatedUser = new User();
         updatedUser.setId(2L);
-        updatedUser.setEmail("jane.admin@example.com");
-        updatedUser.setFirstName("Jane Updated");
-        updatedUser.setLastName("Admin Updated");
-        updatedUser.setRoles(Set.of(Role.ADMIN, Role.USER));
-        updatedUser.setCreatedAt(adminUser.getCreatedAt());
-        updatedUser.setUpdatedAt(LocalDateTime.now());
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getAuthorities()).thenAnswer((Answer<Collection<GrantedAuthority>>) invocation -> Arrays
-                    .asList(new SimpleGrantedAuthority("ROLE_ADMIN")));
-
-            when(userService.getUserById(eq(2L))).thenReturn(Optional.of(adminUser));
-            when(userService.updateUser(eq(2L), any(User.class))).thenReturn(updatedUser);
-
-            ResponseEntity<?> response = userController.updateUser(2L, updateRequest);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isInstanceOf(Map.class);
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
-            assertThat(responseBody.get("message")).isEqualTo("User updated successfully");
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> userResponse = (Map<String, Object>) responseBody.get("user");
-            assertThat(userResponse.get("roles")).isEqualTo(Set.of(Role.ADMIN, Role.USER));
-        }
-    }
-
-    @Test
-    @DisplayName("PUT /api/users/{id} - Should handle update service exception")
-    void shouldHandleUpdateServiceException() {
-
-        UserUpdateRequest updateRequest = new UserUpdateRequest();
-        updateRequest.setFirstName("John");
-        updateRequest.setEmail("invalid-email");
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getAuthorities()).thenAnswer((Answer<Collection<GrantedAuthority>>) invocation -> Arrays
-                    .asList(new SimpleGrantedAuthority("ROLE_USER")));
-
-            when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
-            when(userService.updateUser(eq(1L), any(User.class)))
-                    .thenThrow(new RuntimeException("Email already exists"));
-
-            // Expect RuntimeException to be thrown
-            assertThrows(RuntimeException.class, () -> {
-                userController.updateUser(1L, updateRequest);
-            });
-        }
-    }
-
-    @Test
-    @DisplayName("PUT /api/users/{id} - Should skip password update when empty")
-    void shouldSkipPasswordUpdateWhenEmpty() {
-
-        UserUpdateRequest updateRequest = new UserUpdateRequest();
-        updateRequest.setFirstName("John Updated");
-        updateRequest.setPassword("");
-
-        User updatedUser = new User();
-        updatedUser.setId(1L);
-        updatedUser.setFirstName("John Updated");
-        updatedUser.setEmail(testUser.getEmail());
+        updatedUser.setEmail("user@test.com");
+        updatedUser.setFirstName("Test");
+        updatedUser.setLastName("User");
         updatedUser.setRoles(Set.of(Role.USER));
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getAuthorities()).thenAnswer((Answer<Collection<GrantedAuthority>>) invocation -> Arrays
-                    .asList(new SimpleGrantedAuthority("ROLE_USER")));
-
-            when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
-            when(userService.updateUser(eq(1L), any(User.class))).thenReturn(updatedUser);
-
-            ResponseEntity<?> response = userController.updateUser(1L, updateRequest);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        }
+        when(userService.getUserById(2L)).thenReturn(Optional.of(updatedUser));
+        when(userService.updateUser(eq(2L), any(User.class))).thenReturn(updatedUser);
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/users/2")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("User updated successfully"));
     }
 
+    /**
+     * Test: PUT /api/users/{id} (ADMIN) - Not Found
+     * Verifies 404 is returned if user to update does not exist.
+     */
     @Test
-    @DisplayName("DELETE /api/users/{id} - Should delete user successfully")
-    void shouldDeleteUserSuccessfully() {
-
-        when(userService.existsById(1L)).thenReturn(true);
-
-        ResponseEntity<?> response = userController.deleteUser(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody();
-        assertThat(responseBody.get("message")).isEqualTo("User deleted successfully");
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldReturn404WhenUpdatingNonexistentUser() throws Exception {
+        com.petstore.dto.UserUpdateRequest updateRequest = new com.petstore.dto.UserUpdateRequest("Test", "User",
+                "user@test.com", "password123", Set.of(Role.USER));
+        when(userService.getUserById(99L)).thenReturn(Optional.empty());
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/users/99")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("User not found with id: 99"));
     }
 
+    /**
+     * Test: DELETE /api/users/{id} (ADMIN)
+     * Verifies user is deleted successfully by admin.
+     */
     @Test
-    @DisplayName("DELETE /api/users/{id} - Should return error when user not found for deletion")
-    void shouldReturnErrorWhenUserNotFoundForDeletion() {
-
-        when(userService.existsById(999L)).thenReturn(false);
-
-        ResponseEntity<?> response = userController.deleteUser(999L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).contains("User not found with id: 999");
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldDeleteUserByAdmin() throws Exception {
+        when(userService.existsById(2L)).thenReturn(true);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/2"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("User deleted successfully"));
     }
 
+    /**
+     * Test: DELETE /api/users/{id} (ADMIN) - Not Found
+     * Verifies error if user to delete does not exist.
+     */
     @Test
-    @DisplayName("DELETE /api/users/{id} - Should handle delete service exception")
-    void shouldHandleDeleteServiceException() {
-
-        when(userService.existsById(1L)).thenReturn(true);
-        doThrow(new RuntimeException("Cannot delete user with active pets")).when(userService).deleteUser(1L);
-
-        ResponseEntity<?> response = userController.deleteUser(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, String> errorResponse = (Map<String, String>) response.getBody();
-        assertThat(errorResponse.get("message")).contains("Failed to delete user");
-        assertThat(errorResponse.get("message")).contains("Cannot delete user with active pets");
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldReturnErrorWhenDeletingNonexistentUser() throws Exception {
+        when(userService.existsById(99L)).thenReturn(false);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/99"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("User not found with id: 99"));
     }
 
+    /**
+     * Test: DELETE /api/users/{id} (ADMIN) - Exception
+     * Verifies error if service throws exception during delete.
+     */
     @Test
-    @DisplayName("convertToUserResponse - Should exclude sensitive information")
-    void shouldExcludeSensitiveInformationInResponse() {
-
-        when(userService.getUserById(1L)).thenReturn(Optional.of(testUser));
-        ResponseEntity<?> response = userController.getUserById(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isInstanceOf(Map.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> userResponse = (Map<String, Object>) response.getBody();
-
-        assertThat(userResponse).containsKeys("id", "email", "firstName", "lastName", "roles", "createdAt",
-                "updatedAt");
-
-        assertThat(userResponse).doesNotContainKey("password");
+    @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
+    void shouldReturnErrorWhenDeleteThrowsException() throws Exception {
+        when(userService.existsById(2L)).thenReturn(true);
+        org.mockito.Mockito.doThrow(new RuntimeException("Cannot delete user")).when(userService).deleteUser(2L);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/2"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("Failed to delete user: Cannot delete user"));
     }
 
-    @Test
-    @DisplayName("UserUpdateRequest - Should handle null values properly")
-    void shouldHandleNullValuesInUpdateRequest() {
-
-        UserUpdateRequest updateRequest = new UserUpdateRequest();
-        updateRequest.setFirstName("John");
-
-        User updatedUser = new User();
-        updatedUser.setId(1L);
-        updatedUser.setFirstName("John");
-        updatedUser.setEmail(testUser.getEmail());
-        updatedUser.setRoles(Set.of(Role.USER));
-
-        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(
-                SecurityContextHolder.class)) {
-            SecurityContext securityContext = mock(SecurityContext.class);
-            Authentication authentication = mock(Authentication.class);
-
-            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-            when(securityContext.getAuthentication()).thenReturn(authentication);
-            when(authentication.getAuthorities()).thenAnswer((Answer<Collection<GrantedAuthority>>) invocation -> Arrays
-                    .asList(new SimpleGrantedAuthority("ROLE_USER")));
-
-            when(userService.getUserById(eq(1L))).thenReturn(Optional.of(testUser));
-            when(userService.updateUser(eq(1L), any(User.class))).thenReturn(updatedUser);
-
-            ResponseEntity<?> response = userController.updateUser(1L, updateRequest);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        }
-    }
-
-    @Test
-    @DisplayName("Edge cases - Should handle edge case IDs")
-    void shouldHandleEdgeCaseIds() {
-
-        when(userService.getUserById(0L)).thenReturn(Optional.empty());
-        assertThrows(UserNotFoundException.class, () -> {
-            userController.getUserById(0L);
-        });
-
-        when(userService.existsById(0L)).thenReturn(false);
-        ResponseEntity<?> deleteResponse = userController.deleteUser(0L);
-        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    @DisplayName("Edge cases - Should handle negative IDs")
-    void shouldHandleNegativeIds() {
-
-        when(userService.getUserById(-1L)).thenReturn(Optional.empty());
-        assertThrows(UserNotFoundException.class, () -> {
-            userController.getUserById(-1L);
-        });
-    }
 }

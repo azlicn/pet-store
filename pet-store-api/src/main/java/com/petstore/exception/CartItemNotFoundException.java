@@ -1,5 +1,8 @@
 package com.petstore.exception;
 
+/**
+ * Exception thrown when a cart item is not found in the system.
+ */
 public class CartItemNotFoundException extends RuntimeException {
     
     /**

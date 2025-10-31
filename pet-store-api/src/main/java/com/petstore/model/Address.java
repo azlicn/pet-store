@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "addresses")
@@ -29,24 +31,38 @@ public class Address {
     private User user;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "Full name is mandatory")
     private String fullName;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "Phone number is mandatory")
     private String phoneNumber;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "Street is mandatory")
     private String street;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "City is mandatory")
     private String city;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "State is mandatory")
     private String state;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "Postal code is mandatory")
     private String postalCode;
 
     @Column(nullable = false)
+    @NotBlank(
+            message = "Country is mandatory")
     private String country;
 
     private boolean isDefault = false;

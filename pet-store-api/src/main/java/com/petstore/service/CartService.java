@@ -18,6 +18,9 @@ import com.petstore.repository.CartItemRepository;
 import com.petstore.repository.CartRepository;
 import com.petstore.repository.PetRepository;
 
+/**
+ * Service for managing user carts in the store
+ */
 @Service
 public class CartService {
 
@@ -33,8 +36,17 @@ public class CartService {
         this.cartItemRepository = cartItemRepository;
     }
 
+    /**
+     * Adds a pet to the user's cart
+     *
+     * @param userId the user ID
+     * @param petId the pet ID to add
+     * @return the updated cart
+     * @throws PetNotFoundException if the pet does not exist
+     * @throws PetAlreadySoldException if the pet is already sold
+     * @throws PetAlreadyExistInUserCartException if the pet is already in the cart
+     */
     public Cart addPetToCart(Long userId, Long petId) {
-
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new PetNotFoundException(petId));
 
@@ -48,14 +60,13 @@ public class CartService {
                     newCart.setUser(new User(userId));
                     return cartRepository.save(newCart);
                 });
-        
+
         boolean alreadyExists = cart.getItems().stream()
                 .anyMatch(item -> item.getPet().getId().equals(petId));
 
         if (alreadyExists) {
             throw new PetAlreadyExistInUserCartException(petId);
         }
-        
 
         CartItem item = new CartItem();
         item.setCart(cart);
@@ -63,15 +74,29 @@ public class CartService {
         item.setPrice(pet.getPrice());
 
         cart.getItems().add(item);
-        
+
         return cartRepository.save(cart);
     }
 
+    /**
+     * Retrieves the cart for a user by user ID
+     *
+     * @param userId the user ID
+     * @return the user's cart
+     * @throws UserCartNotFoundException if the cart does not exist
+     */
     public Cart getCartByUserId(Long userId) {
+        
         return cartRepository.findByUserIdWithItemsAndPets(userId)
                 .orElseThrow(() -> new UserCartNotFoundException(userId));
     }
 
+    /**
+     * Removes a cart item by its ID
+     *
+     * @param cartItemId the cart item ID to remove
+     * @throws CartItemNotFoundException if the cart item does not exist
+     */
     public void removeCartItem(Long cartItemId) {
 
         if (!cartItemRepository.existsById(cartItemId)) {
@@ -80,5 +105,4 @@ public class CartService {
         cartItemRepository.deleteById(cartItemId);
     }
 
-    
 }

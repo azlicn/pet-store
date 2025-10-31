@@ -12,6 +12,8 @@ import com.petstore.enums.OrderStatus;
 import com.petstore.enums.PaymentStatus;
 import com.petstore.enums.PetStatus;
 import com.petstore.exception.AddressNotFoundException;
+import com.petstore.exception.CartEmptyException;
+import com.petstore.exception.InvalidUserException;
 import com.petstore.exception.OrderNotFoundException;
 import com.petstore.exception.PetAlreadySoldException;
 import com.petstore.exception.UserCartNotFoundException;
@@ -36,6 +38,9 @@ import com.petstore.util.OrderNumberGenerator;
 
 import jakarta.transaction.Transactional;
 
+/**
+ * Service for managing orders in the store
+ */
 @Service
 public class OrderService {
 
@@ -62,14 +67,37 @@ public class OrderService {
         this.discountService = discountService;
     }
 
+    /**
+     * Retrieves all orders in the store.
+     *
+     * @return list of all orders
+     */
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
+    /**
+     * Retrieves all orders for a specific user.
+     *
+     * @param userId the user ID
+     * @return list of orders belonging to the user
+     */
     public List<Order> getOrdersByUserId(Long userId) {
+
+        if (userId == null) {
+            throw new InvalidUserException("User ID cannot be null");
+        }
+
         return orderRepository.findByUserId(userId);
     }
 
+    /**
+     * Retrieves an order by its ID.
+     *
+     * @param orderId the order ID
+     * @return the order if found
+     * @throws OrderNotFoundException if the order does not exist
+     */
     public Order getOrderById(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
@@ -78,6 +106,14 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Retrieves an order by its ID and user ID.
+     *
+     * @param orderId the order ID
+     * @param userId  the user ID
+     * @return the order if found
+     * @throws OrderNotFoundException if the order does not exist for the user
+     */
     public Order getOrderByIdAndUserId(Long orderId, Long userId) {
 
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
@@ -86,10 +122,24 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Performs checkout for a user's cart, creating an order.
+     *
+     * @param userId       the user ID
+     * @param discountCode the discount code to apply (optional)
+     * @return the created order
+     * @throws UserCartNotFoundException if the user's cart does not exist
+     * @throws PetAlreadySoldException   if any pet in the cart is already sold
+     */
     @Transactional
     public Order checkout(Long userId, String discountCode) {
+
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserCartNotFoundException(userId));
+
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new CartEmptyException(userId);
+        }
 
         Order order = new Order();
         order.setOrderNumber(OrderNumberGenerator.generateOrderNumber());
@@ -133,6 +183,16 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Makes a payment for an order.
+     *
+     * @param orderId             the order ID
+     * @param paymentOrderRequest the payment request details
+     * @return the created payment
+     * @throws OrderNotFoundException   if the order does not exist
+     * @throws AddressNotFoundException if the shipping or billing address does not
+     *                                  exist
+     */
     @Transactional
     public Payment makePayment(Long orderId, PaymentOrderRequest paymentOrderRequest) {
 
@@ -188,6 +248,12 @@ public class OrderService {
         return payment;
     }
 
+    /**
+     * Cancels an order by its ID.
+     *
+     * @param orderId the order ID
+     * @throws OrderNotFoundException if the order does not exist
+     */
     @Transactional
     public void cancelOrder(Long orderId) {
 
@@ -201,6 +267,12 @@ public class OrderService {
                 LocalDateTime.now()));
     }
 
+    /**
+     * Deletes (marks as cancelled) an order by its ID.
+     *
+     * @param orderId the order ID
+     * @throws OrderNotFoundException if the order does not exist
+     */
     @Transactional
     public void deleteOrder(Long orderId) {
 
@@ -211,6 +283,14 @@ public class OrderService {
 
     }
 
+    /**
+     * Updates the delivery status of an order.
+     *
+     * @param orderId    the order ID
+     * @param newStatus  the new delivery status
+     * @param dateString the date/time string for shipped/delivered (optional)
+     * @throws OrderNotFoundException if the order does not exist
+     */
     @Transactional
     public void updateOrderDeliveryStatus(Long orderId, DeliveryStatus newStatus, String dateString) {
 
@@ -241,13 +321,28 @@ public class OrderService {
         }
     }
 
+    /**
+     * Checks if an order is owned by a user.
+     *
+     * @param orderId the order ID
+     * @param userId  the user ID
+     * @return true if the order is owned by the user, false otherwise
+     */
     public boolean isOrderOwnedByUser(Long orderId, Long userId) {
+
         return orderRepository.findById(orderId)
                 .map(order -> order.getUser().getId().equals(userId))
                 .orElse(false);
     }
 
+    /**
+     * Checks if an address is used in any order (shipping or billing).
+     *
+     * @param address the address to check
+     * @return true if the address is used, false otherwise
+     */
     public boolean existsByAddressUsed(Address address) {
+
         return orderRepository.existsByAddressUsed(address);
     }
 

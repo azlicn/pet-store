@@ -4,13 +4,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.petstore.exception.DiscountAlreadyExistsException;
+import com.petstore.exception.DiscountInUseException;
 import com.petstore.exception.InvalidDiscountException;
+import com.petstore.exception.DiscountNotFoundException;
 import com.petstore.model.Discount;
 import com.petstore.repository.DiscountRepository;
 
+/**
+ * Service for managing discounts in the store
+ */
 @Service
 public class DiscountService {
 
@@ -35,10 +41,11 @@ public class DiscountService {
      * @param id the discount ID
      * @return the discount if found
      */
-    public Optional<Discount> getDiscountById(Long id) {
-        return discountRepository.findById(id);
-    }
+    public Discount getDiscountById(Long id) {
 
+        return discountRepository.findById(id)
+        .orElseThrow(() -> new DiscountNotFoundException(id));
+    }
 
     /**
      * Saves a new discount to the repository.
@@ -57,29 +64,24 @@ public class DiscountService {
      * @return the updated discount
      */
     public Discount updateDiscount(Long id, Discount discountDetails) {
-        Optional<Discount> existingDiscount = discountRepository.findById(id);
 
-        if (existingDiscount.isPresent()) {
+        Discount existingDiscount = discountRepository.findById(id)
+                .orElseThrow(() -> new DiscountNotFoundException(id));
 
-            // Check for duplicate name (excluding current discount)
-            if (discountRepository.existsByCode(discountDetails.getCode()) &&
-                !existingDiscount.get().getCode().equals(discountDetails.getCode())) {
-                throw new DiscountAlreadyExistsException(discountDetails.getCode());
-            }
-
-            Discount discount = existingDiscount.get();
-            discount.setCode(discountDetails.getCode());
-            discount.setPercentage(discountDetails.getPercentage());
-            discount.setValidFrom(discountDetails.getValidFrom());
-            discount.setValidTo(discountDetails.getValidTo());
-            discount.setDescription(discountDetails.getDescription());
-            discount.setActive(discountDetails.isActive());
-            return discountRepository.save(discount);
+        // Check for duplicate code (excluding current discount)
+        if (discountRepository.existsByCodeAndIdNot(discountDetails.getCode(), id)) {
+            throw new DiscountAlreadyExistsException(discountDetails.getCode());
         }
 
-        return null;
-    }
+        existingDiscount.setCode(discountDetails.getCode());
+        existingDiscount.setPercentage(discountDetails.getPercentage());
+        existingDiscount.setValidFrom(discountDetails.getValidFrom());
+        existingDiscount.setValidTo(discountDetails.getValidTo());
+        existingDiscount.setDescription(discountDetails.getDescription());
+        existingDiscount.setActive(discountDetails.isActive());
 
+        return discountRepository.save(existingDiscount);
+    }
 
     /**
      * Validates a discount code.
@@ -119,15 +121,20 @@ public class DiscountService {
                 .toList();
     }
 
-   /**
+    /**
      * Deletes a discount if it's not in use
      *
      * @param id the discount ID to delete
-     * @return true if deleted, false if not found
      */
-    public boolean deleteDiscount(Long id) {
+    public void deleteDiscount(Long id) {
 
-        discountRepository.deleteById(id);
-        return true;
+        if (!discountRepository.existsById(id)) {
+            throw new DiscountNotFoundException(id);
+        }
+        try {
+            discountRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DiscountInUseException(id);
+        }
     }
 }

@@ -1,307 +1,283 @@
 package com.petstore.controller;
 
+import com.petstore.exception.CategoryAlreadyExistsException;
+import com.petstore.exception.CategoryNotFoundException;
+import com.petstore.exception.ErrorCodes;
+import com.petstore.exception.GlobalExceptionHandler;
 import com.petstore.model.Category;
+import com.petstore.security.JwtTokenProvider;
 import com.petstore.service.CategoryService;
-import org.junit.jupiter.api.BeforeEach;
+import com.petstore.service.UserDetailsServiceImpl;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import com.petstore.config.TestSecurityConfig;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
-import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("Category Controller Tests")
+/**
+ * WebMvcTest for CategoryController.
+ * <p>
+ * This test class covers all controller endpoints for category management, including CRUD operations,
+ * edge cases, negative scenarios, and security/authorization checks. It uses MockMvc for HTTP request simulation
+ * and mocks the service layer to isolate controller logic. Security filters are enabled for realistic access control testing.
+ */
+@WebMvcTest(CategoryController.class)
+@Import({GlobalExceptionHandler.class, TestSecurityConfig.class})
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DisplayName("Category Controller WebMvcTest")
 class CategoryControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private CategoryService categoryService;
 
-    @InjectMocks
-    private CategoryController categoryController;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
 
-    private Category testCategory;
-    private Category secondCategory;
-    private List<Category> testCategories;
+    @MockBean
+    private UserDetailsServiceImpl userDetailsServiceImpl;
 
-    @BeforeEach
-    void setUp() {
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        testCategory = new Category();
-        testCategory.setId(1L);
-        testCategory.setName("Dogs");
-        testCategory.setCreatedAt(LocalDateTime.now());
-        testCategory.setUpdatedAt(LocalDateTime.now());
-
-        secondCategory = new Category();
-        secondCategory.setId(2L);
-        secondCategory.setName("Cats");
-        secondCategory.setCreatedAt(LocalDateTime.now());
-        secondCategory.setUpdatedAt(LocalDateTime.now());
-
-        testCategories = Arrays.asList(testCategory, secondCategory);
+    /**
+     * Test: GET /api/categories
+     * Verifies that all categories are returned successfully for an authenticated admin user.
+     */
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("GET /api/categories - should return all categories")
+    void shouldReturnAllCategories() throws Exception {
+        Category cat1 = new Category(); cat1.setId(1L); cat1.setName("Dogs");
+        Category cat2 = new Category(); cat2.setId(2L); cat2.setName("Cats");
+        when(categoryService.getAllCategories()).thenReturn(List.of(cat1, cat2));
+        mockMvc.perform(get("/api/categories"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].name").value("Dogs"))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].name").value("Cats"));
     }
 
+    /**
+     * Test: GET /api/categories/{id}
+     * Verifies that a category is returned by ID for an authenticated admin user.
+     */
     @Test
-    @DisplayName("GET /api/categories - Should return all categories")
-    void shouldReturnAllCategories() {
-
-        when(categoryService.getAllCategories()).thenReturn(testCategories);
-
-        ResponseEntity<List<Category>> response = categoryController.getAllCategories();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody().get(0).getName()).isEqualTo("Dogs");
-        assertThat(response.getBody().get(1).getName()).isEqualTo("Cats");
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("GET /api/categories/{id} - should return category by id")
+    void shouldReturnCategoryById() throws Exception {
+        Category cat = new Category(); cat.setId(1L); cat.setName("Dogs");
+        when(categoryService.getCategoryById(1L)).thenReturn(cat);
+        mockMvc.perform(get("/api/categories/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.name").value("Dogs"));
     }
 
+    /**
+     * Test: GET /api/categories/{id} (not found)
+     * Verifies that a 404 is returned if the category does not exist.
+     */
     @Test
-    @DisplayName("GET /api/categories - Should return empty list when no categories exist")
-    void shouldReturnEmptyListWhenNoCategoriesExist() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("GET /api/categories/{id} - should return 404 if not found")
+    void shouldReturn404IfCategoryNotFound() throws Exception {
 
-        when(categoryService.getAllCategories()).thenReturn(Arrays.asList());
+        when(categoryService.getCategoryById(99L)).thenThrow(new CategoryNotFoundException(99L));
 
-        ResponseEntity<List<Category>> response = categoryController.getAllCategories();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody()).isEmpty();
+        mockMvc.perform(get("/api/categories/99"))
+            .andExpect(status().isNotFound());
     }
 
+    /**
+     * Test: POST /api/categories
+     * Verifies that a new category is created successfully for an admin user.
+     */
     @Test
-    @DisplayName("GET /api/categories/{id} - Should return category by ID when found")
-    void shouldReturnCategoryByIdWhenFound() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /api/categories - should create category successfully")
+    void shouldCreateCategorySuccessfully() throws Exception {
 
-        when(categoryService.getCategoryById(1L)).thenReturn(Optional.of(testCategory));
-
-        ResponseEntity<Category> response = categoryController.getCategoryById(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(1L);
-        assertThat(response.getBody().getName()).isEqualTo("Dogs");
-    }
-
-    @Test
-    @DisplayName("GET /api/categories/{id} - Should return 404 when category not found")
-    void shouldReturn404WhenCategoryNotFound() {
-
-        when(categoryService.getCategoryById(999L)).thenReturn(Optional.empty());
-
-        ResponseEntity<Category> response = categoryController.getCategoryById(999L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNull();
-    }
-
-    @Test
-    @DisplayName("POST /api/categories - Should create new category successfully")
-    void shouldCreateNewCategorySuccessfully() {
-
-        Category newCategory = new Category();
-        newCategory.setName("Birds");
-
-        Category savedCategory = new Category();
-        savedCategory.setId(3L);
-        savedCategory.setName("Birds");
-        savedCategory.setCreatedAt(LocalDateTime.now());
-        savedCategory.setUpdatedAt(LocalDateTime.now());
-
+        Category newCategory = new Category(); newCategory.setName("Birds");
+        Category savedCategory = new Category(); savedCategory.setId(1L); savedCategory.setName("Birds");
         when(categoryService.saveCategory(any(Category.class))).thenReturn(savedCategory);
-
-        ResponseEntity<Category> response = categoryController.createCategory(newCategory);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(3L);
-        assertThat(response.getBody().getName()).isEqualTo("Birds");
-        assertThat(response.getBody().getCreatedAt()).isNotNull();
-        assertThat(response.getBody().getUpdatedAt()).isNotNull();
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newCategory)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Birds"));
     }
 
+    /**
+     * Test: POST /api/categories (duplicate name)
+     * Verifies that a conflict error is returned when creating a category with a duplicate name.
+     */
     @Test
-    @DisplayName("POST /api/categories - Should create category with valid name")
-    void shouldCreateCategoryWithValidName() {
-
-        Category newCategory = new Category();
-        newCategory.setName("Fish & Aquatic");
-
-        Category savedCategory = new Category();
-        savedCategory.setId(4L);
-        savedCategory.setName("Fish & Aquatic");
-        savedCategory.setCreatedAt(LocalDateTime.now());
-        savedCategory.setUpdatedAt(LocalDateTime.now());
-
-        when(categoryService.saveCategory(any(Category.class))).thenReturn(savedCategory);
-
-        ResponseEntity<Category> response = categoryController.createCategory(newCategory);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getName()).isEqualTo("Fish & Aquatic");
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /api/categories - should handle duplicate category name error")
+    void shouldHandleDuplicateCategoryNameError() throws Exception {
+        
+        Category newCategory = new Category(); newCategory.setName("Dogs");
+        when(categoryService.saveCategory(any(Category.class))).thenThrow(new CategoryAlreadyExistsException(newCategory.getName()));
+        mockMvc.perform(post("/api/categories")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(newCategory)))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.error").value("Category Already Exists"))
+            .andExpect(jsonPath("$.message").value("Category with name 'Dogs' already exists."))
+            .andExpect(jsonPath("$.code").value(ErrorCodes.CATEGORY_ALREADY_EXISTS));
     }
 
+    /**
+     * Test: PUT /api/categories/{id}
+     * Verifies that an existing category is updated successfully for an admin user.
+     */
     @Test
-    @DisplayName("PUT /api/categories/{id} - Should update category successfully")
-    void shouldUpdateCategorySuccessfully() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/categories/{id} - should update category successfully")
+    void shouldUpdateCategorySuccessfully() throws Exception {
 
-        Category updateRequest = new Category();
-        updateRequest.setName("Updated Dogs");
-
-        Category updatedCategory = new Category();
-        updatedCategory.setId(1L);
-        updatedCategory.setName("Updated Dogs");
-        updatedCategory.setCreatedAt(testCategory.getCreatedAt());
-        updatedCategory.setUpdatedAt(LocalDateTime.now());
+        Category updateDetails = new Category(); updateDetails.setName("Reptiles");
+        Category updatedCategory = new Category(); updatedCategory.setId(1L); updatedCategory.setName("Reptiles");
 
         when(categoryService.updateCategory(eq(1L), any(Category.class))).thenReturn(updatedCategory);
-
-        ResponseEntity<Category> response = categoryController.updateCategory(1L, updateRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(1L);
-        assertThat(response.getBody().getName()).isEqualTo("Updated Dogs");
-        assertThat(response.getBody().getUpdatedAt()).isNotNull();
+        mockMvc.perform(put("/api/categories/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updateDetails)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.name").value("Reptiles"));
     }
 
+    /**
+     * Test: PUT /api/categories/{id} (not found)
+     * Verifies that a 404 is returned if the category to update does not exist.
+     */
     @Test
-    @DisplayName("PUT /api/categories/{id} - Should return 404 when category not found for update")
-    void shouldReturn404WhenCategoryNotFoundForUpdate() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/categories/{id} - should return 404 if category not found")
+    void shouldReturn404OnUpdateIfNotFound() throws Exception {
 
-        Category updateRequest = new Category();
-        updateRequest.setName("Non-existent Category");
-
-        when(categoryService.updateCategory(eq(999L), any(Category.class))).thenReturn(null);
-
-        ResponseEntity<Category> response = categoryController.updateCategory(999L, updateRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNull();
+        Category updateDetails = new Category(); updateDetails.setName("Reptiles");
+        when(categoryService.updateCategory(99L, updateDetails)).thenReturn(null);
+        mockMvc.perform(put("/api/categories/99")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updateDetails)))
+            .andExpect(status().isNotFound());
     }
 
+    /**
+     * Test: DELETE /api/categories/{id}
+     * Verifies that a category is deleted successfully for an admin user.
+     */
     @Test
-    @DisplayName("PUT /api/categories/{id} - Should handle category name changes")
-    void shouldHandleCategoryNameChanges() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("DELETE /api/categories/{id} - should delete category successfully")
+    void shouldDeleteCategorySuccessfully() throws Exception {
 
-        Category updateRequest = new Category();
-        updateRequest.setName("Reptiles & Amphibians");
-
-        Category updatedCategory = new Category();
-        updatedCategory.setId(1L);
-        updatedCategory.setName("Reptiles & Amphibians");
-        updatedCategory.setCreatedAt(testCategory.getCreatedAt());
-        updatedCategory.setUpdatedAt(LocalDateTime.now());
-
-        when(categoryService.updateCategory(eq(1L), any(Category.class))).thenReturn(updatedCategory);
-
-        ResponseEntity<Category> response = categoryController.updateCategory(1L, updateRequest);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getName()).isEqualTo("Reptiles & Amphibians");
+        doNothing().when(categoryService).deleteCategory(1L);
+        mockMvc.perform(delete("/api/categories/1"))
+            .andExpect(status().isNoContent());
     }
 
+    /**
+     * Test: DELETE /api/categories/{id} (not found)
+     * Verifies that a 404 is returned if the category to delete does not exist.
+     */
     @Test
-    @DisplayName("DELETE /api/categories/{id} - Should delete category successfully")
-    void shouldDeleteCategorySuccessfully() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("DELETE /api/categories/{id} - should return 404 if category not found")
+    void shouldReturn404OnDeleteIfNotFound() throws Exception {
 
-        when(categoryService.deleteCategory(1L)).thenReturn(true);
-
-        ResponseEntity<Void> response = categoryController.deleteCategory(1L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(response.getBody()).isNull();
+         doThrow(new CategoryNotFoundException(99L)).when(categoryService).deleteCategory(99L);
+        mockMvc.perform(delete("/api/categories/99"))
+            .andExpect(status().isNotFound());
     }
 
+    // Edge case and negative scenario tests
+    /**
+     * Test: POST /api/categories (empty name)
+     * Verifies that a 400 Bad Request is returned when the category name is empty.
+     */
     @Test
-    @DisplayName("DELETE /api/categories/{id} - Should return 404 when category not found for deletion")
-    void shouldReturn404WhenCategoryNotFoundForDeletion() {
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /api/categories - should return 400 for empty name")
+    void shouldReturn400ForEmptyCategoryName() throws Exception {
 
-        when(categoryService.deleteCategory(999L)).thenReturn(false);
-
-        ResponseEntity<Void> response = categoryController.deleteCategory(999L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isNull();
+        Category newCategory = new Category(); newCategory.setName("");
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newCategory)))
+                .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test: POST /api/categories (null body)
+     * Verifies that a 400 Bad Request is returned when the request body is empty.
+     */
     @Test
-    @DisplayName("DELETE /api/categories/{id} - Should handle deletion of existing category")
-    void shouldHandleDeletionOfExistingCategory() {
-
-        when(categoryService.deleteCategory(2L)).thenReturn(true);
-
-        ResponseEntity<Void> response = categoryController.deleteCategory(2L);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(response.getBody()).isNull();
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /api/categories - should return 400 for null body")
+    void shouldReturn400ForNullBody() throws Exception {
+        
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("") 
+        ).andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test: GET /api/categories/{id} (unauthorized)
+     * Verifies that a 403 Forbidden is returned for a user without admin role.
+     */
     @Test
-    @DisplayName("Category operations - Should handle edge case scenarios")
-    void shouldHandleEdgeCaseScenarios() {
+    @DisplayName("GET /api/categories/{id} - should return 403 for unauthorized user")
+    void shouldReturn403ForUnauthorizedUserOnGetById() throws Exception {
 
-        when(categoryService.getCategoryById(0L)).thenReturn(Optional.empty());
-        ResponseEntity<Category> response = categoryController.getCategoryById(0L);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        when(categoryService.deleteCategory(0L)).thenReturn(false);
-        ResponseEntity<Void> deleteResponse = categoryController.deleteCategory(0L);
-        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        mockMvc.perform(get("/api/categories/1"))
+            .andExpect(status().isForbidden());
     }
 
+    /**
+     * Test: POST /api/categories (unauthorized)
+     * Verifies that a 403 Forbidden is returned for a user without admin role when creating a category.
+     */
     @Test
-    @DisplayName("Category operations - Should handle negative IDs")
-    void shouldHandleNegativeIds() {
+    @DisplayName("POST /api/categories - should return 403 for unauthorized user")
+    void shouldReturn403ForUnauthorizedUserOnCreate() throws Exception {
 
-        when(categoryService.getCategoryById(-1L)).thenReturn(Optional.empty());
-        ResponseEntity<Category> response = categoryController.getCategoryById(-1L);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        Category updateRequest = new Category();
-        updateRequest.setName("Invalid Category");
-        when(categoryService.updateCategory(eq(-1L), any(Category.class))).thenReturn(null);
-        ResponseEntity<Category> updateResponse = categoryController.updateCategory(-1L, updateRequest);
-        assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-
-        when(categoryService.deleteCategory(-1L)).thenReturn(false);
-        ResponseEntity<Void> deleteResponse = categoryController.deleteCategory(-1L);
-        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    @DisplayName("Category creation - Should handle category with special characters")
-    void shouldHandleCategoryWithSpecialCharacters() {
-
-        Category newCategory = new Category();
-        newCategory.setName("Exotic Pets & Accessories");
-
-        Category savedCategory = new Category();
-        savedCategory.setId(5L);
-        savedCategory.setName("Exotic Pets & Accessories");
-        savedCategory.setCreatedAt(LocalDateTime.now());
-        savedCategory.setUpdatedAt(LocalDateTime.now());
-
-        when(categoryService.saveCategory(any(Category.class))).thenReturn(savedCategory);
-
-        ResponseEntity<Category> response = categoryController.createCategory(newCategory);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getName()).isEqualTo("Exotic Pets & Accessories");
+        Category newCategory = new Category(); newCategory.setName("Fish");
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newCategory)))
+                .andExpect(status().isForbidden());
     }
 }

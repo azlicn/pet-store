@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "carts")
@@ -28,6 +29,7 @@ public class Cart {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
+    @NotNull(message = "User is required")
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)

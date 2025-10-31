@@ -4,9 +4,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Unit tests for AuthenticationFailedException.
+ */
 @DisplayName("AuthenticationFailedException Tests")
 class AuthenticationFailedExceptionTest {
-    
+
+    /**
+     * Test constructor with custom message.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with custom message")
     void constructor_WithCustomMessage_ShouldUseCustomMessage() {

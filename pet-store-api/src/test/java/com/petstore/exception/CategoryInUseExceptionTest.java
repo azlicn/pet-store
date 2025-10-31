@@ -5,9 +5,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Unit tests for CategoryInUseException.
+ */
 @DisplayName("CategoryInUseException Tests")
 class CategoryInUseExceptionTest {
 
+    /**
+     * Test creating CategoryInUseException with a category name and pet count.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with category name and pet count")
     void constructor_WithCategoryNameAndPetCount_ShouldCreateCorrectMessage() {
@@ -19,6 +25,9 @@ class CategoryInUseExceptionTest {
         assertThat(exception.getMessage()).isEqualTo(expectedMessage);
     }
 
+    /**
+     * Test creating CategoryInUseException with a custom message.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with custom message")
     void constructor_WithCustomMessage_ShouldUseCustomMessage() {
