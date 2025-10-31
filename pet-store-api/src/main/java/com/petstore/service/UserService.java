@@ -1,13 +1,13 @@
 package com.petstore.service;
 
 import com.petstore.exception.EmailAlreadyInUseException;
+import com.petstore.exception.InvalidUserException;
 import com.petstore.exception.UserInUseException;
 import com.petstore.exception.UserNotFoundException;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
 import com.petstore.repository.PetRepository;
 import com.petstore.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,43 +58,51 @@ public class UserService {
      * @return the user if found
      */
     public Optional<User> getUserByEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return Optional.empty();
+        }
         return userRepository.findByEmail(email);
     }
 
     /**
      * Updates a user's information
      *
-     * @param id the ID of the user to update
-     * @param userDetails the new user details
+     * @param id          the ID of the user to update
+     * @param updatedUser the new user details
      * @return the updated user
-     * @throws UserNotFoundException if user not found
+     * @throws UserNotFoundException      if user not found
      * @throws EmailAlreadyInUseException if the new email is already in use
      */
-    public User updateUser(Long id, User userDetails) {
-
+    public User updateUser(Long id, User updatedUser) {
+        if (id == null) {
+            throw new UserNotFoundException(id);
+        }
+        if (updatedUser == null) {
+            throw new InvalidUserException("Updated user cannot be null");
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         // Update fields
-        if (userDetails.getFirstName() != null) {
-            user.setFirstName(userDetails.getFirstName());
+        if (updatedUser.getFirstName() != null) {
+            user.setFirstName(updatedUser.getFirstName());
         }
-        if (userDetails.getLastName() != null) {
-            user.setLastName(userDetails.getLastName());
+        if (updatedUser.getLastName() != null) {
+            user.setLastName(updatedUser.getLastName());
         }
-        if (userDetails.getEmail() != null) {
+        if (updatedUser.getEmail() != null) {
             // Check if email is already in use by another user
-            Optional<User> existingUser = userRepository.findByEmail(userDetails.getEmail());
+            Optional<User> existingUser = userRepository.findByEmail(updatedUser.getEmail());
             if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
-                throw new EmailAlreadyInUseException(userDetails.getEmail());
+                throw new EmailAlreadyInUseException(updatedUser.getEmail());
             }
-            user.setEmail(userDetails.getEmail());
+            user.setEmail(updatedUser.getEmail());
         }
-        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
-        if (userDetails.getRoles() != null) {
-            user.setRoles(userDetails.getRoles());
+        if (updatedUser.getRoles() != null) {
+            user.setRoles(updatedUser.getRoles());
         }
 
         return userRepository.save(user);
@@ -105,10 +113,12 @@ public class UserService {
      *
      * @param id the ID of the user to delete
      * @throws UserNotFoundException if user not found
-     * @throws UserInUseException if user owns or created pets that still exist
+     * @throws UserInUseException    if user owns or created pets that still exist
      */
     public void deleteUser(Long id) {
-
+        if (id == null) {
+            throw new UserNotFoundException(id);
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
@@ -141,7 +151,7 @@ public class UserService {
         return userRepository.existsById(id);
     }
 
-     /**
+    /**
      * Checks if a user exists by their ID
      *
      * @param id the ID to check

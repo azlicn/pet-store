@@ -2,6 +2,8 @@ package com.petstore.service;
 
 import com.petstore.model.Pet;
 import com.petstore.enums.PetStatus;
+import com.petstore.exception.InvalidPetException;
+import com.petstore.exception.PetNotFoundException;
 import com.petstore.model.Category;
 import com.petstore.model.User;
 import com.petstore.model.Role;
@@ -22,9 +24,17 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link PetService} covering CRUD operations, purchase logic,
+ * and edge cases.
+ * Uses Mockito for mocking dependencies and AssertJ for assertions.
+ */
+@ExtendWith(MockitoExtension.class)
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Pet Service Tests")
 class PetServiceTest {
@@ -73,21 +83,9 @@ class PetServiceTest {
         testPet.setTags(Arrays.asList("friendly", "energetic"));
     }
 
-    @Test
-    @DisplayName("Get all pets - Should return all pets")
-    void getAllPets_ShouldReturnAllPets() {
-
-        List<Pet> expectedPets = Arrays.asList(testPet);
-        when(petRepository.findAll()).thenReturn(expectedPets);
-
-        List<Pet> actualPets = petService.getAllPets();
-
-        assertThat(actualPets).hasSize(1);
-        assertThat(actualPets.get(0).getName()).isEqualTo("Buddy");
-        verify(petRepository).findAll();
-    }
-
-
+    /**
+     * Test: Should return pet when it exists by ID.
+     */
     @Test
     @DisplayName("Get pet by ID - Should return pet when exists")
     void getPetById_WhenPetExists_ShouldReturnPet() {
@@ -101,6 +99,9 @@ class PetServiceTest {
         verify(petRepository).findById(1L);
     }
 
+    /**
+     * Test: Should return empty Optional when pet does not exist by ID.
+     */
     @Test
     @DisplayName("Get pet by ID - Should return empty when pet does not exist")
     void getPetById_WhenPetDoesNotExist_ShouldReturnEmpty() {
@@ -113,6 +114,9 @@ class PetServiceTest {
         verify(petRepository).findById(999L);
     }
 
+    /**
+     * Test: Should save and return pet when valid.
+     */
     @Test
     @DisplayName("Save pet - Should save and return pet")
     void savePet_ShouldSaveAndReturnPet() {
@@ -126,60 +130,9 @@ class PetServiceTest {
         verify(petRepository).save(testPet);
     }
 
-    @Test
-    @DisplayName("Purchase pet - Should assign owner and change status when pet is available")
-    void purchasePet_WhenPetIsAvailable_ShouldAssignOwnerAndChangeStatus() {
-
-        testPet.setStatus(PetStatus.AVAILABLE);
-        testPet.setOwner(null);
-
-        Pet purchasedPet = new Pet();
-        purchasedPet.setId(1L);
-        purchasedPet.setName("Buddy");
-        purchasedPet.setCategory(testCategory);
-        purchasedPet.setPrice(new BigDecimal("299.99"));
-        purchasedPet.setStatus(PetStatus.SOLD);
-        purchasedPet.setOwner(testUser);
-
-        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
-        when(petRepository.save(any(Pet.class))).thenReturn(purchasedPet);
-
-        Pet result = petService.purchasePet(1L, testUser);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getOwner()).isEqualTo(testUser);
-        assertThat(result.getStatus()).isEqualTo(PetStatus.SOLD);
-        verify(petRepository).findById(1L);
-        verify(petRepository).save(any(Pet.class));
-    }
-
-    @Test
-    @DisplayName("Purchase pet - Should return null when pet not found")
-    void purchasePet_WhenPetNotFound_ShouldReturnNull() {
-
-        when(petRepository.findById(999L)).thenReturn(Optional.empty());
-
-        Pet result = petService.purchasePet(999L, testUser);
-
-        assertThat(result).isNull();
-        verify(petRepository).findById(999L);
-        verify(petRepository, never()).save(any(Pet.class));
-    }
-
-    @Test
-    @DisplayName("Purchase pet - Should return null when pet not available")
-    void purchasePet_WhenPetNotAvailable_ShouldReturnNull() {
-
-        testPet.setStatus(PetStatus.SOLD);
-        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
-
-        Pet result = petService.purchasePet(1L, testUser);
-
-        assertThat(result).isNull();
-        verify(petRepository).findById(1L);
-        verify(petRepository, never()).save(any(Pet.class));
-    }
-
+    /**
+     * Test: Should update pet status when pet exists.
+     */
     @Test
     @DisplayName("Update pet status - Should update status when pet exists")
     void updatePetStatus_WhenPetExists_ShouldUpdateStatus() {
@@ -200,6 +153,9 @@ class PetServiceTest {
         verify(petRepository).save(any(Pet.class));
     }
 
+    /**
+     * Test: Should return null when updating status of a non-existent pet.
+     */
     @Test
     @DisplayName("Update pet status - Should return null when pet not found")
     void updatePetStatus_WhenPetNotFound_ShouldReturnNull() {
@@ -213,45 +169,180 @@ class PetServiceTest {
         verify(petRepository, never()).save(any(Pet.class));
     }
 
+    /**
+     * Test: Should return true when deleting a pet that exists.
+     */
     @Test
     @DisplayName("Delete pet - Should return true when pet exists")
     void deletePet_WhenPetExists_ShouldReturnTrue() {
 
-        when(petRepository.existsById(1L)).thenReturn(true);
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
 
         boolean result = petService.deletePet(1L);
 
         assertThat(result).isTrue();
-        verify(petRepository).existsById(1L);
-        verify(petRepository).deleteById(1L);
+        verify(petRepository).findById(1L);
+        verify(petRepository).delete(testPet);
     }
 
+    /**
+     * Test: Should return false when deleting a non-existent pet.
+     */
     @Test
     @DisplayName("Delete pet - Should return false when pet does not exist")
     void deletePet_WhenPetDoesNotExist_ShouldReturnFalse() {
 
-        when(petRepository.existsById(999L)).thenReturn(false);
+        when(petRepository.findById(999L)).thenReturn(Optional.empty());
 
-        boolean result = petService.deletePet(999L);
+        assertThatThrownBy(() -> petService.deletePet(999L))
+            .isInstanceOf(PetNotFoundException.class)
+            .hasMessageContaining("Pet not found with ID '999'");
+        verify(petRepository).findById(999L);
+        verify(petRepository, never()).delete(any());
+    }
 
-        assertThat(result).isFalse();
-        verify(petRepository).existsById(999L);
+    /**
+     * Test: Should throw InvalidPetException when saving a null pet.
+     */
+    @Test
+    @DisplayName("Save pet - Should throw InvalidPetException when pet is null")
+    void savePet_WhenPetIsNull_ShouldThrowException() {
+        assertThatThrownBy(() -> petService.savePet(null))
+                .isInstanceOf(InvalidPetException.class)
+                .hasMessageContaining("Pet cannot be null");
+        verify(petRepository, never()).save(any());
+    }
+
+    /**
+     * Test: Should throw InvalidPetException when updating pet status with null
+     * value.
+     */
+    @Test
+    @DisplayName("Update pet status - Should throw InvalidPetException when status is null")
+    void updatePetStatus_WhenStatusIsNull_ShouldThrowException() {
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        assertThatThrownBy(() -> petService.updatePetStatus(1L, null))
+                .isInstanceOf(InvalidPetException.class)
+                .hasMessageContaining("Pet status cannot be null");
+        verify(petRepository).findById(1L);
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    /**
+     * Test: Should throw InvalidPetException when deleting a pet with null ID.
+     */
+    @Test
+    @DisplayName("Delete pet - Should throw InvalidPetException when ID is null")
+    void deletePet_WhenIdIsNull_ShouldThrowException() {
+        assertThatThrownBy(() -> petService.deletePet(null))
+                .isInstanceOf(InvalidPetException.class)
+                .hasMessageContaining("Pet ID cannot be null");
+        verify(petRepository, never()).existsById(any());
         verify(petRepository, never()).deleteById(any());
     }
 
+    /**
+     * Test: Should handle saving a pet with missing name and category.
+     */
     @Test
-    @DisplayName("Get pets by owner - Should return pets owned by user")
-    void getPetsByOwner_ShouldReturnPetsOwnedByUser() {
-
-        testPet.setOwner(testUser);
-        List<Pet> userPets = Arrays.asList(testPet);
-        when(petRepository.findByOwner(testUser)).thenReturn(userPets);
-
-        List<Pet> result = petService.getPetsByOwner(testUser);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getOwner()).isEqualTo(testUser);
-        verify(petRepository).findByOwner(testUser);
+    @DisplayName("Save pet - Should handle missing name and category")
+    void savePet_WhenMissingNameOrCategory_ShouldHandleGracefully() {
+        Pet incompletePet = new Pet();
+        incompletePet.setPrice(new BigDecimal("100.00"));
+        when(petRepository.save(any(Pet.class))).thenReturn(incompletePet);
+        Pet result = petService.savePet(incompletePet);
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isNull();
+        assertThat(result.getCategory()).isNull();
+        verify(petRepository).save(incompletePet);
     }
 
+    /**
+     * Test: Should return latest available pets with limit.
+     */
+    @Test
+    @DisplayName("Get latest available pets - Should return limited list")
+    void getLatestAvailablePets_ShouldReturnLimitedList() {
+
+        List<Pet> expectedPets = Arrays.asList(testPet);
+        when(petRepository.findLatestPetsByStatus(eq(PetStatus.AVAILABLE), any())).thenReturn(expectedPets);
+        List<Pet> actualPets = petService.getLatestAvailablePets(1);
+
+        assertThat(actualPets).hasSize(1);
+        assertThat(actualPets.get(0).getStatus()).isEqualTo(PetStatus.AVAILABLE);
+        verify(petRepository).findLatestPetsByStatus(eq(PetStatus.AVAILABLE), any());
+    }
+
+    /**
+     * Test: Should update pet details when pet exists.
+     */
+    @Test
+    @DisplayName("Update pet - Should update details when pet exists")
+    void updatePet_WhenPetExists_ShouldUpdateDetails() {
+
+        Pet petDetails = new Pet();
+        petDetails.setName("UpdatedBuddy");
+        petDetails.setDescription("Updated description");
+        petDetails.setCategory(testCategory);
+        petDetails.setPrice(new BigDecimal("399.99"));
+        petDetails.setStatus(PetStatus.PENDING);
+        petDetails.setOwner(testUser);
+        petDetails.setPhotoUrls(Arrays.asList("updated1.jpg"));
+        petDetails.setTags(Arrays.asList("updated"));
+
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(categoryRepository.findById(testCategory.getId())).thenReturn(Optional.of(testCategory));
+        when(petRepository.save(any(Pet.class))).thenReturn(petDetails);
+
+        Pet updatedPet = petService.updatePet(1L, petDetails);
+        assertThat(updatedPet).isNotNull();
+        assertThat(updatedPet.getName()).isEqualTo("UpdatedBuddy");
+        assertThat(updatedPet.getDescription()).isEqualTo("Updated description");
+        assertThat(updatedPet.getCategory()).isEqualTo(testCategory);
+        assertThat(updatedPet.getPrice()).isEqualByComparingTo(new BigDecimal("399.99"));
+        assertThat(updatedPet.getStatus()).isEqualTo(PetStatus.PENDING);
+        assertThat(updatedPet.getOwner()).isEqualTo(testUser);
+        assertThat(updatedPet.getPhotoUrls()).containsExactly("updated1.jpg");
+        assertThat(updatedPet.getTags()).containsExactly("updated");
+        verify(petRepository).findById(1L);
+        verify(categoryRepository).findById(testCategory.getId());
+        verify(petRepository).save(any(Pet.class));
+    }
+
+    /**
+     * Test: Should return null when updating a non-existent pet.
+     */
+    @Test
+    @DisplayName("Update pet - Should return null when pet not found")
+    void updatePet_WhenPetNotFound_ShouldReturnNull() {
+
+        Pet petDetails = new Pet();
+        when(petRepository.findById(999L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> petService.updatePet(999L, petDetails))
+            .isInstanceOf(PetNotFoundException.class)
+            .hasMessageContaining("Pet not found with ID '999'");
+        verify(petRepository).findById(999L);
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    /**
+     * Test: Should return paginated pets with filters.
+     */
+    @Test
+    @DisplayName("Find pets by filters paginated - Should return filtered and paginated pets")
+    void findPetsByFiltersPaginated_ShouldReturnFilteredPage() {
+        // Setup test data
+        List<Pet> pets = Arrays.asList(testPet);
+        org.springframework.data.domain.Page<Pet> petPage = new org.springframework.data.domain.PageImpl<>(pets);
+        // Mock repository method
+        when(petRepository.findPetsByFiltersPaginated(eq("Buddy"), eq(1L), eq(PetStatus.AVAILABLE), eq(1L), any()))
+                .thenReturn(petPage);
+
+        org.springframework.data.domain.Page<Pet> result = petService.findPetsByFiltersPaginated("Buddy", 1L,
+                PetStatus.AVAILABLE, 1L, 0, 10);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getName()).isEqualTo("Buddy");
+        verify(petRepository).findPetsByFiltersPaginated(eq("Buddy"), eq(1L), eq(PetStatus.AVAILABLE), eq(1L), any());
+    }
 }

@@ -60,9 +60,12 @@ h1 {
   margin-bottom: 16px;
   
   .count-text {
-    color: #666;
-    font-size: 14px;
-    margin: 0;
+    font-size: 1.0rem;
+    font-style: italic;
+    color: #444;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
     text-align: center;
     
     .filter-indicator {
@@ -174,4 +177,46 @@ h1 {
       gap: 6px;
     }
   }
+}
+
+.pagination-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 12px 0 8px 0;
+}
+
+.pagination-card {
+  padding: 2px 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.pagination-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pagination-card-content ::ng-deep .mat-paginator, 
+.pagination-card-content ::ng-deep .mat-paginator-range-label, 
+.pagination-card-content ::ng-deep .mat-paginator-page-size, 
+.pagination-card-content ::ng-deep .mat-paginator-navigation-previous, 
+.pagination-card-content ::ng-deep .mat-paginator-navigation-next, 
+.pagination-card-content ::ng-deep .mat-paginator-navigation-first, 
+.pagination-card-content ::ng-deep .mat-paginator-navigation-last, 
+.pagination-card-content ::ng-deep .mat-select-value {
+  font-size: 1.25rem !important;
+}
+
+.pagination-card-content ::ng-deep .mat-mdc-paginator {
+  border-radius: 10px !important;
+}
+
+.pagination-card-content ::ng-deep .mat-mdc-paginator-page-size, 
+.pagination-card-content ::ng-deep .mat-mdc-paginator-range-actions,
+.pagination-card-content ::ng-deep .mat-mdc-select-value {
+  font-size: 0.9rem !important;
+  font-style: italic;
 }

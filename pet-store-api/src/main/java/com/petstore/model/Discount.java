@@ -1,6 +1,9 @@
 package com.petstore.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -16,24 +19,27 @@ public class Discount {
     private Long id;
 
     @Column(unique = true, nullable = false, length = 50)
+    @NotBlank(message = "Discount code cannot be blank")
     private String code;
 
     @Column(nullable = false)
+    @NotNull(message = "Discount percentage cannot be null")
     private BigDecimal percentage;
 
     @Column(nullable = false)
+    @NotNull(message = "Valid from date cannot be null")
     private LocalDateTime validFrom;
 
     @Column(nullable = false)
+    @NotNull(message = "Valid to date cannot be null")
     private LocalDateTime validTo;
 
     private String description;
 
     @Column(nullable = false)
+    @NotNull(message = "Active status cannot be null")
     private boolean active = true;
 
-
-    // Optional: audit fields
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -25,8 +25,13 @@ import com.petstore.service.AddressService;
 import com.petstore.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 
+/**
+ * REST controller for managing user addresses.
+ * Provides endpoints for CRUD operations on addresses for authenticated users.
+ */
 @RestController
 @RequestMapping("/api/users/addresses")
 @Tag(name = "Address Controller", description = "Address Management API")
@@ -41,6 +46,11 @@ public class AddressController {
         this.userService = userService;
     }
 
+    /**
+     * Retrieves all addresses for the authenticated user.
+     *
+     * @return ResponseEntity containing the list of addresses
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Get user addresses", description = "Retrieve all addresses for the authenticated user.")
@@ -49,55 +59,65 @@ public class AddressController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
         Optional<User> userOptional = userService.getUserByEmail(userEmail);
-
         if (userOptional.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-
         User user = userOptional.get();
-
         List<Address> addresses = addressService.getUserAddresses(user.getId());
-
         return ResponseEntity.ok(addresses);
     }
 
+    /**
+     * Creates a new address for the authenticated user.
+     *
+     * @param address the address to create
+     * @return ResponseEntity containing the created address
+     */
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Create address", description = "Create a new address for the authenticated user.")
-    public ResponseEntity<Address> createAddress(@RequestBody Address address) {
+    public ResponseEntity<Address> createAddress(@Valid @RequestBody Address address) {
 
         logger.info("Creating address: {}", address.getFullAddress());
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = auth.getName();
         Optional<User> userOptional = userService.getUserByEmail(userEmail);
-
         if (userOptional.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-
         User user = userOptional.get();
-
         Address savedAddress = addressService.createAddress(user.getId(), address);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAddress);
     }
 
+    /**
+     * Updates an existing address for the authenticated user.
+     *
+     * @param addressId the ID of the address to update
+     * @param address   the updated address data
+     * @return ResponseEntity containing the updated address
+     */
     @PutMapping("/{addressId}")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Update address", description = "Update an existing address for the authenticated user.")
-    public ResponseEntity<Address> updateAddress(@PathVariable Long addressId, @RequestBody Address address) {
+    public ResponseEntity<Address> updateAddress(@PathVariable Long addressId, @Valid @RequestBody Address address) {
 
         Address updatedAddress = addressService.updateAddress(addressId, address);
         return ResponseEntity.ok(updatedAddress);
     }
 
+    /**
+     * Deletes an address for the authenticated user.
+     *
+     * @param addressId the ID of the address to delete
+     * @return ResponseEntity with no content if successful
+     */
     @DeleteMapping("/{addressId}")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Delete address", description = "Delete an address for the authenticated user.")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long addressId) {
 
         addressService.deleteAddress(addressId);
-
         return ResponseEntity.noContent().build();
     }
 }

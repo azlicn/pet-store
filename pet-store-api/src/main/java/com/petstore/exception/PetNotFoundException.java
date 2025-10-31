@@ -1,5 +1,8 @@
 package com.petstore.exception;
 
+/**
+ * Exception thrown when a pet is not found in the system.
+ */
 public class PetNotFoundException extends RuntimeException {
 
     /**

@@ -1,5 +1,8 @@
 package com.petstore.exception;
 
+/**
+ * Exception thrown when a pet is already sold.
+ */
 public class PetAlreadySoldException extends RuntimeException {
 
     /**

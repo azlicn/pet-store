@@ -1,5 +1,8 @@
 package com.petstore.exception;
 
+/**
+ * Exception thrown when a pet already exists in the user's cart.
+ */
 public class PetAlreadyExistInUserCartException extends RuntimeException {
 
     /**

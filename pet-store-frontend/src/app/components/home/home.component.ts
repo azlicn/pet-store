@@ -7,7 +7,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatChipsModule } from "@angular/material/chips";
 import { PetService } from "../../services/pet.service";
-import { Pet } from "../../models/pet.model";
+import { Pet, PetPageResponse } from "../../models/pet.model";
 import { LatestPetCardComponent } from "../latest-pet-card/latest-pet-card.component";
 
 @Component({
@@ -38,9 +38,10 @@ export class HomeComponent implements OnInit {
   }
 
   loadLatestPets(): void {
-    this.petService.getAllPets(this.LIMIT_LATEST_PETS).subscribe({
-      next: (pets) => {
-        this.latestPets = pets;
+    this.petService.getLatestPets(this.LIMIT_LATEST_PETS).subscribe({
+      next: (pets: Pet[]) => {
+        this.latestPets = [...pets];
+        console.log("Latest pets loaded:", pets);
         this.loading = false;
       },
       error: (error) => {

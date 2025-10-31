@@ -6,6 +6,14 @@ export enum PetStatus {
   SOLD = 'SOLD'
 }
 
+export interface PetPageResponse {
+  pets: Pet[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export interface Pet {
   id?: number;
   name: string;

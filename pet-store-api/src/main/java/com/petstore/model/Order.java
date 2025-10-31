@@ -26,6 +26,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "orders")
@@ -36,16 +38,21 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(
+            message = "Order number is required")
     private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     //@JsonIgnore
+    @NotNull(message = "User is required")
     private User user;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Order status is required")
     private OrderStatus status = OrderStatus.PLACED;
 
+    @NotNull(message = "Total amount is required")
     private BigDecimal totalAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)

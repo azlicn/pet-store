@@ -1,19 +1,15 @@
 <div class="pet-list-view">
   <mat-table [dataSource]="pets" class="pet-table">
-    
+
     <ng-container matColumnDef="photo">
-      <mat-header-cell *matHeaderCellDef style="display: flex; justify-content: center !important;">Photo</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef
+        style="display: flex; justify-content: center !important;">Photo</mat-header-cell>
       <mat-cell *matCellDef="let pet" style="display: flex; justify-content: center !important;">
         <div class="pet-photo">
-          <img *ngIf="pet.photoUrls && pet.photoUrls.length > 0"
-               [src]="pet.photoUrls[0]" 
-               [alt]="pet.name" 
-               class="pet-thumbnail"
-               loading="lazy"
-               (click)="onImageClick(pet)"
-               style="cursor: pointer;"
-               title="Click to view full size">
-          
+          <img *ngIf="pet.photoUrls && pet.photoUrls.length > 0" [src]="pet.photoUrls[0]" [alt]="pet.name"
+            class="pet-thumbnail" loading="lazy" (click)="onImageClick(pet)" style="cursor: pointer;"
+            title="Click to view full size">
+
           <div *ngIf="!pet.photoUrls || pet.photoUrls.length === 0" class="pet-placeholder">
             <mat-icon>pets</mat-icon>
             <span>{{ pet.category?.name || 'Pet' }}</span>
@@ -28,13 +24,12 @@
         <div class="pet-info">
           <div class="pet-name-container">
             <div class="pet-name">{{pet.name}}</div>
-            <mat-icon *ngIf="authService.isLoggedIn() && !authService.isAdmin() && (isCreatedByMe(pet) || isOwnedByMe(pet))" 
-                      class="relationship-icon"
-                      [class.created-and-owned]="isCreatedByMe(pet) && isOwnedByMe(pet)"
-                      [class.created-only]="isCreatedByMe(pet) && !isOwnedByMe(pet)"
-                      [class.owned-only]="!isCreatedByMe(pet) && isOwnedByMe(pet)"
-                      [matTooltip]="getPetRelationshipTooltip(pet)"
-                      matTooltipPosition="above">
+            <mat-icon
+              *ngIf="authService.isLoggedIn() && !authService.isAdmin() && (isCreatedByMe(pet) || isOwnedByMe(pet))"
+              class="relationship-icon" [class.created-and-owned]="isCreatedByMe(pet) && isOwnedByMe(pet)"
+              [class.created-only]="isCreatedByMe(pet) && !isOwnedByMe(pet)"
+              [class.owned-only]="!isCreatedByMe(pet) && isOwnedByMe(pet)" [matTooltip]="getPetRelationshipTooltip(pet)"
+              matTooltipPosition="above">
               {{getPetRelationshipIcon(pet)}}
             </mat-icon>
           </div>
@@ -48,13 +43,17 @@
     </ng-container>
 
     <ng-container matColumnDef="category">
-      <mat-header-cell *matHeaderCellDef style="display: flex; justify-content: center !important;">Category</mat-header-cell>
-      <mat-cell *matCellDef="let pet" style="display: flex; justify-content: center !important;"><span>{{pet.category?.name || 'N/A'}}</span></mat-cell>
+      <mat-header-cell *matHeaderCellDef
+        style="display: flex; justify-content: center !important;">Category</mat-header-cell>
+      <mat-cell *matCellDef="let pet"
+        style="display: flex; justify-content: center !important;"><span>{{pet.category?.name ||
+          'N/A'}}</span></mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="status">
-      <mat-header-cell *matHeaderCellDef style="display: flex; justify-content: center !important;">Status</mat-header-cell>
-      <mat-cell *matCellDef="let pet"  style="display: flex; justify-content: center !important;">
+      <mat-header-cell *matHeaderCellDef
+        style="display: flex; justify-content: center !important;">Status</mat-header-cell>
+      <mat-cell *matCellDef="let pet" style="display: flex; justify-content: center !important;">
         <mat-chip [class]="getStatusClass(pet.status)">
           {{pet.status}}
         </mat-chip>
@@ -69,38 +68,35 @@
     </ng-container>
 
     <ng-container matColumnDef="actions">
-      <mat-header-cell *matHeaderCellDef style="display: flex; justify-content: center !important;">Actions</mat-header-cell>
+      <mat-header-cell *matHeaderCellDef
+        style="display: flex; justify-content: center !important;">Actions</mat-header-cell>
       <mat-cell *matCellDef="let pet" style="display: flex; justify-content: center !important;">
         <div class="action-buttons">
-          <button mat-icon-button 
-                  *ngIf="canEditPet(pet)"
-                  [routerLink]="['/pets/edit', pet.id]"
-                  matTooltip="Edit Pet"
-                  color="primary">
+          <button mat-icon-button *ngIf="canEditPet(pet)" [routerLink]="['/pets/edit', pet.id]" matTooltip="Edit Pet"
+            color="primary">
             <mat-icon>edit</mat-icon>
           </button>
-          
-          <button mat-icon-button 
+
+          <!--  <button mat-icon-button 
                   *ngIf="!authService.isAdmin() && pet.status === 'AVAILABLE' && !isOwnPet(pet)"
                   (click)="onPurchase(pet)"
                   matTooltip="Purchase Pet"
                   color="primary">
             <mat-icon>shopping_cart</mat-icon>
+          </button> -->
+           <button mat-icon-button (click)="onAddToCart(pet)"
+            *ngIf="pet.status === 'AVAILABLE' && authService.isLoggedIn() && authService.isUser() && !isOwnPet(pet)" matTooltip="Add to Cart"
+            color="primary">
+          <mat-icon class="action-icon" color="primary" >shopping_cart</mat-icon>
           </button>
-          
+
           <ng-container *ngIf="authService.isAdmin()">
-            <button mat-icon-button 
-                    *ngIf="pet.status !== 'SOLD'"
-                    (click)="onStatusUpdate(pet)"
-                    matTooltip="Mark as Sold"
-                    color="accent">
+            <button mat-icon-button *ngIf="pet.status !== 'SOLD'" (click)="onStatusUpdate(pet)"
+              matTooltip="Mark as Sold" color="accent">
               <mat-icon>shopping_cart</mat-icon>
             </button>
-            
-            <button mat-icon-button 
-                    (click)="onDelete(pet)"
-                    matTooltip="Delete Pet"
-                    color="warn">
+
+            <button mat-icon-button (click)="onDelete(pet)" matTooltip="Delete Pet" color="warn">
               <mat-icon>delete</mat-icon>
             </button>
           </ng-container>

@@ -114,10 +114,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/pets/my-pets").hasAnyRole("USER", "ADMIN") // User's
                                                                                                           // purchased
                                                                                                           // pets
-                        .requestMatchers(HttpMethod.POST, "/api/pets/*/purchase").hasAnyRole("USER", "ADMIN") // Pet
-                                                                                                              // purchase
-                                                                                                              // for
-                                                                                                              // users
                         .requestMatchers(HttpMethod.POST, "/api/pets").hasAnyRole("USER", "ADMIN") // USER and ADMIN can
                                                                                                    // add pets
                         .requestMatchers(HttpMethod.PUT, "/api/pets/**").hasAnyRole("USER", "ADMIN") // USER and ADMIN

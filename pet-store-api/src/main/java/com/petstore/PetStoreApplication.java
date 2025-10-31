@@ -3,14 +3,12 @@ package com.petstore;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 /**
  * Main application class for the Pet Store API
  * Handles application startup and environment configuration
  */
 @SpringBootApplication
-@EnableJpaAuditing
 public class PetStoreApplication {
 
     /**

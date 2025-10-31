@@ -33,7 +33,7 @@ export class PetListViewComponent {
   @Input() pets: Pet[] = [];
   @Output() statusUpdate = new EventEmitter<Pet>();
   @Output() petDelete = new EventEmitter<Pet>();
-  @Output() petPurchase = new EventEmitter<Pet>();
+  @Output() petAddToCart = new EventEmitter<Pet>();
 
   displayedColumns: string[] = [
     "photo",
@@ -80,10 +80,6 @@ export class PetListViewComponent {
     this.petDelete.emit(pet);
   }
 
-  onPurchase(pet: Pet): void {
-    this.petPurchase.emit(pet);
-  }
-
   onImageClick(pet: Pet): void {
     if (pet.photoUrls && pet.photoUrls.length > 0) {
       const dialogData: ImageModalData = {
@@ -126,6 +122,10 @@ export class PetListViewComponent {
   isOwnedByMe(pet: Pet): boolean {
     const currentUser = this.authService.getCurrentUser();
     return currentUser && pet.owner ? pet.owner.id === currentUser.id : false;
+  }
+
+   onAddToCart(pet: Pet): void{
+    this.petAddToCart.emit(pet);
   }
 
   getPetRelationshipIcon(pet: Pet): string {

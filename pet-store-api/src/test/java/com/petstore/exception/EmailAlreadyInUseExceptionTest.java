@@ -5,9 +5,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Unit tests for EmailAlreadyInUseException.
+ */
 @DisplayName("EmailAlreadyInUseException Tests")
 class EmailAlreadyInUseExceptionTest {
 
+    /**
+     * Test creating EmailAlreadyInUseException with an email.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with email")
     void constructor_WithEmail_ShouldCreateCorrectMessage() {
@@ -18,6 +24,9 @@ class EmailAlreadyInUseExceptionTest {
         assertThat(exception.getMessage()).isEqualTo(expectedMessage);
     }
 
+    /**
+     * Test creating EmailAlreadyInUseException with a custom message.
+     */
     @Test
     @DisplayName("Constructor - Should create correct message with custom message")
     void constructor_WithCustomMessage_ShouldUseCustomMessage() {

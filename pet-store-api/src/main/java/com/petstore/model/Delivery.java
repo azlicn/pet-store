@@ -15,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "deliveries")
@@ -28,15 +30,20 @@ public class Delivery {
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
     @JsonIgnore
+    @NotNull(message = "Order is required for delivery")
     private Order order;
 
+    @NotBlank(message = "Recipient name is required")
     private String name;
 
+    @NotBlank(message = "Phone number is required")
     private String phone;
 
+    @NotBlank(message = "Address is required")
     private String address;
 
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Delivery status is required")
     private DeliveryStatus status = DeliveryStatus.PENDING;
 
     private LocalDateTime createdAt;

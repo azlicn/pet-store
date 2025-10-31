@@ -13,7 +13,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatDialogModule, MatDialog } from "@angular/material/dialog";
-import { Pet, PetStatus } from "../../models/pet.model";
+import { Pet, PetPageResponse, PetStatus } from "../../models/pet.model";
 import { Category } from "../../models/category.model";
 import { PetService } from "../../services/pet.service";
 import { CategoryService } from "../../services/category.service";
@@ -26,6 +26,7 @@ import {
 } from "../confirm-dialog/confirm-dialog.component";
 import { StoreService } from "src/app/services/store.service";
 import { HttpErrorResponse } from "@angular/common/http";
+import { MatPaginatorModule, PageEvent } from "@angular/material/paginator";
 
 @Component({
   selector: "app-pet-list",
@@ -46,6 +47,7 @@ import { HttpErrorResponse } from "@angular/common/http";
     MatDialogModule,
     PetCardComponent,
     PetListViewComponent,
+    MatPaginatorModule,
   ],
   templateUrl: "./pet-list.component.html",
   styleUrls: ["./pet-list.component.scss"],
@@ -63,6 +65,11 @@ export class PetListComponent implements OnInit {
     status: "",
   };
 
+  currentPage = 1;
+  pageSize = 10;
+  totalPages = 0;
+  totalElements = 0;
+
   userId = this.authService.getCurrentUser()?.id;
 
   constructor(
@@ -79,18 +86,51 @@ export class PetListComponent implements OnInit {
     this.loadCategories();
   }
 
-  loadPets(): void {
-    this.petService.getAllPets().subscribe({
-      next: (pets) => {
-        this.allPets = pets;
-        this.pets = [...pets];
-        this.applyFilters();
-      },
-      error: (error) => {
-        this.snackBar.open("Error loading pets", "Close", { duration: 3000 });
-        console.error("Error loading pets:", error);
-      },
-    });
+  loadPets(filters?: any): void {
+    this.petService
+      .getAllPets(this.currentPage - 1, this.pageSize, filters)
+      .subscribe({
+        next: (response: PetPageResponse) => {
+          this.allPets = response.pets;
+          this.pets = [...response.pets];
+          this.totalPages = response.totalPages;
+          this.totalElements = response.totalElements;
+          //this.applyFilters();
+        },
+        error: (error) => {
+          this.snackBar.open("Error loading pets", "Close", { duration: 3000 });
+          console.error("Error loading pets:", error);
+        },
+      });
+  }
+
+  loadMyPets(filters?: any): void {
+    if (!this.authService.isLoggedIn()) {
+      this.snackBar.open("Please log in to view your pets", "Close", {
+        duration: 3000,
+      });
+      this.showMyPetsOnly = false;
+      return;
+    }
+    console.log("Loading my pets with filters:", filters);
+    this.petService
+      .getMyPets(this.currentPage - 1, this.pageSize, filters)
+      .subscribe({
+        next: (response) => {
+          //this.pets = pets;
+          this.allPets = response.pets;
+          this.pets = [...response.pets];
+          this.totalPages = response.totalPages;
+          this.totalElements = response.totalElements;
+        },
+        error: (error) => {
+          this.snackBar.open("Error loading your pets", "Close", {
+            duration: 3000,
+          });
+          console.error("Error loading user pets:", error);
+          this.pets = [];
+        },
+      });
   }
 
   loadCategories(): void {
@@ -104,35 +144,19 @@ export class PetListComponent implements OnInit {
     });
   }
 
-  onFilterChange(): void {
+  onFilterChange(event: any): void {
+    if (event.value) {
+      this.applyFilters();
+    } else {
+      this.loadPets();
+    }
+  }
+
+  onSearchFilterChange(): void {
     this.applyFilters();
   }
 
   applyFilters(): void {
-    if (this.showMyPetsOnly) {
-      if (!this.authService.isLoggedIn()) {
-        this.snackBar.open("Please log in to view your pets", "Close", {
-          duration: 3000,
-        });
-        this.showMyPetsOnly = false;
-        return;
-      }
-
-      this.petService.getMyPets().subscribe({
-        next: (pets) => {
-          this.pets = pets;
-        },
-        error: (error) => {
-          this.snackBar.open("Error loading your pets", "Close", {
-            duration: 3000,
-          });
-          console.error("Error loading user pets:", error);
-          this.pets = [];
-        },
-      });
-      return;
-    }
-
     const hasFilters =
       this.searchFilters.name.trim() ||
       this.searchFilters.categoryId ||
@@ -157,19 +181,18 @@ export class PetListComponent implements OnInit {
         filters.status = this.searchFilters.status as PetStatus;
       }
 
-      this.petService.searchPets(filters).subscribe({
-        next: (pets) => {
-          this.pets = pets;
-        },
-        error: (error) => {
-          this.snackBar.open("Error filtering pets", "Close", {
-            duration: 3000,
-          });
-          console.error("Error filtering pets:", error);
-        },
-      });
+      if (this.showMyPetsOnly) {
+        this.loadMyPets(filters);
+        return;
+      }
+      this.loadPets(filters);
     } else {
-      this.pets = [...this.allPets];
+      if (this.showMyPetsOnly) {
+        this.loadMyPets();
+        return;
+      }
+      this.loadPets();
+      //this.pets = [...this.allPets];
     }
   }
 
@@ -185,7 +208,8 @@ export class PetListComponent implements OnInit {
       status: "",
     };
     this.showMyPetsOnly = false;
-    this.applyFilters();
+    //this.applyFilters();
+    this.loadPets();
   }
 
   toggleFilters(): void {
@@ -291,53 +315,6 @@ export class PetListComponent implements OnInit {
     });
   }
 
-  purchasePet(pet: Pet): void {
-    if (!pet.id) {
-      return;
-    }
-
-    const dialogData: ConfirmDialogData = {
-      title: "Purchase Pet",
-      message: `Are you sure you want to purchase <strong>"${pet.name}"</strong> for $${pet.price}?\nThis will mark the pet as sold and update its status.`,
-      confirmText: "Purchase Now",
-      cancelText: "Not Now",
-      icon: "pets",
-      danger: false,
-    };
-
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: "450px",
-      maxWidth: "90vw",
-      data: dialogData,
-      disableClose: true,
-      panelClass: "confirm-dialog-container",
-      hasBackdrop: true,
-      backdropClass: "confirm-dialog-backdrop",
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && pet.id) {
-        this.petService.purchasePet(pet.id).subscribe({
-          next: (updatedPet: Pet) => {
-            const index = this.pets.findIndex((p) => p.id === pet.id);
-            if (index !== -1) {
-              this.pets[index] = updatedPet;
-            }
-            this.snackBar.open("Pet purchased successfully!", "Close", {
-              duration: 3000,
-            });
-          },
-          error: (error: any) => {
-            this.snackBar.open("Error purchasing pet", "Close", {
-              duration: 3000,
-            });
-            console.error("Error purchasing pet:", error);
-          },
-        });
-      }
-    });
-  }
-
   addToCart(pet: Pet): void {
     if (!pet.id) {
       return;
@@ -361,5 +338,25 @@ export class PetListComponent implements OnInit {
         );
       },
     });
+  }
+
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadPets();
+  }
+
+  get pageStart(): number {
+    return this.pageSize > 0 ? (this.currentPage - 1) * this.pageSize + 1 : 1;
+  }
+  get pageEnd(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalElements);
+  }
+  get pageSizeOptions(): number[] {
+    if (this.totalElements > 1000) return [10, 20, 50, 100, 250, 500, 1000];
+    if (this.totalElements > 500) return [10, 20, 50, 100, 250, 500];
+    if (this.totalElements > 100) return [10, 20, 50, 100];
+    if (this.totalElements > 20) return [5, 10, 20, 50];
+    return [5, 10, 20];
   }
 }
