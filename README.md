@@ -4,6 +4,11 @@ A modern, full-stack pet store application built with Angular 17 and Spring Boot
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen)](https://spring.io/projects/spring-boot) [![Angular](https://img.shields.io/badge/Angular-17-red)](https://angular.io/) [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)](https://www.mysql.com/)
 
+
+<p align="center">
+  <img src="docs/assets/pawfect.png" alt="Pawfect Store" width="1200"/>
+</p>
+
 ---
 
 ## 📋 Table of Contents
