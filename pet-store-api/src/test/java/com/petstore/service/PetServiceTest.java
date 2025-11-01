@@ -92,25 +92,25 @@ class PetServiceTest {
 
         when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
 
-        Optional<Pet> actualPet = petService.getPetById(1L);
+        Pet actualPet = petService.getPetById(1L);
 
-        assertThat(actualPet).isPresent();
-        assertThat(actualPet.get().getName()).isEqualTo("Buddy");
+        assertThat(actualPet).isNotNull();
+        assertThat(actualPet.getName()).isEqualTo("Buddy");
         verify(petRepository).findById(1L);
     }
 
     /**
-     * Test: Should return empty Optional when pet does not exist by ID.
+     * Test: Should return PetNotFoundException when pet does not exist by ID.
      */
     @Test
-    @DisplayName("Get pet by ID - Should return empty when pet does not exist")
-    void getPetById_WhenPetDoesNotExist_ShouldReturnEmpty() {
+    @DisplayName("Get pet by ID - Should return PetNotFoundException when pet does not exist")
+    void getPetById_WhenPetDoesNotExist_ShouldReturnPetNotFoundException() {
 
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
 
-        Optional<Pet> actualPet = petService.getPetById(999L);
-
-        assertThat(actualPet).isEmpty();
+        assertThatThrownBy(() -> petService.getPetById(999L))
+                .isInstanceOf(PetNotFoundException.class)
+                .hasMessageContaining("Pet not found with ID '999'");
         verify(petRepository).findById(999L);
     }
 
@@ -131,45 +131,6 @@ class PetServiceTest {
     }
 
     /**
-     * Test: Should update pet status when pet exists.
-     */
-    @Test
-    @DisplayName("Update pet status - Should update status when pet exists")
-    void updatePetStatus_WhenPetExists_ShouldUpdateStatus() {
-
-        Pet updatedPet = new Pet();
-        updatedPet.setId(1L);
-        updatedPet.setName("Buddy");
-        updatedPet.setStatus(PetStatus.PENDING);
-
-        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
-        when(petRepository.save(any(Pet.class))).thenReturn(updatedPet);
-
-        Pet result = petService.updatePetStatus(1L, PetStatus.PENDING);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(PetStatus.PENDING);
-        verify(petRepository).findById(1L);
-        verify(petRepository).save(any(Pet.class));
-    }
-
-    /**
-     * Test: Should return null when updating status of a non-existent pet.
-     */
-    @Test
-    @DisplayName("Update pet status - Should return null when pet not found")
-    void updatePetStatus_WhenPetNotFound_ShouldReturnNull() {
-
-        when(petRepository.findById(999L)).thenReturn(Optional.empty());
-
-        Pet result = petService.updatePetStatus(999L, PetStatus.PENDING);
-
-        assertThat(result).isNull();
-        verify(petRepository).findById(999L);
-        verify(petRepository, never()).save(any(Pet.class));
-    }
-
-    /**
      * Test: Should return true when deleting a pet that exists.
      */
     @Test
@@ -178,9 +139,8 @@ class PetServiceTest {
 
         when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
 
-        boolean result = petService.deletePet(1L);
+        petService.deletePet(1L);
 
-        assertThat(result).isTrue();
         verify(petRepository).findById(1L);
         verify(petRepository).delete(testPet);
     }
@@ -195,8 +155,8 @@ class PetServiceTest {
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> petService.deletePet(999L))
-            .isInstanceOf(PetNotFoundException.class)
-            .hasMessageContaining("Pet not found with ID '999'");
+                .isInstanceOf(PetNotFoundException.class)
+                .hasMessageContaining("Pet not found with ID '999'");
         verify(petRepository).findById(999L);
         verify(petRepository, never()).delete(any());
     }
@@ -211,21 +171,6 @@ class PetServiceTest {
                 .isInstanceOf(InvalidPetException.class)
                 .hasMessageContaining("Pet cannot be null");
         verify(petRepository, never()).save(any());
-    }
-
-    /**
-     * Test: Should throw InvalidPetException when updating pet status with null
-     * value.
-     */
-    @Test
-    @DisplayName("Update pet status - Should throw InvalidPetException when status is null")
-    void updatePetStatus_WhenStatusIsNull_ShouldThrowException() {
-        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
-        assertThatThrownBy(() -> petService.updatePetStatus(1L, null))
-                .isInstanceOf(InvalidPetException.class)
-                .hasMessageContaining("Pet status cannot be null");
-        verify(petRepository).findById(1L);
-        verify(petRepository, never()).save(any(Pet.class));
     }
 
     /**
@@ -319,8 +264,8 @@ class PetServiceTest {
         Pet petDetails = new Pet();
         when(petRepository.findById(999L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> petService.updatePet(999L, petDetails))
-            .isInstanceOf(PetNotFoundException.class)
-            .hasMessageContaining("Pet not found with ID '999'");
+                .isInstanceOf(PetNotFoundException.class)
+                .hasMessageContaining("Pet not found with ID '999'");
         verify(petRepository).findById(999L);
         verify(petRepository, never()).save(any(Pet.class));
     }

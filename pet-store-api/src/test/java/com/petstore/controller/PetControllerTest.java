@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,6 +51,7 @@ import com.petstore.model.Role;
 import com.petstore.enums.PetStatus;
 
 import com.petstore.exception.GlobalExceptionHandler;
+import com.petstore.exception.PetNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petstore.config.TestSecurityConfig;
 
@@ -244,7 +246,7 @@ class PetControllerTest {
         pet.setCategory(category);
         pet.setCreatedBy(1L);
 
-        when(petService.getPetById(1L)).thenReturn(Optional.of(pet));
+        when(petService.getPetById(1L)).thenReturn(pet);
 
         mockMvc.perform(get("/api/pets/1")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -268,7 +270,7 @@ class PetControllerTest {
     @DisplayName("PUT /api/pets/{id} - should return 404 when pet not found")
     void shouldReturnNotFoundWhenPetDoesNotExist() throws Exception {
 
-        when(petService.getPetById(1L)).thenReturn(Optional.empty());
+        when(petService.getPetById(1L)).thenThrow(new PetNotFoundException(1L));
         when(userService.getUserByEmail("user@example.com"))
                 .thenReturn(Optional.of(new User()));
 
@@ -360,7 +362,7 @@ class PetControllerTest {
         adminUser.setId(10L);
         adminUser.setRoles(Set.of(Role.ADMIN));
 
-        when(petService.getPetById(1L)).thenReturn(Optional.of(pet));
+        when(petService.getPetById(1L)).thenReturn(pet);
         when(userService.getUserByEmail(anyString())).thenReturn(Optional.of(adminUser));
         when(petService.updatePet(eq(1L), any(Pet.class))).thenReturn(pet);
 
@@ -388,38 +390,14 @@ class PetControllerTest {
         pet.setId(1L);
         pet.setName("Buddy");
 
-        when(petService.getPetById(1L)).thenReturn(Optional.of(pet));
-        when(petService.deletePet(1L)).thenReturn(true);
+        when(petService.getPetById(1L)).thenReturn(pet);
+        doNothing().when(petService).deletePet(1L);
 
         mockMvc.perform(delete("/api/pets/1"))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNoContent());
 
         verify(petService, times(1)).deletePet(1L);
-    }
-
-    /**
-     * Test: POST /api/pets/{id}/status
-     * Verifies that a pet's status is updated successfully by an admin.
-     */
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /api/pets/{id} - should update pet")
-    void shouldUpdatePetStatus() throws Exception {
-
-        Pet pet = new Pet();
-        pet.setId(1L);
-        pet.setName("Buddy");
-        pet.setStatus(PetStatus.SOLD);
-
-        when(petService.updatePetStatus(1L, PetStatus.SOLD)).thenReturn(pet);
-
-        mockMvc.perform(post("/api/pets/1/status")
-                .param("status", "SOLD"))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk());
-
-        verify(petService, times(1)).updatePetStatus(1L, PetStatus.SOLD);
     }
 
     /**

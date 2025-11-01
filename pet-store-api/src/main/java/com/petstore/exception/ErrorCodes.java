@@ -45,8 +45,9 @@ public final class ErrorCodes {
 
     public static final String ORDER_ACCESS_DENIED = "ERROR_7001";
     public static final String ORDER_NOT_FOUND = "ERROR_7002";
-    
-    
-    
+
+    public static final String INVALID_PAYMENT = "ERROR_8001";
+    public static final String UNSUPPORTED_PAYMENT = "ERROR_8002";
+    public static final String UNSUPPORTED_PAYMENT_TYPE = "ERROR_8003";
 
 }

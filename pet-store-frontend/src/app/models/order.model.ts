@@ -4,6 +4,13 @@ import { Discount } from "./discount.model";
 import { OrderItem } from "./orderItem.model";
 import { Payment } from "./payment.model";
 
+export enum OrderStatus {
+  PLACED = "PLACED",
+  APPROVED = "APPROVED",
+  DELIVERED = "DELIVERED",
+  CANCELED = "CANCELED",
+}
+
 export interface Order {
   id?: number;
   orderNumber: string;

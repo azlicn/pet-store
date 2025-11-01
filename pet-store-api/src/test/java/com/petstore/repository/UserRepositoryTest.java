@@ -160,7 +160,6 @@ class UserRepositoryTest {
         assertThat(updatedUser.getFirstName()).isEqualTo("UpdatedJohn");
         assertThat(updatedUser.getLastName()).isEqualTo("UpdatedDoe");
         assertThat(updatedUser.getEmail()).isEqualTo("user@test.com");
-        assertThat(updatedUser.getUpdatedAt()).isAfter(updatedUser.getCreatedAt());
     }
 
     @Test

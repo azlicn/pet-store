@@ -16,7 +16,13 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { PaymentOrderRequest } from "src/app/models/paymentOrder.model";
+import { Location } from "@angular/common";
+import {
+  WalletType,
+  getWalletType,
+  PaymentOrderRequest,
+  PaymentType,
+} from "src/app/models/paymentOrder.model";
 
 @Component({
   selector: "app-checkout",
@@ -62,7 +68,8 @@ export class CheckoutComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private location: Location
   ) {
     this.route.paramMap.subscribe((params) => {
       this.orderId = +params.get("orderId")!;
@@ -76,8 +83,8 @@ export class CheckoutComponent implements OnInit {
 
   isPaymentInfoValid(): boolean {
     if (
-      this.selectedPaymentType === "CREDIT_CARD" ||
-      this.selectedPaymentType === "DEBIT_CARD"
+      this.selectedPaymentType === PaymentType.CREDIT_CARD ||
+      this.selectedPaymentType === PaymentType.DEBIT_CARD
     ) {
       // Card number: 16-19 digits, Luhn valid
       const cardNum = this.cardNumber.replace(/\s/g, "");
@@ -91,20 +98,20 @@ export class CheckoutComponent implements OnInit {
       if (!this.cardHolder || this.cardHolder.trim().length < 2) return false;
       return true;
     }
-    if (this.selectedPaymentType === "PAYPAL") {
+    if (this.selectedPaymentType === PaymentType.PAYPAL) {
       // Paypal contact: not empty, basic email or phone format
       if (!this.paypalContact || this.paypalContact.trim().length < 5)
         return false;
       return true;
     }
-    if (this.selectedPaymentType === "E_WALLET") {
-      if (this.selectedEwallet === "GRABPAY") {
+    if (this.selectedPaymentType === PaymentType.E_WALLET) {
+      if (this.selectedEwallet === WalletType.GRABPAY) {
         return !!this.grabPay && this.grabPay.trim().length > 3;
       }
-      if (this.selectedEwallet === "BOOSTPAY") {
+      if (this.selectedEwallet === WalletType.BOOSTPAY) {
         return !!this.boostPay && this.boostPay.trim().length > 3;
       }
-      if (this.selectedEwallet === "TOUCHNGO") {
+      if (this.selectedEwallet === WalletType.TOUCHNGO) {
         return !!this.touchNGo && this.touchNGo.trim().length > 3;
       }
       return false;
@@ -235,11 +242,15 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  goBack(): void {
+    this.location.back();
+  }
+
   cancelOrder() {
     if (!this.order?.id) return;
     const dialogData = {
       title: "Cancel Order",
-      message: `Are you sure you want to cancel this order?<br><strong>This action cannot be undone and will permanently remove this order from the system.</strong>`,
+      message: `Are you sure you want to cancel this order?`,
       confirmText: "Cancel Order",
       cancelText: "Keep Order",
       icon: "delete_forever",
@@ -305,25 +316,33 @@ export class CheckoutComponent implements OnInit {
   }
 
   private buildPaymentOrderRequest(): PaymentOrderRequest {
-    let paymentNote = "";
-    if (this.selectedPaymentType === "E_WALLET") {
-      let ewalletValue = "";
-      if (this.selectedEwallet === "GRABPAY") {
-        ewalletValue = this.grabPay;
-      } else if (this.selectedEwallet === "BOOSTPAY") {
-        ewalletValue = this.boostPay;
-      } else if (this.selectedEwallet === "TOUCHNGO") {
-        ewalletValue = this.touchNGo;
+    let cardNumber: string;
+    let walletId: string;
+    let paypalId: string;
+    //let paymentNote = "";
+    if (this.selectedPaymentType === PaymentType.E_WALLET) {
+      //let ewalletValue = "";
+      if (this.selectedEwallet === WalletType.GRABPAY) {
+        //ewalletValue = this.grabPay;
+        walletId = this.grabPay;
+      } else if (this.selectedEwallet === WalletType.BOOSTPAY) {
+        //ewalletValue = this.boostPay;
+        walletId = this.boostPay;
+      } else if (this.selectedEwallet === WalletType.TOUCHNGO) {
+        //ewalletValue = this.touchNGo;
+        walletId = this.touchNGo;
       }
-      paymentNote = this.selectedEwallet + " Account ID: " + ewalletValue;
-    } else if (this.selectedPaymentType === "PAYPAL") {
-      paymentNote = "PAYPAL Account ID: " + this.paypalContact;
+      //paymentNote = this.selectedEwallet + " Account ID: " + ewalletValue;
+    } else if (this.selectedPaymentType === PaymentType.PAYPAL) {
+      walletId = this.paypalContact;
+      //paymentNote = "PAYPAL Account ID: " + this.paypalContact;
     } else if (
-      this.selectedPaymentType === "CREDIT_CARD" ||
-      this.selectedPaymentType === "DEBIT_CARD"
+      this.selectedPaymentType === PaymentType.CREDIT_CARD ||
+      this.selectedPaymentType === PaymentType.DEBIT_CARD
     ) {
-      const cardNum = this.cardNumber.replace(/\s/g, "");
-      paymentNote = "Last 4 digits: " + cardNum.slice(-4);
+      //const cardNum = this.maskCardNumber(this.cardNumber);
+      //paymentNote = "Last 4 digits: " + cardNum.slice(-4);
+      cardNumber = this.maskCardNumber(this.cardNumber);
     }
     return {
       paymentType: this.selectedPaymentType,
@@ -331,7 +350,69 @@ export class CheckoutComponent implements OnInit {
       billingAddressId: this.billingSameAsShipping
         ? this.selectedAddressId!
         : this.selectedBillingAddressId,
-      paymentNote: paymentNote,
+      walletType: this.validateAndReturnWalletType(this.selectedPaymentType, this.selectedEwallet),
+      walletId: this.validateAndReturnWalletId(this.selectedPaymentType, walletId!),
+      paypalId: this.validateAndReturnPaypalId(this.selectedPaymentType, walletId!),
+      cardNumber: this.validateCardAndReturnCardNNumber(
+        this.selectedPaymentType,
+        this.cardNumber
+      ),
     };
   }
+
+  private maskCardNumber(cardNumber: string): string {
+    if (!cardNumber || cardNumber.length <= 4) {
+      return cardNumber;
+    }
+
+    const visibleDigits = 4;
+    const maskedSection = "*".repeat(cardNumber.length - visibleDigits);
+    const visibleSection = cardNumber.slice(-visibleDigits);
+
+    return maskedSection + visibleSection;
+  }
+
+  private validateAndReturnWalletType(
+    paymentType: string,
+    walletValue: string
+  ): WalletType | undefined {
+    if (paymentType === PaymentType.E_WALLET) {
+      return getWalletType(walletValue);
+    }
+    return undefined;
+  }
+
+  private validateCardAndReturnCardNNumber(
+    paymentType: string,
+    cardNumber: string
+  ): string | undefined {
+    if (
+      paymentType === PaymentType.CREDIT_CARD ||
+      paymentType === PaymentType.DEBIT_CARD
+    ) {
+      return this.maskCardNumber(cardNumber);
+    }
+    return undefined;
+  }
+
+  private validateAndReturnPaypalId(
+    paymentType: string,
+    paypalId: string
+  ): string | undefined {
+    if (paymentType === PaymentType.PAYPAL) {
+      return paypalId;
+    }
+    return undefined;
+  }
+
+  private validateAndReturnWalletId(
+    paymentType: string,
+    walletId: string
+  ): string | undefined {
+    if (paymentType === PaymentType.E_WALLET) {
+      return walletId;
+    }
+    return undefined;
+  } 
+
 }

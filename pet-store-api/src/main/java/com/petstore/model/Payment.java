@@ -3,6 +3,7 @@ package com.petstore.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.petstore.enums.PaymentStatus;
 import com.petstore.enums.PaymentType;
@@ -29,7 +30,7 @@ public class Payment {
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
-    @com.fasterxml.jackson.annotation.JsonBackReference
+    @JsonBackReference
     private Order order;
 
     private BigDecimal amount;

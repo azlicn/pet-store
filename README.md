@@ -84,6 +84,10 @@ graph TD
         PetList[Pet List Component<br/>Main Pet Management]
         PetForm[Pet Form Component<br/>Add/Edit Pets]
         Categories[Category Management<br/>Admin Only]
+        Discounts[Discount Management<br/>Admin Only]
+        Addresses[Address Management<br/>Card View]
+        OrderList[Order List View Component<br/>Card View]
+        Cart[Cart View Component<br/>Add Pet to Cart]
         Users[User Management<br/>Admin Only]
     end
     
@@ -98,6 +102,9 @@ graph TD
         AuthService[Auth Service<br/>JWT Management]
         PetService[Pet Service<br/>Pet CRUD Operations]
         CategoryService[Category Service<br/>Category Management]
+        AddressService[Address Service<br/>Address Management]
+        DiscountService[Discount Service<br/>Discount Management]
+        StoreService[Store Service<br/>Store/Order Management]
         UserService[User Service<br/>User Management]
         BaseApiService[Base API Service<br/>HTTP Configuration]
     end
@@ -107,6 +114,10 @@ graph TD
     App --> PetList
     App --> PetForm
     App --> Categories
+    App --> Discounts
+    App --> Addresses
+    App --> OrderList
+    App --> Cart
     App --> Users
     
     PetList --> PetCard
@@ -119,11 +130,18 @@ graph TD
     PetForm -.-> PetService
     PetForm -.-> CategoryService
     Categories -.-> CategoryService
+    Discounts -.-> DiscountService
+    Addresses -.-> AddressService
+    Cart -.-> StoreService
+    OrderList -.-> StoreService
     Users -.-> UserService
     
     AuthService -.-> BaseApiService
     PetService -.-> BaseApiService
     CategoryService -.-> BaseApiService
+    DiscountService -.-> BaseApiService
+    AddressService -.-> BaseApiService
+    StoreService -.-> BaseApiService
     UserService -.-> BaseApiService
     
     style App fill:#ffeb3b
@@ -138,7 +156,9 @@ graph TD
 - **Add Pets**: Add new pets to the store inventory
 - **Update Pets**: Edit existing pet information
 - **Delete Pets**: Remove pets from inventory
-- **Status Management**: Update pet status (Available, Pending, Sold)
+- **Store Management**: Add to Cart, Order Pets, Mock Payment, View Order Status
+- **Discount Management**: Manage Discounts
+- **Category Management**: Manage Categories
 
 ### Advanced Features
 - **Search & Filter**: Filter pets by name, species, and status
@@ -154,7 +174,19 @@ graph TD
 erDiagram
     USERS ||--o{ PETS : "owns"
     USERS ||--o{ PETS : "creates"
+    USERS ||--|| CARTS : "has one"
     CATEGORIES ||--o{ PETS : "categorizes"
+    USERS }|..|{ ADDRESSES : "addresses"
+    ORDERS ||--|{ ORDER_ITEMS : "contains"
+    ORDERS ||--|| PAYMENTS : "covers"
+    ORDERS ||--|| DELIVERIES : "delivers"
+    ORDERS ||--o{ ADDRESSES : "has shipping address"
+    ORDERS ||--o{ ADDRESSES : "has delivery address"
+    CARTS ||--o{ CART_ITEMS : "contains"
+    PETS ||--|{ CART_ITEMS : "ordered in"
+    PETS ||--|{ PET_PHOTOS : "has"
+    PETS ||--|{ PET_TAGS : "has"
+    DISCOUNTS ||--o{ ORDERS : "used by"
     
     USERS {
         bigint id PK
@@ -180,6 +212,16 @@ erDiagram
         timestamp created_at "Listing creation"
         timestamp updated_at "Last modification"
     }
+
+    PET_PHOTOS {
+        bigint pet_id FK "Pet Id"
+        string photo_url FK "Photo URL"
+    }
+
+    PET_TAGS {
+        bigint pet_id FK "Pet Id"
+        string tag FK "Tag"
+    }
     
     CATEGORIES {
         bigint id PK
@@ -187,6 +229,85 @@ erDiagram
         timestamp created_at "Category creation"
         timestamp updated_at "Last modification"
     }
+
+    DISCOUNTS {
+        bigint id PK
+        string code UK "Unique code"
+        decimal percentage "Discount percentage"
+        string description "Discount description"
+        timestamp valid_from "Valid From"
+        timestamp valid_to "Valid To"
+        bit active "Active discount"
+        timestamp created_at "Category creation"
+        timestamp updated_at "Last modification"
+    }
+
+     ADDRESSES {
+        bigint id PK
+        bigint user_id FK "User belong to the address"
+        string full_name "System will concat from User's first name and last name"
+        string street "Street"
+        string city "City"
+        string postal_code "Postal Code"
+        string country "Country"
+        string phone_number "Phone NUmber"
+        bit is_default "Mark default address"
+    }
+
+    PAYMENTS {
+        bigint id PK
+        bigint order_id FK "Payment order id"
+        decimal amount "Amount"
+        enum status "PENDING, SUCCESS, FAILED"
+        enum payment_type "CREDIT_CARD, DEBIT_CARD, E-WALLET, PAYPAL"
+        string payment_note "Note"
+        timestamp paid_at "Paid at"
+    }
+
+    DELIVERIES {
+        bigint id PK
+        bigint order_id FK "Order id"
+        string name "Customer name"
+        string phone "Phone Number"
+        string address "Delivery Address"
+        decimal amount "Amount"
+        enum status "PENDING, SHIPPED, DELIVERED"
+        timestamp delivered_at "Delivered At"
+        timestamp shipped_at "Shipped At"
+    }
+
+     ORDERS {
+        bigint id PK
+        string order_number "System Generated Order Number"
+        enum status "PLACED, APPROVED, DELIVERED, CANCELLED"
+        decimal total_amount "Total Amount"
+        bigint user_id FK "User Id"
+        bigint discount_id FK "Discount Id"
+        bigint billing_address_id FK "Billing Address Id"
+        bigint shipping_address_id FK "Shipping Address Id"
+        timestamp created_at "Created At"
+        timestamp updated_at "Updated At"
+     }
+
+     ORDER_ITEMS {
+        bigint id PK
+        decimal price "Item Price"
+        bigint order_id FK "Order Id"
+        bigint pet_id FK "Pet Id"
+
+     }
+
+     CARTS {
+        bigint id PK
+        bigint user_id FK "User Id"
+     }
+
+     CART_ITEMS {
+        bigint id PK
+        decimal price "Price"
+        bigint cart_id FK "Cart Id"
+        bigint pet_id FK "Pet Id"
+     }
 ```
 
 ### API Flow Diagrams
@@ -216,6 +337,69 @@ sequenceDiagram
 ```
 
 #### Pet Management Flow
+
+##### Create a Pet Flow
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant P as Pet Controller
+    participant S as Pet Service
+    participant R as Pet Repository
+    participant D as Database
+
+    U->>F: Click Add New Pet button
+    F->>F: Fill in Pet Info
+    F->>F: FE Form Validation
+    F->>P: POST /api/pets (with JWT)
+    P->>P: Validate JWT & Extract User
+    P->>S: savePet()
+    S->>R: save()
+    R->>D: SQL Query (Save Pet to DB)
+    D-->>R: Saved Pet
+    R-->>S: Saved Pet
+    S-->>P: Processed Pet
+    P-->>F: 201 CREATED + Pet JSON
+    F-->>U: Display newly created Pet in Pet List
+    
+```
+
+##### Update Pet Flow
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant P as Pet Controller
+    participant S as Pet Service
+    participant R as Pet Repository
+    participant D as Database
+
+    U->>F: Click Edit Pet button
+    F->>P: GET /api/pets{id} (with JWT)
+    P->>P: Validate JWT & Extract User
+    P->>S: getPetById()
+    S->>R: findById()
+    R->>D: SQL Query (Get Pet from DB)
+    R-->>S: Pet
+    S-->>P: Processed Pet
+    P-->>F: Pet JSON
+    F->>F: Update Pet Info
+    F->>F: FE Form Validation
+    F->>P: PUT /api/pets/{id} (with JWT)
+    P->>P: Validate JWT & Extract User
+    P->>S: updatePet()
+    S->>S: Validation
+    S->>R: save()
+    R->>D: SQL Query (Update Pet to DB)
+    D-->>R: Updated Pet
+    R-->>S: Updated Pet
+    S-->>P: Processed Pet
+    P-->>F: 200 OK + Pet JSON
+    F-->>U: Display updated Pet in Pet List
+    
+```
+
+##### View Pets/My Pets Flow
 ```mermaid
 sequenceDiagram
     participant U as User
@@ -228,17 +412,41 @@ sequenceDiagram
     U->>F: View My Pets
     F->>P: GET /api/pets/my-pets (with JWT)
     P->>P: Validate JWT & Extract User
-    P->>S: getPetsByUser(user)
-    S->>R: findByOwner(user) + findByCreatedBy(user)
-    R->>D: SQL Query (owned + created pets)
-    D-->>R: Pet Results
-    R-->>S: Combined Pet List
-    S->>S: Remove Duplicates
-    S-->>P: Processed Pet List
-    P-->>F: 200 OK + Pet JSON
-    F-->>U: Display Pets with Icons
+    P->>S: findPetsByFiltersPaginated() - pass user id for my pets
+    S->>R: findPetsByFiltersPaginated() - pass user id for my pets
+    R->>D: SQL Query (all or owned + created pets for my pets)
+    D-->>R: Page<Pet> Results
+    R-->>S: Page<Pet> Results
+    S-->>P: Processed Page<Pet>
+    P-->>F: 200 OK + Page<Pet> JSON
+    F-->>U: Display Pets in Pagination
     
-    Note over S,R: Service combines owned and created pets<br/>then removes duplicates
+```
+
+##### Delete Pet Flow
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant P as Pet Controller
+    participant S as Pet Service
+    participant R as Pet Repository
+    participant D as Database
+
+    U->>F: Click Delete icon
+    F->>F: Confirmation Dialog
+    F->>P: DELETE /api/pets/{id} (with JWT)
+    P->>P: Validate JWT & Extract User
+    P->>S: deletePet()
+    S->>S: Validation 
+    S->>R: delete()
+    R->>D: SQL Query (delete Pet from DB)
+    D-->>R: Page<Pet> Results
+    R-->>S: Page<Pet> Results
+    S-->>P: Processed Page<Pet>
+    P-->>F: 200 OK + Page<Pet> JSON
+    F-->>U: Display Pets in Pagination
+    
 ```
 
 ## Quick Start
@@ -721,10 +929,12 @@ graph TD
     subgraph "USER Role Permissions"
         UserRole[USER Role]
         UserRole --> ViewPets[View All Pets]
-        UserRole --> MyPets[Manage My Pets]
+        UserRole --> MyPets[View My Pets]
         UserRole --> AddPet[Add New Pets]
-        UserRole --> BuyPet[Purchase Pets]
+        UserRole --> AddToCart[Add Pet to Card]
+        UserRole --> OrderPet[Buy Pets]
         UserRole --> EditOwn[Edit Own Pets Only]
+        UserRole --> Addresses[Manage Own Addresses]
     end
     
     subgraph "ADMIN Role Permissions"
@@ -732,8 +942,9 @@ graph TD
         AdminRole --> AllPets[Manage All Pets]
         AdminRole --> DeleteAny[Delete Any Pet]
         AdminRole --> Categories[Manage Categories]
+        AdminRole --> Discounts[Manage Discounts]
         AdminRole --> Users[Manage Users]
-        AdminRole --> SystemStatus[View System Status]
+        AdminRole --> DeliveryStatus[Update Delivery Status]
     end
     
     Roles --> UserRole
@@ -749,18 +960,58 @@ graph TD
 
 The REST API follows the Swagger Pawfect Store specification and includes:
 
+### Category Endpoints
+- `GET /api/categories{id}` - Get category by ID
+- `GET /api/categories` - Get all categories
+- `POST /api/categories` - Create a new category
+- `PUT /api/categories` - Update a category
+- `DELETE /api/categories/{id}` - Delete a category
+
 ### Pet Endpoints
-- `GET /api/pets` - Get available pets (with optional filtering by name, categoryId, status, limit)
+- `GET /api/pets` - Get all available pets (supports filters: name, categoryId, status, limit) in pagination
+- `GET /api/pets/my-pets` - Get user's own pets (owned and created) (supports filters: name, categoryId, status, limit) in pagination
 - `GET /api/pets/latest` - Get latest available pets (for homepage display)
 - `GET /api/pets/{id}` - Get pet by ID
-- `GET /api/pets/findByStatus` - Find pets by status
 - `POST /api/pets` - Add new pet (requires authentication)
-- `PUT /api/pets/{id}` - Update pet (requires authentication - user can only edit own pets, admin can edit any)
-- `DELETE /api/pets/{id}` - Delete pet (admin only)
-- `POST /api/pets/{id}/status` - Update pet status (admin only)
-- `POST /api/pets/{id}/purchase` - Purchase a pet (requires authentication)
-- `GET /api/pets/my-pets` - Get user's own pets (owned and created)
-- `GET /api/pets/auth-test` - Test authentication endpoint
+- `PUT /api/pets/{id}` - Update an existing pet (requires authentication - user can only edit own pets, admin can edit any)
+- `DELETE /api/pets/{id}` - Delete pet
+
+### Authentication Endpoints
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+
+### User Endpoints
+- `GET /api/users{id}` - Get user by ID
+- `GET /api/users` - Get all users
+- `PUT /api/users{id}` - Update an existing user
+- `DELETE /api/users{id}` - Delete user by ID
+
+### Store Endpoints
+- `GET /api/stores/orders` - Get orders
+- `GET /api/stores/order/{orderId}` - Get order by ID
+- `GET /api/stores/cart/{userId}` - Get user's cart
+- `GET /api/stores/cart/discount/validate` - Validate discount
+- `POST /api/stores/order/{orderId}/pay` - Make payment for order
+- `POST /api/stores/checkout` - Checkout cart
+- `PATCH /api/stores/order/{orderId}/delivery-status` - Update order delivery status
+- `DELETE /api/stores/order/{orderId}` - Cancel order
+- `DELETE /api/stores/order/{orderId}/delete` - Delete order (ADMIN role only)
+- `DELETE /api/stores/cart/item/{cartItemId}` - Remove item from cart
+- `PATCH /api/stores/order/{orderId}/delivery-status` - Update order delivery status
+
+### Discount Endpoints
+- `GET /api/discounts/{id}` - Get discount by ID
+- `GET /api/discounts` - Get all discounts (ADMIN role only)
+- `GET /api/discounts/active` - Get all active discounts
+- `POST /api/discounts` - Create discount (ADMIN role only)
+- `PUT /api/discounts/{id}` - Update discount by ID (ADMIN role only)
+- `DELETE /api/discounts/{id}` - Delete discount by ID (ADMIN role only)
+
+### Address Endpoints
+- `GET /api/addresses` - Get user addresses
+- `POST /api/addresses` - Create address
+- `PUT /api/addresses/{addressId}` - Get user addresses
+- `DELETE /api/addresses/{addressId}` - deleter address
 
 Visit http://localhost:8080/swagger-ui.html when the backend is running for interactive API documentation.
 

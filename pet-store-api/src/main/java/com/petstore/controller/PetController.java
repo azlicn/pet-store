@@ -7,7 +7,6 @@ import com.petstore.model.Role;
 import com.petstore.service.PetService;
 import com.petstore.service.UserService;
 import com.petstore.dto.PetPageResponse;
-import com.petstore.exception.PetNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -108,7 +107,7 @@ public class PetController {
     public ResponseEntity<Pet> getPetById(
             @Parameter(description = "ID of pet to return") @PathVariable Long id) {
 
-        return ResponseEntity.of(petService.getPetById(id));
+        return ResponseEntity.ok(petService.getPetById(id));
 
     }
 
@@ -153,8 +152,7 @@ public class PetController {
         User currentUser = userService.getUserByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
-        Pet existingPet = petService.getPetById(id)
-                .orElseThrow(() -> new PetNotFoundException(id));
+        Pet existingPet = petService.getPetById(id);
 
         boolean isAdmin = currentUser.getRoles().contains(Role.ADMIN);
         boolean isOwner = existingPet.getCreatedBy() != null &&
@@ -187,26 +185,6 @@ public class PetController {
     }
 
     /**
-     * Updates the status of a pet by its ID. Only admins can update status.
-     *
-     * @param id     the ID of the pet to update
-     * @param status the new status to set
-     * @return ResponseEntity containing the updated pet if successful, or not found
-     *         status
-     */
-    @PostMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Updates a pet status", description = "Update pet status by ID")
-    public ResponseEntity<Pet> updatePetStatus(
-            @Parameter(description = "ID of pet to update") @PathVariable Long id,
-            @Parameter(description = "New status of pet") @RequestParam PetStatus status) {
-
-        Pet updatedPet = petService.updatePetStatus(id, status);
-
-        return ResponseEntity.ok(updatedPet);
-    }
-
-    /**
      * Retrieves pets owned and created by the current authenticated user.
      *
      * @return ResponseEntity containing the list of user's pets
@@ -219,7 +197,6 @@ public class PetController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) PetStatus status,
-            @RequestParam(required = false) Integer limit,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
