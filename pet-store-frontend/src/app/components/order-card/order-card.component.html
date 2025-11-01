@@ -19,6 +19,7 @@
   </mat-card-header>
   <mat-card-content>
     <div class="order-details">
+      <div class="status-row" *ngIf="isAdmin()"><strong>Order By:</strong> {{order.user?.firstName + ' ' + order.user?.lastName || 'N/A'}}</div>
       <div class="status-row"><strong>Total:</strong> {{order.totalAmount | currency}}</div>
 
       <div class="status-row">

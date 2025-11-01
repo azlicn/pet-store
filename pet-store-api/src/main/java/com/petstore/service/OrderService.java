@@ -3,6 +3,9 @@ package com.petstore.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.petstore.dto.PaymentOrderRequest;
@@ -17,6 +20,7 @@ import com.petstore.exception.InvalidUserException;
 import com.petstore.exception.OrderNotFoundException;
 import com.petstore.exception.PetAlreadySoldException;
 import com.petstore.exception.UserCartNotFoundException;
+import com.petstore.generator.OrderNumberGenerator;
 import com.petstore.model.Address;
 import com.petstore.model.AuditLog;
 import com.petstore.model.Cart;
@@ -34,7 +38,8 @@ import com.petstore.repository.DeliveryRepository;
 import com.petstore.repository.OrderRepository;
 import com.petstore.repository.PaymentRepository;
 import com.petstore.repository.PetRepository;
-import com.petstore.util.OrderNumberGenerator;
+import com.petstore.strategy.PaymentStrategyFactory;
+import com.petstore.strategy.payment.PaymentStrategy;
 
 import jakarta.transaction.Transactional;
 
@@ -44,6 +49,8 @@ import jakarta.transaction.Transactional;
 @Service
 public class OrderService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
+
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final PetRepository petRepository;
@@ -52,11 +59,13 @@ public class OrderService {
     private final DeliveryRepository deliveryRepository;
     private final AddressRepository addressRepository;
     private final DiscountService discountService;
+    private final OrderNumberGenerator orderNumberGenerator;
+    private final PaymentStrategyFactory paymentStrategyFactory;
 
     public OrderService(CartRepository cartRepository, OrderRepository orderRepository,
             PetRepository petRepository, AuditLogRepository auditLogRepository,
             PaymentRepository paymentRepository, DeliveryRepository deliveryRepository,
-            AddressRepository addressRepository, DiscountService discountService) {
+            AddressRepository addressRepository, DiscountService discountService, OrderNumberGenerator orderNumberGenerator, PaymentStrategyFactory paymentStrategyFactory) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.petRepository = petRepository;
@@ -65,6 +74,8 @@ public class OrderService {
         this.deliveryRepository = deliveryRepository;
         this.addressRepository = addressRepository;
         this.discountService = discountService;
+        this.orderNumberGenerator = orderNumberGenerator;
+        this.paymentStrategyFactory = paymentStrategyFactory;
     }
 
     /**
@@ -142,7 +153,7 @@ public class OrderService {
         }
 
         Order order = new Order();
-        order.setOrderNumber(OrderNumberGenerator.generateOrderNumber());
+        order.setOrderNumber(orderNumberGenerator.generate());
         order.setUser(cart.getUser());
         order.setStatus(OrderStatus.PLACED);
 
@@ -199,13 +210,21 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
+        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(
+            paymentOrderRequest.getPaymentType());
+    
+        logger.error("Using payment strategy: paymentOrderRequest {}", paymentOrderRequest);
+        paymentStrategy.validatePayment(paymentOrderRequest);
+        
+
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(order.getTotalAmount());
         payment.setStatus(PaymentStatus.SUCCESS);
         payment.setPaidAt(LocalDateTime.now());
         payment.setPaymentType(paymentOrderRequest.getPaymentType());
-        payment.setPaymentNote(paymentOrderRequest.getPaymentNote());
+       //payment.setPaymentNote(paymentOrderRequest.getPaymentNote());
+        paymentStrategy.processPayment(payment, paymentOrderRequest);
 
         paymentRepository.save(payment);
 

@@ -10,6 +10,8 @@ import { Router, RouterModule } from "@angular/router";
 import { StoreService } from "../../services/store.service";
 import { UpdateDeliveryStatusDialogComponent } from "../update-delivery-status-dialog/update-delivery-status-dialog.component";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { DeliveryStatus } from "src/app/models/delivery.model";
+import { OrderStatus } from "src/app/models/order.model";
 
 @Component({
   selector: "app-order-card",
@@ -77,27 +79,35 @@ export class OrderCardComponent {
     });
   }
 
+  private isOrderOwner(): boolean {
+    return this.order?.user?.id == this.authService.getCurrentUser()?.id;
+  }
+
   canViewOrderDetails(): boolean {
     return (
       this.order &&
-      (this.order.status === "APPROVED" || this.order.status === "DELIVERED")
+      (this.order.status === OrderStatus.APPROVED ||
+        this.order.status === DeliveryStatus.DELIVERED)
     );
   }
 
   canEditOrder(): boolean {
-    return this.order && this.order.status === "PLACED";
+    return this.order && this.order.status === OrderStatus.PLACED && this.isOrderOwner();
   }
 
   canUpdateDeliveryStatus(): boolean {
     return (
       this.order &&
       this.isAdmin() &&
-      (this.order.status === "APPROVED" || this.order.status === "SHIPPED")
+      (this.order.status === OrderStatus.APPROVED ||
+        this.order.status === DeliveryStatus.SHIPPED)
     );
   }
 
   canDeleteOrder(): boolean {
-    return this.order && this.isAdmin() && this.order.status === "CANCELLED";
+    return (
+      this.order && this.isAdmin() && this.order.status === OrderStatus.CANCELED
+    );
   }
 
   deleteOrder(orderId: number): void {

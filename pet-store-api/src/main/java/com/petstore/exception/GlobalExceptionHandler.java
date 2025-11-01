@@ -22,6 +22,10 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+        private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
         /**
          * Handles invalid or expired discount code errors (400 Bad Request)
          *
@@ -42,7 +46,65 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.badRequest().body(errorResponse);
         }
 
-        private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+        /**
+         * Handles invalid payment errors (400 Bad Request)
+         *
+         * @param ex      the invalid payment exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(InvalidPaymentException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidPaymentException(
+                        InvalidPaymentException ex, HttpServletRequest request) {
+                logger.warn("Invalid payment: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Invalid Payment",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.INVALID_PAYMENT);
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
+         * Handles unsupported payment errors (400 Bad Request)
+         *
+         * @param ex      the unsupported payment exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(UnsupportedPaymentException.class)
+        public ResponseEntity<ErrorResponse> handleUnsupportedPaymentException(
+                        UnsupportedPaymentException ex, HttpServletRequest request) {
+                logger.warn("Unsupported payment: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Unsupported Payment",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.UNSUPPORTED_PAYMENT);
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
+         * Handles unsupported payment type errors (400 Bad Request)
+         *
+         * @param ex      the unsupported payment type exception
+         * @param request the current HTTP request
+         * @return error response with BAD_REQUEST status
+         */
+        @ExceptionHandler(UnsupportedPaymentTypeException.class)
+        public ResponseEntity<ErrorResponse> handleUnsupportedPaymentTypeException(
+                        UnsupportedPaymentTypeException ex, HttpServletRequest request) {
+                logger.warn("Unsupported payment type: {}", ex.getMessage());
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Unsupported Payment Type",
+                                ex.getMessage(),
+                                request.getRequestURI(),
+                                ErrorCodes.UNSUPPORTED_PAYMENT_TYPE);
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
 
         /**
          * Handles address not found errors (404 Not Found)

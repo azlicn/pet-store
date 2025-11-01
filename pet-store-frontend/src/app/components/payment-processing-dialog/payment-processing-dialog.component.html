@@ -8,11 +8,16 @@
       <mat-label>Password</mat-label>
       <input matInput [(ngModel)]="password" type="password" placeholder="Enter password" />
     </mat-form-field>
-    <button mat-raised-button color="primary" style="margin-top:18px;" (click)="onPasswordProceed()" [disabled]="!password || password.length < 4">Proceed</button>
+    <div class="action-section">
+      <button mat-raised-button color="primary" (click)="onPasswordProceed()"
+        [disabled]="!password || password.length < 4">Proceed</button>
+      <button mat-raised-button color="cancel-button" (click)="onCancel()">Cancel</button>
+    </div>
   </ng-container>
   <ng-container *ngIf="animationStep">
     <h2>
-      {{ data.paymentType === 'CREDIT_CARD' || data.paymentType === 'DEBIT_CARD' ? 'We’re securely connecting to your bank...' : 'Connecting to Payment Gateway...' }}
+      {{ data.paymentType === 'CREDIT_CARD' || data.paymentType === 'DEBIT_CARD' ? 'We’re securely connecting to your
+      bank...' : 'Connecting to Payment Gateway...' }}
     </h2>
     <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
     <div class="processing-text">Please wait while we process your payment.</div>

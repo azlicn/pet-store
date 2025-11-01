@@ -6,6 +6,7 @@ import { MatInputModule } from "@angular/material/input";
 import { FormsModule } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
+import { WalletType, PaymentType } from "src/app/models/paymentOrder.model";
 
 interface PaymentDialogData {
   paymentType: string;
@@ -58,6 +59,10 @@ export class PaymentProcessingDialogComponent {
     }
   }
 
+  onCancel() {
+    this.dialogRef.close(false);
+  }
+
   startProgress() {
     this.progress = 0;
     this.intervalId = setInterval(() => {
@@ -70,13 +75,13 @@ export class PaymentProcessingDialogComponent {
   }
 
   getLogo(type: string, selectedEwallet?: string): string {
-    if (type === "CREDIT_CARD" || type === "DEBIT_CARD")
+    if (type === PaymentType.CREDIT_CARD || type === PaymentType.DEBIT_CARD)
       return "assets/images/visa_master.png";
-    if (type === "PAYPAL") return "assets/images/paypal.png";
-    if (type === "E_WALLET") {
-      if (selectedEwallet === "GRABPAY") return "assets/images/grabpay.png";
-      if (selectedEwallet === "BOOSTPAY") return "assets/images/boostpay.png";
-      if (selectedEwallet === "TOUCHNGO") return "assets/images/tng.png";
+    if (type === PaymentType.PAYPAL) return "assets/images/paypal.png";
+    if (type === PaymentType.E_WALLET) {
+      if (selectedEwallet === WalletType.GRABPAY) return "assets/images/grabpay.png";
+      if (selectedEwallet === WalletType.BOOSTPAY) return "assets/images/boostpay.png";
+      if (selectedEwallet === WalletType.TOUCHNGO) return "assets/images/tng.png";
       return "assets/images/grabpay.png";
     }
     return "";

@@ -95,6 +95,7 @@
         <section class="payment-info mat-elevation-z1">
             <h3>Payment Information</h3>
             <div class="info-row"><span>Payment Type:</span><span>{{ order?.payment?.paymentType }}</span></div>
+            <div class="info-row"><span>Payment Note:</span><span>{{ order?.payment?.paymentNote }}</span></div>
             <div class="info-row"><span>Status:</span><span>{{ order?.payment?.status }}</span></div>
             <div class="info-row"><span>Paid Amount:</span><span>{{ order?.payment?.amount | currency }}</span></div>
             <div class="info-row"><span>Payment Date: </span><span>{{ order?.payment?.paidAt | date:'dd/MM/yy hh:mm a' }}</span></div>
