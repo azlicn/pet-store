@@ -1,16 +1,35 @@
-# Architecture Documentation
+# 🏗️ Architecture Documentation
 
-This document describes the system architecture, component design, and database schema of Pawfect Store.
+> Comprehensive guide to the system architecture, component design, and database schema of Pawfect Store.
 
 ---
 
-## Architecture
+## 📋 Table of Contents
+
+- [Architecture](#architecture)
+  - [System Architecture Overview](#system-architecture-overview)
+  - [Component Architecture](#component-architecture)
+- [Features](#features)
+  - [Core Functionality](#core-functionality)
+  - [Advanced Features](#advanced-features)
+  - [Database Schema](#database-schema)
+- [Project Structure](#project-structure)
+- [Key Architecture Components](#key-architecture-components)
+  - [Backend (Spring Boot)](#backend-spring-boot)
+  - [Frontend (Angular)](#frontend-angular)
+  - [Database Schema](#database-schema-1)
+
+---
+
+## 🏛️ Architecture
 
 This application follows a 3-tier architecture:
 
 - **Frontend**: Angular 17 with Angular Material UI
 - **Backend**: Spring Boot 3.2 REST API with JWT authentication
 - **Database**: MySQL 8.0 with JPA/Hibernate
+
+---
 
 ### System Architecture Overview
 
@@ -151,7 +170,9 @@ graph TD
     style BaseApiService fill:#2196f3
 ```
 
-## Features
+---
+
+## ✨ Features
 
 ### Core Functionality
 - **View Pets**: Browse all available pets with filtering and search
@@ -315,7 +336,7 @@ erDiagram
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 <details>
   <summary><b>Click to expand the Project Structure</b></summary>
@@ -550,7 +571,9 @@ pet-store/
 ```
 </details>
 
-### Key Architecture Components
+---
+
+## 🔑 Key Architecture Components
 
 #### Backend (Spring Boot)
 - **Controllers**: Handle HTTP requests and responses

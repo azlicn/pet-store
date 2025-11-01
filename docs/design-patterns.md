@@ -1,12 +1,21 @@
-# Design Patterns
+# 🎨 Design Patterns
 
-Design patterns used in Pawfect Store backend implementation.
+> Design patterns used in Pawfect Store backend implementation.
 
 ---
 
-## Design Pattern Used
+## 📋 Table of Contents
 
-The project uses design patters in below implementation
+- [Design Pattern Used](#design-pattern-used)
+  - [1. Order Number Generator](#1-order-number-generator)
+  - [2. Payment Type](#2-payment-type)
+  - [3. Other Design Patterns](#3-other-design-patterns)
+
+---
+
+## 🏗️ Design Pattern Used
+
+The project uses design patterns in below implementation
 
 ### 1. Order Number Generator
 
@@ -495,7 +504,7 @@ classDiagram
 
 ```
 
-### 3. Others Design Patterns
+### 3. Other Design Patterns
 
 This project demonstrates multiple **software design patterns** implemented using **Spring Boot** and **Java best practices**.  
 Each pattern contributes to a modular, maintainable, and testable architecture.

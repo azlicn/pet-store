@@ -1,6 +1,6 @@
 # 🐾 Pawfect Store - 3-Tier Pet Store Application
 
-A modern, full-stack pet store e-commerce application built with Angular 17 and Spring Boot 3.2.
+A modern, full-stack pet store application built with Angular 17 and Spring Boot 3.2.
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen)](https://spring.io/projects/spring-boot) [![Angular](https://img.shields.io/badge/Angular-17-red)](https://angular.io/) [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)](https://www.mysql.com/)
 
@@ -21,7 +21,7 @@ A modern, full-stack pet store e-commerce application built with Angular 17 and 
 
 ## 🎯 Overview
 
-Pawfect Store is a comprehensive pet store management and e-commerce platform featuring:
+Pawfect Store is a full-stack pet store management application, featuring:
 
 - **Modern Frontend**: Angular 17 with standalone components and Angular Material UI
 - **Robust Backend**: Spring Boot 3.2 REST API with JWT authentication
@@ -175,6 +175,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Admin analytics dashboard
 - [ ] Review and rating system
 - [ ] Wishlist functionality
+- [ ] Database migration with Flyway or Liquibase (currently using JPA Auto DDL)
+- [ ] Microservices Architecture
+- [ ] Event-Driven Communication
+- [ ] Monitoring and Observability
 
 ---
 

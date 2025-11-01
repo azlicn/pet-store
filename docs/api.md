@@ -1,12 +1,47 @@
-# API Documentation
+# 📡 API Documentation
 
-Complete REST API reference and flow diagrams for Pawfect Store.
+> Complete REST API reference and flow diagrams for Pawfect Store.
 
 ---
 
-### API Flow Diagrams
+## 📋 Table of Contents
 
-#### Authentication Flow
+- [API Flow Diagrams](#api-flow-diagrams)
+  - [Authentication Flow](#authentication-flow)
+  - [Pet Management Flow](#pet-management-flow)
+  - [Category Management Flow](#category-management-flow)
+  - [User Management Flow](#user-management-flow)
+  - [Store/Order Management Flow](#storeorder-management-flow)
+  - [Discount Management Flow](#discount-management-flow)
+  - [Address Management Flow](#address-management-flow)
+- [Authentication & Authorization](#authentication--authorization)
+  - [User Roles](#user-roles)
+  - [Demo Login Credentials](#demo-login-credentials)
+  - [User Journey Map](#user-journey-map)
+    - [Guest & Authentication Journey](#guest--authentication-journey)
+    - [User Pet Management Journey](#user-pet-management-journey)
+    - [Shopping & Purchase Journey](#shopping--purchase-journey)
+    - [Order Management Journey](#order-management-journey)
+    - [Admin Management Journey](#admin-management-journey)
+  - [Role-Based Access Control](#role-based-access-control)
+- [API Documentation](#api-documentation)
+  - [Category Endpoints](#category-endpoints)
+  - [Pet Endpoints](#pet-endpoints)
+  - [Authentication Endpoints](#authentication-endpoints)
+  - [User Endpoints](#user-endpoints)
+  - [Store Endpoints](#store-endpoints)
+  - [Discount Endpoints](#discount-endpoints)
+  - [Address Endpoints](#address-endpoints)
+
+---
+
+## 🔄 API Flow Diagrams
+
+### 🔐 Authentication Flow
+
+<details>
+<summary><b>Click to view Authentication Flow Diagram</b></summary>
+
 ```mermaid
 sequenceDiagram
     participant U as User
@@ -30,7 +65,14 @@ sequenceDiagram
     Note over F,A: All subsequent requests include JWT in Authorization header
 ```
 
-#### Pet Management Flow
+</details>
+
+---
+
+### 🐾 Pet Management Flow
+
+<details>
+<summary><b>Click to view Pet Management Flow Diagrams</b></summary>
 
 ##### Create a Pet Flow
 ```mermaid
@@ -143,7 +185,14 @@ sequenceDiagram
     
 ```
 
-#### Category Management Flow
+</details>
+
+---
+
+### 🏷️ Category Management Flow
+
+<details>
+<summary><b>Click to view Category Management Flow Diagrams</b></summary>
 
 ##### View All Categories Flow
 ```mermaid
@@ -367,7 +416,14 @@ sequenceDiagram
     Note over S,PR: Cannot delete category<br/>if pets are using it
 ```
 
-#### User Management Flow
+</details>
+
+---
+
+### 👥 User Management Flow
+
+<details>
+<summary><b>Click to view User Management Flow Diagrams</b></summary>
 
 ##### User Registration Flow
 ```mermaid
@@ -703,7 +759,14 @@ sequenceDiagram
     Note over S: Admin cannot change<br/>own role
 ```
 
-#### Store/Order Management Flow
+</details>
+
+---
+
+### 🛒 Store/Order Management Flow
+
+<details>
+<summary><b>Click to view Store/Order Management Flow Diagrams</b></summary>
 
 ##### Add Pet to Cart Flow
 ```mermaid
@@ -1319,7 +1382,14 @@ sequenceDiagram
     Note over F,SC: Only ADMIN role can<br/>update delivery status
 ```
 
-#### Discount Management Flow
+</details>
+
+---
+
+### 💰 Discount Management Flow
+
+<details>
+<summary><b>Click to view Discount Management Flow Diagrams</b></summary>
 
 ##### View All Discounts Flow
 ```mermaid
@@ -1780,7 +1850,14 @@ sequenceDiagram
     Note over F,DC: Only ADMIN role can view<br/>discount statistics
 ```
 
-#### Address Management Flow
+</details>
+
+---
+
+### 📍 Address Management Flow
+
+<details>
+<summary><b>Click to view Address Management Flow Diagrams</b></summary>
 
 ##### View User Addresses Flow
 ```mermaid
@@ -2255,10 +2332,11 @@ sequenceDiagram
     Note over AS: If no default, first address<br/>becomes default automatically
 ```
 
+</details>
 
 ---
 
-## Authentication & Authorization
+## 🔐 Authentication & Authorization
 
 The application includes a demonstration authentication system:
 
@@ -2281,36 +2359,120 @@ For testing user functionality, any email/password combination will work in the 
 
 ### User Journey Map
 
+The following diagrams illustrate different user experiences in the Pet Store application.
+
+#### Guest & Authentication Journey
+
 ```mermaid
 journey
-    title Pet Store User Experience Journey
+    title Guest to Authenticated User Journey
     section Discovery
-      Visit Homepage: 5: User
-      Browse Available Pets: 5: User
-      View Pet Details: 4: User
-      Filter by Category: 4: User
-      Search by Name: 4: User
+      Visit Homepage: 5: Guest
+      Browse Available Pets: 5: Guest
+      View Pet Details: 4: Guest
+      Filter by Category: 4: Guest
+      Search by Name: 4: Guest
     section Authentication
-      Click Login: 3: User
+      Click Login/Register: 3: Guest
       Enter Credentials: 3: User
       Receive JWT Token: 5: System
       Redirect to Dashboard: 5: User
-    section Pet Management (User)
+```
+
+#### User Pet Management Journey
+
+```mermaid
+journey
+    title Pet Owner Experience
+    section My Pet Listings
       View My Pets: 5: User
-      Add New Pet for Sale: 4: User
-      Edit Pet Details: 4: User
-      Upload Pet Images: 3: User
-      Update Pet Status: 4: User
-    section Pet Management (Admin)
-      Manage All Pets: 5: Admin
-      Delete Any Pet: 4: Admin
-      Manage Categories: 4: Admin
-      View User Management: 5: Admin
-    section Purchase Flow
-      Select Pet to Buy: 5: User
-      Confirm Purchase: 4: User
-      Pet Status to Sold: 5: System
-      Update Ownership: 5: System
+      Click Add New Pet: 4: User
+      Fill Pet Details Form: 3: User
+      Add Pet Images (links): 3: User
+      Submit Pet Listing: 4: User
+    section Pet Maintenance
+      Browse My Listings: 5: User
+      Select Pet to Edit: 4: User
+      Update Pet Information: 4: User
+      Change Pet Status: 4: User
+      Save Changes: 5: User
+```
+
+#### Shopping & Purchase Journey
+
+```mermaid
+journey
+    title Pet Shopping Experience
+    section Shopping
+      Browse Available Pets: 5: User
+      View Pet Details: 5: User
+      Click Add to Cart: 4: User
+      Pet Added to Cart: 5: System
+      Continue Shopping: 4: User
+    section Cart Management
+      View Cart: 5: User
+      Review Cart Items: 4: User
+      Remove Unwanted Items: 3: User
+      Enter Discount Code: 4: User
+      Discount Applied: 5: System
+    section Checkout
+      Click Checkout: 5: User
+      Order Created (PLACED): 5: System
+      Review Order Details: 4: User
+      Enter Payment Info: 3: User
+      Submit Payment: 4: User
+    section Post-Purchase
+      Payment Processed: 5: System
+      Pets Status to SOLD: 5: System
+      Ownership Transferred: 5: System
+      View Order Confirmation: 5: User
+```
+
+#### Order Management Journey
+
+```mermaid
+journey
+    title Order Tracking Experience
+    section Order Viewing
+      Navigate to My Orders: 5: User
+      View Order List: 5: User
+      Click Order Details: 4: User
+      Review Order Info: 4: User
+    section Order Actions
+      Check Payment Status: 4: User
+      Track Delivery Status: 4: User
+      Request Cancellation: 3: User
+      Order Cancelled: 4: System
+      Pets Restored to Available: 5: System
+```
+
+#### Admin Management Journey
+
+```mermaid
+journey
+    title Admin Operations Experience
+    section Pet Administration
+      View All Pets: 5: Admin
+      Manage Any Pet: 5: Admin
+      Delete Inappropriate Listing: 4: Admin
+    section Category Management
+      View Categories: 5: Admin
+      Create New Category: 4: Admin
+      Update Category: 4: Admin
+      Delete Unused Category: 3: Admin
+    section User Management
+      View All Users: 5: Admin
+      Change User Roles: 4: Admin
+      Manage User Accounts: 4: Admin
+    section Order Administration
+      View All Orders: 5: Admin
+      Update Delivery Status: 4: Admin
+      Mark Order as Shipped: 4: Admin
+      Mark Order as Delivered: 5: Admin
+    section Discount Management
+      Create Discount Codes: 4: Admin
+      Activate/Deactivate Discounts: 4: Admin
+      View Usage Statistics: 5: Admin
 ```
 
 ### Role-Based Access Control
@@ -2355,7 +2517,7 @@ graph TD
 
 ---
 
-## API Documentation
+## 📚 API Documentation
 
 The REST API follows the Swagger Pawfect Store specification and includes:
 

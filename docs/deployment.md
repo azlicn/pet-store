@@ -1,10 +1,44 @@
-# Deployment Guide
+# 🚢 Deployment Guide
 
-Docker deployment and CI/CD pipeline documentation.
+> Docker deployment and CI/CD pipeline documentation for Pawfect Store.
 
 ---
 
-## Development
+## 📋 Table of Contents
+
+- [Development](#development)
+  - [Backend Development](#backend-development)
+  - [Frontend Development](#frontend-development)
+  - [Available VS Code Tasks](#available-vs-code-tasks)
+  - [Development Workflow](#development-workflow)
+  - [Development Commands Flow](#development-commands-flow)
+- [Docker Deployment](#docker-deployment)
+  - [Deployment Architecture](#deployment-architecture)
+  - [Container Communication Flow](#container-communication-flow)
+  - [Full Stack Deployment](#full-stack-deployment)
+  - [Individual Services](#individual-services)
+- [Docker Security Configuration](#docker-security-configuration)
+  - [Security Options](#security-options)
+  - [Security Best Practices](#security-best-practices)
+  - [File Structure](#file-structure)
+  - [Security Quick Start](#security-quick-start)
+  - [Security Verification](#security-verification)
+  - [Security Considerations](#security-considerations)
+  - [Important Security Notes](#important-security-notes)
+- [CI/CD Pipeline](#cicd-pipeline)
+  - [Overview](#overview)
+  - [GitHub Actions Workflow](#github-actions-workflow)
+  - [Pipeline Stages](#pipeline-stages)
+  - [Setting Up CI/CD](#setting-up-cicd)
+  - [Environment Variables for CI/CD](#environment-variables-for-cicd)
+  - [Deployment Strategies](#deployment-strategies)
+  - [CI/CD Best Practices](#cicd-best-practices)
+  - [CI/CD Workflow Diagram](#cicd-workflow-diagram)
+  - [Example: Complete CI/CD Setup](#example-complete-cicd-setup)
+
+---
+
+## 💻 Development
 
 ### Backend Development
 - **Framework**: Spring Boot 3.2
@@ -102,7 +136,7 @@ flowchart LR
 
 ---
 
-## Docker Deployment
+## 🐳 Docker Deployment
 
 ### Deployment Architecture
 
@@ -196,7 +230,7 @@ docker-compose up -d petstore-frontend
 
 ---
 
-## Docker Security Configuration
+## 🔒 Docker Security Configuration
 
 This section contains multiple approaches to securely manage passwords and secrets in Docker Compose.
 
@@ -338,7 +372,7 @@ docker exec petstore-mysql cat /run/secrets/mysql_root_password
 
 ---
 
-## CI/CD Pipeline
+## 🔄 CI/CD Pipeline
 
 ### Overview
 

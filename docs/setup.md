@@ -1,10 +1,32 @@
-# Setup Guide
+# 🚀 Setup Guide
 
-Complete setup instructions for local development and production deployment.
+> Complete setup instructions for local development and production deployment.
 
 ---
 
-## Quick Start
+## 📋 Table of Contents
+
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [1. Clone and Setup](#1-clone-and-setup)
+  - [2. Database Setup](#2-database-setup)
+  - [3. Run the Application](#3-run-the-application)
+  - [4. Access the Application](#4-access-the-application)
+  - [5. Initial Data Setup](#5-initial-data-setup)
+- [Configuration](#configuration)
+  - [Backend Configuration](#backend-configuration-applicationproperties)
+  - [Frontend Configuration](#frontend-configuration)
+- [Local Environment Configuration](#local-environment-configuration)
+  - [Setup Instructions](#setup-instructions)
+- [Docker Environment Configuration](#docker-environment-configuration)
+  - [Docker Environment Variables](#docker-environment-variables)
+  - [Environment Files](#environment-files)
+  - [Variable Precedence](#variable-precedence)
+  - [Profile-Specific Behavior](#profile-specific-behavior)
+
+---
+
+## ⚡ Quick Start
 
 ### Prerequisites
 - **Java 17+** (OpenJDK recommended)
@@ -112,7 +134,11 @@ All sample pets include multiple high-quality photos and relevant tags for demon
 
 ---
 
-## Configuration
+#```
+
+---
+
+## ⚙️ Configuration
 
 ### Backend Configuration (`application.properties`)
 ```properties
@@ -137,7 +163,11 @@ The Angular app is configured to connect to the backend at `http://localhost:808
 
 ---
 
-## Local Environment Configuration
+```
+
+---
+
+## 🖥️ Local Environment Configuration
 
 This section explains how to configure environment variables for local development to securely manage sensitive configuration like database passwords and JWT secrets.
 
@@ -294,9 +324,7 @@ JWT_SECRET=your_actual_generated_jwt_secret_256_bits
 
 ---
 
-## Docker Environment Configuration
-
-## � Docker Environment Configuration
+## 🐳 Docker Environment Configuration
 
 This section explains the environment variables used when running the Pet Store API in Docker containers.
 
