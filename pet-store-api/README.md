@@ -19,7 +19,7 @@ Spring Boot 3.2 REST API for Pawfect Store pet e-commerce platform.
 
 ---
 
-## 🎯 Overview
+## Overview
 
 The Pawfect Store backend is a RESTful API built with Spring Boot 3.2, featuring:
 
@@ -33,7 +33,7 @@ The Pawfect Store backend is a RESTful API built with Spring Boot 3.2, featuring
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework**: Spring Boot 3.2.0
 - **Java**: 17
@@ -47,7 +47,7 @@ The Pawfect Store backend is a RESTful API built with Spring Boot 3.2, featuring
 
 ---
 
-## ✅ Prerequisites
+## Prerequisites
 
 - **Java 17** or higher
 - **Maven 3.6+**
@@ -56,7 +56,7 @@ The Pawfect Store backend is a RESTful API built with Spring Boot 3.2, featuring
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the Repository
 
@@ -110,7 +110,7 @@ The API will be available at `http://localhost:8080`
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 pet-store-api/
@@ -205,7 +205,7 @@ pet-store-api/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Application Properties
 
@@ -249,7 +249,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=docker
 
 ---
 
-## 🏃 Running the Application
+## Running the Application
 
 ### Development Mode
 ```bash
@@ -282,7 +282,9 @@ Use the configured tasks:
 
 ---
 
-## 🧪 Testing
+## Testing
+
+The backend includes comprehensive test coverage across multiple layers to ensure code quality and reliability.
 
 ### Run All Tests
 ```bash
@@ -302,15 +304,91 @@ mvn test jacoco:report
 ### Test Coverage Report
 View coverage report at: `target/site/jacoco/index.html`
 
-### Test Categories
+---
 
-- **Unit Tests** - Service and utility classes
-- **Integration Tests** - Repository and controller tests
-- **Security Tests** - Authentication and authorization
+### Test Scope
+
+#### Unit Tests
+Unit tests focus on testing individual components in isolation using mocking frameworks.
+
+**Service Layer Tests** (`src/test/java/com/petstore/service/`)
+- **CartServiceTest** - Shopping cart operations (add, remove, update quantities, discount validation)
+- **PetServiceTest** - Pet CRUD operations, status updates, owner verification
+- **CategoryServiceTest** - Category management and validation
+- **UserServiceTest** - User management, role assignments, profile updates
+- **Mocking**: Uses Mockito to mock repositories and dependencies
+- **Scope**: Business logic validation, edge cases, exception handling
+- **Example**: Test adding items to cart without database interaction
+
+**Controller Layer Tests** (`src/test/java/com/petstore/controller/`)
+- **AuthControllerTest** - Registration, login, JWT token generation
+- **PetControllerTest** - REST endpoint responses, request validation, HTTP status codes
+- **UserControllerTest** - User management endpoints, authorization checks
+- **CategoryControllerTest** - Category CRUD endpoints
+- **Mocking**: Uses MockMvc to test HTTP layer without starting full server
+- **Scope**: Request/response handling, validation, error responses
+- **Example**: Test POST /api/pets returns 201 Created with valid data
+
+**Exception Handling Tests** (`src/test/java/com/petstore/exception/`)
+- **CategoryExceptionTest** - Custom exception creation and messages
+- **UserInUseExceptionTest** - Constraint violation exceptions
+- **Scope**: Exception instantiation, message accuracy
+
+#### Integration Tests
+Integration tests verify interactions between components using real database connections.
+
+**Repository Layer Tests** (`src/test/java/com/petstore/repository/`)
+- **PetRepositoryTest** - Database queries, filtering by status/category/owner
+- **CategoryRepositoryTest** - Category retrieval and relationships
+- **UserRepositoryTest** - User lookup, role queries, existence checks
+- **CartRepositoryTest** - Cart persistence and retrieval by user
+- **Database**: Uses H2 in-memory database with test profile
+- **Scope**: JPA queries, database constraints, entity relationships
+- **Example**: Test finding pets by category returns correct results from database
+
+**Full Integration Tests** (`src/test/java/com/petstore/integration/`)
+- **BaseIntegrationTest** - Base class providing Spring context, MockMvc, test users, JWT tokens
+- **AuthIntegrationTest** - Complete authentication flow (signup, login, token validation)
+- **PetIntegrationTest** - Pet management endpoints with database persistence
+- **CategoryIntegrationTest** - Category CRUD operations with full Spring context
+- **UserIntegrationTest** - User management with authorization checks
+- **AddressIntegrationTest** - Address book operations with user associations
+- **StoreIntegrationTest** - Shopping cart, checkout, and order processing
+- **DiscountIntegrationTest** - Discount code validation and application
+- **E2EUserJourneyTest** - End-to-end user workflows (browse → cart → checkout → payment)
+- **Environment**: Full Spring Boot application context with random port
+- **Scope**: Complete request-to-response flow, multiple component interactions, security, transactions
+- **Example**: User registers, logs in, adds items to cart, applies discount, checks out, and makes payment
+
+**Key Differences**
+- **Unit Tests**: Fast execution, isolated components, mocked dependencies
+- **Repository Integration Tests**: Database-focused, JPA query validation
+- **Full Integration Tests**: Complete application context, end-to-end workflows, real HTTP requests
+
+### Test Configuration
+
+Tests use a separate configuration profile (`application-test.properties`):
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+### Test Coverage Goals
+- **Service Layer**: >80% coverage
+- **Controller Layer**: >75% coverage
+- **Repository Layer**: >70% coverage
+- **Overall Project**: >75% coverage
+
+### Best Practices
+- Each test method should test one specific behavior
+- Use descriptive test method names (e.g., `getCartByUserId_CartNotFound_ShouldReturnEmptyCart`)
+- Mock external dependencies in unit tests
+- Clean up test data in integration tests
+- Use AssertJ for fluent assertions
 
 ---
 
-## 📖 API Documentation
+## API Documentation
 
 ### Swagger UI
 Access interactive API documentation at:
@@ -350,7 +428,7 @@ http://localhost:8080/v3/api-docs
 
 ---
 
-## 🎨 Design Patterns
+## Design Patterns
 
 The backend implements several design patterns for maintainability and scalability:
 
@@ -375,7 +453,7 @@ For detailed design pattern documentation, see [Design Patterns](../docs/design-
 
 ---
 
-## 💾 Database
+## Database
 
 ### Entity Relationship
 
@@ -398,7 +476,7 @@ We use JPA's `ddl-auto=update` for development. For production, consider using F
 
 ---
 
-## 🔐 Security
+## Security
 
 ### Authentication
 - **JWT (JSON Web Tokens)** for stateless authentication
@@ -428,7 +506,7 @@ We use JPA's `ddl-auto=update` for development. For production, consider using F
 
 ---
 
-## 📝 Logging
+## Logging
 
 Logs are written to:
 - **Console** - All log levels in development
@@ -444,7 +522,7 @@ Configure in `logback-spring.xml`.
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Docker
 ```bash
@@ -462,19 +540,19 @@ For detailed deployment instructions, see [Deployment Guide](../docs/deployment.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read our [Contributing Guide](../CONTRIBUTING.md) for details.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [Main Documentation](../README.md)
 - [Architecture Overview](../docs/architecture.md)

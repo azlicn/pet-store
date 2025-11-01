@@ -89,7 +89,7 @@
         <mat-label>Discount Code</mat-label>
         <input [(ngModel)]="discountCode" matInput placeholder="Enter discount code" maxlength="30">
       </mat-form-field>
-      <button mat-raised-button color="accent" (click)="applyDiscount()">
+      <button mat-raised-button color="accent" (click)="applyDiscount()" [disabled]="!discountCode || discountCode.trim() === ''">
         <mat-icon>local_offer</mat-icon>
         Apply Discount
       </button>

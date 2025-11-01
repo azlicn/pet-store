@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -21,6 +23,7 @@ public class Category {
 
     @NotBlank(message = "Category name is required")
     @Column(nullable = false, unique = true)
+    @Size(max = 30, message = "Category name cannot exceed 30 characters")
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

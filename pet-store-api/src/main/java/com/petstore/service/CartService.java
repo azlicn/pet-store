@@ -9,7 +9,6 @@ import com.petstore.exception.CartItemNotFoundException;
 import com.petstore.exception.PetAlreadyExistInUserCartException;
 import com.petstore.exception.PetAlreadySoldException;
 import com.petstore.exception.PetNotFoundException;
-import com.petstore.exception.UserCartNotFoundException;
 import com.petstore.model.Cart;
 import com.petstore.model.CartItem;
 import com.petstore.model.Pet;
@@ -79,16 +78,23 @@ public class CartService {
     }
 
     /**
-     * Retrieves the cart for a user by user ID
+     * Gets a user's cart by their user ID
      *
      * @param userId the user ID
-     * @return the user's cart
-     * @throws UserCartNotFoundException if the cart does not exist
+     * @return the user's cart, or an empty cart if one doesn't exist yet
      */
     public Cart getCartByUserId(Long userId) {
         
         return cartRepository.findByUserIdWithItemsAndPets(userId)
-                .orElseThrow(() -> new UserCartNotFoundException(userId));
+                .orElseGet(() -> {
+                    // Return an empty cart instead of throwing exception
+                    // This is more RESTful and prevents unnecessary 404 errors
+                    Cart emptyCart = new Cart();
+                    User user = new User();
+                    user.setId(userId);
+                    emptyCart.setUser(user);
+                    return emptyCart;
+                });
     }
 
     /**

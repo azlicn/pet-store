@@ -9,9 +9,13 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Pet Name</mat-label>
-            <input matInput formControlName="name" placeholder="Enter pet name">
+            <input matInput formControlName="name" placeholder="Enter pet name" maxlength="50">
+            <mat-hint align="end">{{ petForm.get('name')?.value?.length || 0 }}/50</mat-hint>
             <mat-error *ngIf="petForm.get('name')?.hasError('required')">
               Pet name is required
+            </mat-error>
+            <mat-error *ngIf="petForm.get('name')?.hasError('maxlength')">
+              Pet name cannot exceed 50 characters
             </mat-error>
           </mat-form-field>
         </div>

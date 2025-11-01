@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, ErrorHandler } from '@angular/core';
 import { MatNativeDateModule } from '@angular/material/core';
 import { importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
@@ -11,6 +11,7 @@ import { catchError, throwError } from 'rxjs';
 
 import { routes } from './app.routes';
 import { AuthService } from './services/auth.service';
+import { GlobalErrorHandler } from './handlers/global-error.handler';
 
 // Create functional auth interceptor
 const authInterceptor = (req: any, next: any) => {
@@ -73,6 +74,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, unauthorizedInterceptor])),
     provideAnimationsAsync(),
-    importProvidersFrom(MatNativeDateModule)
+    importProvidersFrom(MatNativeDateModule),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler }
   ]
 };

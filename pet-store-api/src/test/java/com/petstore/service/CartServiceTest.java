@@ -5,7 +5,6 @@ import com.petstore.exception.CartItemNotFoundException;
 import com.petstore.exception.PetAlreadyExistInUserCartException;
 import com.petstore.exception.PetAlreadySoldException;
 import com.petstore.exception.PetNotFoundException;
-import com.petstore.exception.UserCartNotFoundException;
 import com.petstore.model.Cart;
 import com.petstore.model.CartItem;
 import com.petstore.model.Pet;
@@ -138,13 +137,18 @@ class CartServiceTest {
     }
 
     /**
-     * Tests getting a cart by user ID when cart does not exist (edge case).
+     * Tests getting a cart by user ID when cart does not exist (returns empty cart).
      */
     @Test
-    void getCartByUserId_CartNotFound_ShouldThrowException() {
+    void getCartByUserId_CartNotFound_ShouldReturnEmptyCart() {
         when(cartRepository.findByUserIdWithItemsAndPets(2L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> cartService.getCartByUserId(2L))
-            .isInstanceOf(UserCartNotFoundException.class);
+        Cart result = cartService.getCartByUserId(2L);
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getUser()).isNotNull();
+        assertThat(result.getUser().getId()).isEqualTo(2L);
+        assertThat(result.getItems()).isNullOrEmpty();
+        
         verify(cartRepository).findByUserIdWithItemsAndPets(2L);
     }
 

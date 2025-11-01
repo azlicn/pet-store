@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -32,9 +34,10 @@ public class Pet {
 
     @NotBlank(message = "Pet name is required")
     @Column(nullable = false)
+    @Size(max = 50, message = "Pet name cannot exceed 50 characters")
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Size(max = 200, message = "Description cannot exceed 200 characters")
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)

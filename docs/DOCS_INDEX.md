@@ -2,7 +2,7 @@
 
 Welcome to the Pawfect Store comprehensive documentation hub! This index helps you navigate through all available documentation.
 
-## 📖 Quick Links
+## Quick Links
 
 ### Getting Started
 - [**Main README**](../README.md) - Project overview and quick start guide
@@ -24,7 +24,7 @@ Welcome to the Pawfect Store comprehensive documentation hub! This index helps y
 
 ---
 
-## 📁 Documentation Structure
+## Documentation Structure
 
 ```
 pet-store/
@@ -50,7 +50,7 @@ pet-store/
 
 ---
 
-## 🎯 Documentation by Role
+## Documentation by Role
 
 ### For Developers
 1. Start with [Setup Guide](./setup.md)

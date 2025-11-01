@@ -49,12 +49,12 @@ export class AddressComponent implements OnInit {
     private authService: AuthService
   ) {
     this.addressForm = this.fb.group({
-      phoneNumber: ["", Validators.required],
-      street: ["", Validators.required],
-      city: ["", Validators.required],
-      state: ["", Validators.required],
-      postalCode: ["", [Validators.required, Validators.pattern("^[0-9]{5}$")]],
-      country: ["", Validators.required],
+      phoneNumber: ["", [Validators.required, Validators.maxLength(20)]],
+      street: ["", [Validators.required, Validators.maxLength(255)]],
+      city: ["", [Validators.required, Validators.maxLength(100)]],
+      state: ["", [Validators.required, Validators.maxLength(100)]],
+      postalCode: ["", [Validators.required, Validators.maxLength(20), Validators.pattern("^[0-9]{5}$")]],
+      country: ["", [Validators.required, Validators.maxLength(100)]],
       isDefault: [true],
     });
   }
@@ -221,6 +221,10 @@ export class AddressComponent implements OnInit {
     }
     if (control?.hasError("pattern")) {
       return "Invalid ZIP code";
+    }
+    if (control?.hasError("maxlength")) {
+      const maxLength = control.errors?.['maxlength']?.requiredLength;
+      return `Maximum ${maxLength} characters allowed`;
     }
     return "";
   }

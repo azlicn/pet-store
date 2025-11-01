@@ -3,6 +3,7 @@ package com.petstore.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,8 +19,9 @@ public class Discount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(unique = true, nullable = false, length = 20)
     @NotBlank(message = "Discount code cannot be blank")
+    @Size(max = 20, message = "Discount code cannot exceed 20 characters")
     private String code;
 
     @Column(nullable = false)
@@ -34,6 +36,7 @@ public class Discount {
     @NotNull(message = "Valid to date cannot be null")
     private LocalDateTime validTo;
 
+    @Size(max = 200, message = "Discount description cannot exceed 200 characters")
     private String description;
 
     @Column(nullable = false)

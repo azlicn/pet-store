@@ -62,8 +62,8 @@ export class HeaderComponent {
     // Update cart count and subscribe to cart changes reactively
     this.currentUser$.subscribe((user) => {
       if (user?.id) {
-        this.storeService.updateCartItemCount(user.id);
-        this.storeService.getCart(user.id).subscribe(); // triggers cartSubject update
+        // Only call getCart once - it updates both cart data and count
+        this.storeService.getCart(user.id).subscribe();
         this.storeService.cart$.subscribe((cart) => {
           this.cartItems = cart?.items || [];
         });
