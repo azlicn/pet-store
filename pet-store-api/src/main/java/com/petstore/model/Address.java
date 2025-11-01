@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "addresses")
@@ -38,31 +38,37 @@ public class Address {
     @Column(nullable = false)
     @NotBlank(
             message = "Phone number is mandatory")
+    @Size(max = 20, message = "Phone number cannot exceed 20 characters")
     private String phoneNumber;
 
     @Column(nullable = false)
     @NotBlank(
             message = "Street is mandatory")
+    @Size(max = 255, message = "Street cannot exceed 255 characters")
     private String street;
 
     @Column(nullable = false)
     @NotBlank(
             message = "City is mandatory")
+    @Size(max = 100, message = "City cannot exceed 100 characters")
     private String city;
 
     @Column(nullable = false)
     @NotBlank(
             message = "State is mandatory")
+    @Size(max = 100, message = "State cannot exceed 100 characters")
     private String state;
 
     @Column(nullable = false)
     @NotBlank(
             message = "Postal code is mandatory")
+    @Size(max = 20, message = "Postal code cannot exceed 20 characters")
     private String postalCode;
 
     @Column(nullable = false)
     @NotBlank(
             message = "Country is mandatory")
+    @Size(max = 100, message = "Country cannot exceed 100 characters")
     private String country;
 
     private boolean isDefault = false;

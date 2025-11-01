@@ -100,7 +100,7 @@ public class StoreController {
      * @param petId the ID of the pet to add
      * @return ResponseEntity containing the updated cart
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/cart/add/{petId}")
         @Operation(summary = "Add pet to cart", description = "Add a pet to the user's cart.")
     public ResponseEntity<Cart> addToCart(@PathVariable Long petId) {
@@ -125,7 +125,7 @@ public class StoreController {
      * @param userId the ID of the user whose cart to retrieve
      * @return ResponseEntity containing the user's cart
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/cart/{userId}")
         @Operation(summary = "Get user's cart", description = "Get the user's cart by user ID.")
     public ResponseEntity<Cart> getCart(@PathVariable Long userId) {
@@ -170,7 +170,7 @@ public class StoreController {
      * @param cartItemId the ID of the cart item to remove
      * @return ResponseEntity with no content if successful
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/cart/item/{cartItemId}")
         @Operation(summary = "Remove item from cart", description = "Remove a specific item from the user's cart.")
     public ResponseEntity<Void> removeItem(@PathVariable Long cartItemId) {
@@ -187,7 +187,7 @@ public class StoreController {
      * @param total the current total amount
      * @return ResponseEntity containing discount details and new total
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/cart/discount/validate")
     @Operation(summary = "Validate discount", description = "Validate a discount code for the user's cart.")
     public ResponseEntity<?> validateDiscount(@RequestParam String code, @RequestParam BigDecimal total) {
@@ -210,7 +210,7 @@ public class StoreController {
      * @param discountCode optional discount code to apply
      * @return ResponseEntity containing the created order
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/checkout")
         @Operation(summary = "Checkout cart", description = "Checkout a user's cart into an order. Allows optional discount code.")
     public ResponseEntity<Order> checkout(
@@ -238,7 +238,7 @@ public class StoreController {
      * @param paymentOrderRequest the payment request details
      * @return ResponseEntity containing the payment information
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/order/{orderId}/pay")
         @Operation(summary = "Make payment for order", description = "Make payment for a specific order.")
     public ResponseEntity<Payment> makePayment(@PathVariable Long orderId,
@@ -269,7 +269,7 @@ public class StoreController {
      * @param orderId the ID of the order to cancel
      * @return ResponseEntity containing a cancellation message
      */
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/order/{orderId}")
         @Operation(summary = "Cancel order", description = "Cancel a specific order.")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {

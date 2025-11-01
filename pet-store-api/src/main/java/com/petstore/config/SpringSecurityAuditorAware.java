@@ -26,13 +26,18 @@ public class SpringSecurityAuditorAware implements AuditorAware<Long> {
     public Optional<Long> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
-        if (authentication == null || !authentication.isAuthenticated() || 
-            authentication.getPrincipal().equals("anonymousUser")) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             return Optional.of(1L); // Default auditor ID for system operations
         }
         
-        if (authentication.getPrincipal() instanceof UserPrincipal) {
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        
+        if (principal == null || "anonymousUser".equals(principal)) {
+            return Optional.of(1L); // Default auditor ID for anonymous users
+        }
+        
+        if (principal instanceof UserPrincipal) {
+            UserPrincipal userPrincipal = (UserPrincipal) principal;
             return Optional.of(userPrincipal.getId());
         }
         

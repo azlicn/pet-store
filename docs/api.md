@@ -35,9 +35,9 @@
 
 ---
 
-## 🔄 API Flow Diagrams
+## API Flow Diagrams
 
-### 🔐 Authentication Flow
+### Authentication Flow
 
 <details>
 <summary><b>Click to view Authentication Flow Diagram</b></summary>
@@ -69,7 +69,7 @@ sequenceDiagram
 
 ---
 
-### 🐾 Pet Management Flow
+### Pet Management Flow
 
 <details>
 <summary><b>Click to view Pet Management Flow Diagrams</b></summary>
@@ -189,7 +189,7 @@ sequenceDiagram
 
 ---
 
-### 🏷️ Category Management Flow
+### Category Management Flow
 
 <details>
 <summary><b>Click to view Category Management Flow Diagrams</b></summary>
@@ -420,7 +420,7 @@ sequenceDiagram
 
 ---
 
-### 👥 User Management Flow
+### User Management Flow
 
 <details>
 <summary><b>Click to view User Management Flow Diagrams</b></summary>
@@ -763,7 +763,7 @@ sequenceDiagram
 
 ---
 
-### 🛒 Store/Order Management Flow
+### Store/Order Management Flow
 
 <details>
 <summary><b>Click to view Store/Order Management Flow Diagrams</b></summary>
@@ -1386,7 +1386,7 @@ sequenceDiagram
 
 ---
 
-### 💰 Discount Management Flow
+### Discount Management Flow
 
 <details>
 <summary><b>Click to view Discount Management Flow Diagrams</b></summary>
@@ -1854,7 +1854,7 @@ sequenceDiagram
 
 ---
 
-### 📍 Address Management Flow
+### Address Management Flow
 
 <details>
 <summary><b>Click to view Address Management Flow Diagrams</b></summary>
@@ -2336,7 +2336,7 @@ sequenceDiagram
 
 ---
 
-## 🔐 Authentication & Authorization
+## Authentication & Authorization
 
 The application includes a demonstration authentication system:
 
@@ -2517,7 +2517,7 @@ graph TD
 
 ---
 
-## 📚 API Documentation
+## API Documentation
 
 The REST API follows the Swagger Pawfect Store specification and includes:
 

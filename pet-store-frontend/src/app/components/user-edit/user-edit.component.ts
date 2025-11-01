@@ -75,9 +75,9 @@ export class UserEditComponent implements OnInit {
   initializeForm(): void {
     this.userForm = this.fb.group(
       {
-        firstName: ["", [Validators.required, Validators.minLength(2)]],
-        lastName: ["", [Validators.required, Validators.minLength(2)]],
-        email: ["", [Validators.required, Validators.email]],
+        firstName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+        lastName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+        email: ["", [Validators.required, Validators.email, Validators.maxLength(150)]],
         currentPassword: [""],
         newPassword: [""],
         confirmPassword: [""],
@@ -235,6 +235,13 @@ export class UserEditComponent implements OnInit {
       return `${this.getFieldDisplayName(
         fieldName
       )} must be at least ${requiredLength} characters`;
+    }
+
+    if (field?.hasError("maxlength")) {
+      const requiredLength = field.errors?.["maxlength"].requiredLength;
+      return `${this.getFieldDisplayName(
+        fieldName
+      )} cannot exceed ${requiredLength} characters`;
     }
 
     if (

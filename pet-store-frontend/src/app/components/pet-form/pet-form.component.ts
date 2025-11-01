@@ -56,7 +56,7 @@ export class PetFormComponent implements OnInit {
     private authService: AuthService
   ) {
     this.petForm = this.fb.group({
-      name: ["", [Validators.required]],
+      name: ["", [Validators.required, Validators.maxLength(50)]],
       description: [""],
       categoryId: ["", [Validators.required]],
       price: ["", [Validators.required, Validators.min(0)]],

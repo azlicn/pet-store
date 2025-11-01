@@ -20,7 +20,7 @@ Angular 17 frontend application for Pawfect Store pet e-commerce platform.
 
 ---
 
-## 🎯 Overview
+## Overview
 
 The Pawfect Store frontend is a modern, responsive web application built with Angular 17, featuring:
 
@@ -34,7 +34,7 @@ The Pawfect Store frontend is a modern, responsive web application built with An
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework**: Angular 17
 - **UI Library**: Angular Material 17
@@ -49,7 +49,7 @@ The Pawfect Store frontend is a modern, responsive web application built with An
 
 ---
 
-## ✅ Prerequisites
+## Prerequisites
 
 - **Node.js 18+** (LTS recommended)
 - **npm 9+** (comes with Node.js)
@@ -62,7 +62,7 @@ npm install -g @angular/cli@17
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the Repository
 
@@ -100,7 +100,7 @@ The application will be available at `http://localhost:4200`
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 pet-store-frontend/
@@ -176,7 +176,7 @@ pet-store-frontend/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Files
 
@@ -230,7 +230,7 @@ Key settings in `angular.json`:
 
 ---
 
-## 🏃 Running the Application
+## Running the Application
 
 ### Development Server
 ```bash
@@ -282,9 +282,9 @@ docker run -p 80:80 pet-store-frontend
 
 ---
 
-## 🧪 Testing
+## Testing
 
-### Unit Tests
+### Run Unit Tests
 ```bash
 npm test
 # or
@@ -393,7 +393,7 @@ export class PetCardComponent {
 
 ---
 
-## 🔌 Services
+## Services
 
 ### Auth Service
 Handles authentication and authorization.
@@ -481,7 +481,11 @@ export class StoreService {
 
 ---
 
-## 🛣️ Routing & Guards
+---
+
+## Routing & Guards
+
+### App Routes
 
 ### Route Configuration
 
@@ -555,7 +559,7 @@ export const adminGuard: CanActivateFn = () => {
 
 ---
 
-## 🎨 Styling
+## Styling
 
 ### Global Styles
 
@@ -626,7 +630,7 @@ $my-theme: mat.define-light-theme((
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Docker Deployment
 

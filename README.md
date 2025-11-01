@@ -24,7 +24,7 @@ A modern, full-stack pet store application built with Angular 17 and Spring Boot
 
 ---
 
-## 🎯 Overview
+## Overview
 
 Pawfect Store is a full-stack pet store management application, featuring:
 
@@ -36,7 +36,7 @@ Pawfect Store is a full-stack pet store management application, featuring:
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Functionality
 - 🐶 **Pet Management**: Browse, add, update, and delete pet listings
@@ -57,7 +57,7 @@ Pawfect Store is a full-stack pet store management application, featuring:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework**: Angular 17 (Standalone Components)
@@ -84,7 +84,7 @@ Pawfect Store is a full-stack pet store management application, featuring:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Java 17+
@@ -122,7 +122,7 @@ Password: admin123
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 pet-store/
@@ -136,7 +136,7 @@ pet-store/
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 Comprehensive documentation is available in the `docs/` directory:
 
@@ -153,7 +153,7 @@ Comprehensive documentation is available in the `docs/` directory:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
 
@@ -164,13 +164,13 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🌟 Future Enhancements
+## Future Enhancements
 
 - [ ] Real payment gateway integration (Stripe/PayPal)
 - [ ] Email notifications for orders

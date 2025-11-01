@@ -16,8 +16,10 @@
             <input matInput 
                    formControlName="firstName" 
                    placeholder="Enter your first name"
-                   autocomplete="given-name">
+                   autocomplete="given-name"
+                   maxlength="100">
             <mat-icon matPrefix>person</mat-icon>
+            <mat-hint align="end">{{ registerForm.get('firstName')?.value?.length || 0 }}/100</mat-hint>
             <mat-error *ngIf="isFieldInvalid('firstName')">
               {{getFieldError('firstName')}}
             </mat-error>
@@ -28,8 +30,10 @@
             <input matInput 
                    formControlName="lastName" 
                    placeholder="Enter your last name"
-                   autocomplete="family-name">
+                   autocomplete="family-name"
+                   maxlength="100">
             <mat-icon matPrefix>person</mat-icon>
+            <mat-hint align="end">{{ registerForm.get('lastName')?.value?.length || 0 }}/100</mat-hint>
             <mat-error *ngIf="isFieldInvalid('lastName')">
               {{getFieldError('lastName')}}
             </mat-error>
@@ -42,8 +46,10 @@
                  type="email"
                  formControlName="email" 
                  placeholder="Enter your email address"
-                 autocomplete="email">
+                 autocomplete="email"
+                 maxlength="150">
           <mat-icon matPrefix>email</mat-icon>
+          <mat-hint align="end">{{ registerForm.get('email')?.value?.length || 0 }}/150</mat-hint>
           <mat-error *ngIf="isFieldInvalid('email')">
             {{getFieldError('email')}}
           </mat-error>

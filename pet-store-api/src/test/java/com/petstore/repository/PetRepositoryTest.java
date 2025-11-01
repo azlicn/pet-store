@@ -17,7 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
-import com.petstore.config.LocalJpaAuditingConfig;
+import com.petstore.config.JpaAuditingConfig;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test class for PetRepository.
  */
 @DataJpaTest
-@Import(LocalJpaAuditingConfig.class)
+@Import(JpaAuditingConfig.class)
 @ActiveProfiles("test")
 @DisplayName("Pet Repository Tests")
 class PetRepositoryTest {

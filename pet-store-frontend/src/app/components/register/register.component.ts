@@ -52,9 +52,9 @@ export class RegisterComponent implements OnInit {
   private initializeForm(): void {
     this.registerForm = this.formBuilder.group(
       {
-        firstName: ["", [Validators.required, Validators.minLength(2)]],
-        lastName: ["", [Validators.required, Validators.minLength(2)]],
-        email: ["", [Validators.required, Validators.email]],
+        firstName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+        lastName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+        email: ["", [Validators.required, Validators.email, Validators.maxLength(150)]],
         password: ["", [Validators.required, Validators.minLength(6)]],
         confirmPassword: ["", [Validators.required]],
       },
@@ -152,6 +152,12 @@ export class RegisterComponent implements OnInit {
       return `${this.getFieldDisplayName(
         fieldName
       )} must be at least ${minLength} characters`;
+    }
+    if (field?.hasError("maxlength")) {
+      const maxLength = field.getError("maxlength").requiredLength;
+      return `${this.getFieldDisplayName(
+        fieldName
+      )} cannot exceed ${maxLength} characters`;
     }
     if (field?.hasError("passwordMismatch")) {
       return "Passwords do not match";

@@ -40,6 +40,7 @@ export class StoreService extends BaseApiService {
   /**
    * Get the user's cart
    * GET /api/stores/cart/{userId}
+   * Note: Backend now returns an empty cart instead of 404 if cart doesn't exist
    */
   getCart(userId: number): Observable<any> {
     return this.http.get(`${this.storesUrl}/cart/${userId}`, {}).pipe(
