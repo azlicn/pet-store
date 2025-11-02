@@ -131,11 +131,6 @@ All sample pets include multiple high-quality photos and relevant tags for demon
 
 > **Note**: Initial data is only created when the database is empty. Existing data will not be overwritten on subsequent application starts.
 
-
----
-
-#```
-
 ---
 
 ## Configuration
@@ -157,17 +152,12 @@ app.jwt.expiration-ms=86400000
 ```
 
 ### Frontend Configuration
-### Frontend Configuration
 The Angular app is configured to connect to the backend at `http://localhost:8080/api`.
 
 
 ---
 
-```
-
----
-
-## 🖥️ Local Environment Configuration
+## Local Environment Configuration
 
 This section explains how to configure environment variables for local development to securely manage sensitive configuration like database passwords and JWT secrets.
 
