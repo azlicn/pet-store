@@ -49,7 +49,7 @@
           <div class="api-navigation">
             <h4>Quick Navigation:</h4>
             <div class="nav-buttons">
-              <button mat-raised-button color="primary" (click)="scrollToSection('authentication-sequence-title')">
+              <button mat-raised-button color="primary" (click)="scrollToSection('auth-sequence-title')">
                 <mat-icon>security</mat-icon>
                 Authentication APIs
               </button>
@@ -57,13 +57,25 @@
                 <mat-icon>pets</mat-icon>
                 Pet Management APIs
               </button>
+              <button mat-raised-button color="primary" (click)="scrollToSection('address-sequence-title')">
+                <mat-icon>location_on</mat-icon>
+                Address Management APIs
+              </button>
+              <button mat-raised-button color="primary" (click)="scrollToSection('store-sequence-title')">
+                <mat-icon>shopping_cart</mat-icon>
+                Store & Order APIs
+              </button>
+              <button mat-raised-button color="primary" (click)="scrollToSection('discount-sequence-title')">
+                <mat-icon>local_offer</mat-icon>
+                Discount Management APIs
+              </button>
+              <button mat-raised-button color="primary" (click)="scrollToSection('category-sequence-title')">
+                <mat-icon>category</mat-icon>
+                Category Management APIs
+              </button>
               <button mat-raised-button color="primary" (click)="scrollToSection('users-sequence-title')">
                 <mat-icon>people</mat-icon>
                 User Management APIs
-              </button>
-              <button mat-raised-button color="primary" (click)="scrollToSection('categories-sequence-title')">
-                <mat-icon>category</mat-icon>
-                Category Management APIs
               </button>
             </div>
           </div>
@@ -112,6 +124,26 @@
         
         <app-mermaid-diagram
           *ngFor="let diagram of getDiagramsByCategory('deployment'); trackBy: trackByDiagram"
+          [title]="diagram.title"
+          [description]="diagram.description"
+          [diagramDefinition]="diagram.definition"
+          [showActions]="true">
+        </app-mermaid-diagram>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="🎨 Design Patterns">
+      <div class="tab-content">
+        <div class="category-intro">
+          <h2>Design Patterns</h2>
+          <p>The project uses well-established design patterns to organize code efficiently, improve flexibility, and ensure maintainability.</p>
+        </div>
+        <div class="category-detail">
+          <app-design-pattern-doc></app-design-pattern-doc>
+        </div>
+        
+         <app-mermaid-diagram
+          *ngFor="let diagram of getDiagramsByCategory('design-patterns'); trackBy: trackByDiagram"
           [title]="diagram.title"
           [description]="diagram.description"
           [diagramDefinition]="diagram.definition"

@@ -21,7 +21,7 @@
 
 ---
 
-## 🏛️ Architecture
+## Architecture
 
 This application follows a 3-tier architecture:
 
@@ -92,6 +92,8 @@ graph TB
 
 ### Component Architecture
 
+#### Frontend Component Structure
+
 ```mermaid
 graph TD
     App[App Component<br/>Main Application Shell]
@@ -101,15 +103,21 @@ graph TD
         Login[Login Component<br/>Authentication]
     end
     
-    subgraph "Protected Routes"
+    subgraph "Protected Routes - Pet Management"
         PetList[Pet List Component<br/>Main Pet Management]
         PetForm[Pet Form Component<br/>Add/Edit Pets]
+    end
+    
+    subgraph "Protected Routes - Admin Only"
         Categories[Category Management<br/>Admin Only]
         Discounts[Discount Management<br/>Admin Only]
+        Users[User Management<br/>Admin Only]
+    end
+    
+    subgraph "Protected Routes - User Features"
         Addresses[Address Management<br/>Card View]
         OrderList[Order List View Component<br/>Card View]
         Cart[Cart View Component<br/>Add Pet to Cart]
-        Users[User Management<br/>Admin Only]
     end
     
     subgraph "Shared Components"
@@ -117,17 +125,6 @@ graph TD
         PetListView[Pet List View Component<br/>Table View]
         ImageModal[Image Modal Component<br/>Image Viewer]
         LatestPetCard[Latest Pet Card<br/>Homepage Display]
-    end
-    
-    subgraph "Services Layer"
-        AuthService[Auth Service<br/>JWT Management]
-        PetService[Pet Service<br/>Pet CRUD Operations]
-        CategoryService[Category Service<br/>Category Management]
-        AddressService[Address Service<br/>Address Management]
-        DiscountService[Discount Service<br/>Discount Management]
-        StoreService[Store Service<br/>Store/Order Management]
-        UserService[User Service<br/>User Management]
-        BaseApiService[Base API Service<br/>HTTP Configuration]
     end
     
     App --> Home
@@ -146,33 +143,109 @@ graph TD
     PetList --> ImageModal
     Home --> LatestPetCard
     
-    Login -.-> AuthService
-    PetList -.-> PetService
-    PetForm -.-> PetService
-    PetForm -.-> CategoryService
-    Categories -.-> CategoryService
-    Discounts -.-> DiscountService
-    Addresses -.-> AddressService
-    Cart -.-> StoreService
-    OrderList -.-> StoreService
-    Users -.-> UserService
+    style App fill:#ffeb3b
+    style Home fill:#e1f5fe
+    style Login fill:#e1f5fe
+    style Categories fill:#ffcdd2
+    style Discounts fill:#ffcdd2
+    style Users fill:#ffcdd2
+```
+
+#### Services Layer Architecture
+
+```mermaid
+graph TD
+    subgraph "Authentication & Base"
+        AuthService[Auth Service<br/>JWT Management]
+        BaseApiService[Base API Service<br/>HTTP Configuration]
+    end
+    
+    subgraph "Core Services"
+        PetService[Pet Service<br/>Pet CRUD Operations]
+        CategoryService[Category Service<br/>Category Management]
+        UserService[User Service<br/>User Management]
+    end
+    
+    subgraph "Store Services"
+        StoreService[Store Service<br/>Cart/Order/Payment]
+        AddressService[Address Service<br/>Address Management]
+        DiscountService[Discount Service<br/>Discount Management]
+    end
     
     AuthService -.-> BaseApiService
     PetService -.-> BaseApiService
     CategoryService -.-> BaseApiService
-    DiscountService -.-> BaseApiService
-    AddressService -.-> BaseApiService
-    StoreService -.-> BaseApiService
     UserService -.-> BaseApiService
+    StoreService -.-> BaseApiService
+    AddressService -.-> BaseApiService
+    DiscountService -.-> BaseApiService
     
-    style App fill:#ffeb3b
     style AuthService fill:#4caf50
     style BaseApiService fill:#2196f3
+    style StoreService fill:#ff9800
+```
+
+#### Component-Service Integration
+
+```mermaid
+graph
+   
+    subgraph "Components"
+        
+        Login[Login Component]
+        PetList[Pet List]
+        PetForm[Pet Form]
+        CategoryList[CategoryList]
+        CategoryForm[CategoryForm]
+        AddressBook[Address Book]
+        Address[Address]
+        DiscountForm[Discount Form]
+        DiscountList[Discount List]
+        Cart[Cart]
+        OrderCart[Order Cart]
+        OrderList[Order List]
+        OrderHistory[Order History]
+        Checkout[Checkout]
+        OrderList[Orders]
+        UserList[User List]
+        UserEdit[User Edit]
+    end
+    
+    subgraph "Services"
+        AuthService[Auth Service]
+        PetService[Pet Service]
+        CategoryService[Category Service]
+        DiscountService[Discount Service]
+        AddressService[Address Service]
+        StoreService[Store Service]
+        UserService[User Service]
+    end
+    
+    Login -.-> AuthService
+    PetList -.-> PetService
+    PetForm -.-> PetService
+    PetForm -.-> CategoryService
+    CategoryList -.-> CategoryService
+    CategoryForm -.-> CategoryService
+    DiscountList -.-> DiscountService
+    DiscountForm -.-> DiscountService
+    Address -.-> AddressService
+    AddressBook -.-> AddressService
+    Cart -.-> StoreService
+    OrderCart -.-> StoreService
+    OrderList -.-> StoreService
+    OrderHistory -.-> StoreService
+    Checkout -.-> StoreService
+    UserList -.-> UserService
+    UserEdit -.-> UserService
+    
+    style Login fill:#e1f5fe
+    style AuthService fill:#4caf50
 ```
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Functionality
 - **View Pets**: Browse all available pets with filtering and search
@@ -195,148 +268,181 @@ graph TD
 
 ```mermaid
 erDiagram
-    USERS ||--o{ PETS : "owns"
-    USERS ||--o{ PETS : "creates"
+    USERS ||--o{ PETS : "owns (owner_id)"
+    USERS ||--o{ PETS : "creates (created_by)"
     USERS ||--|| CARTS : "has one"
+    USERS ||--o{ ORDERS : "places"
+    USERS }|--o{ ADDRESSES : "has multiple"
+    USERS ||--o{ AUDIT_LOGS : "tracked by"
     CATEGORIES ||--o{ PETS : "categorizes"
-    USERS }|..|{ ADDRESSES : "addresses"
     ORDERS ||--|{ ORDER_ITEMS : "contains"
-    ORDERS ||--|| PAYMENTS : "covers"
-    ORDERS ||--|| DELIVERIES : "delivers"
-    ORDERS ||--o{ ADDRESSES : "has shipping address"
-    ORDERS ||--o{ ADDRESSES : "has delivery address"
+    ORDERS ||--o| PAYMENTS : "paid by"
+    ORDERS ||--o| DELIVERIES : "delivered by"
+    ORDERS ||--o| DISCOUNTS : "applies"
+    ORDERS ||--o| ADDRESSES : "ships to"
+    ORDERS ||--o| ADDRESSES : "bills to"
+    ORDERS ||--o{ AUDIT_LOGS : "audited"
     CARTS ||--o{ CART_ITEMS : "contains"
-    PETS ||--|{ CART_ITEMS : "ordered in"
-    PETS ||--|{ PET_PHOTOS : "has"
-    PETS ||--|{ PET_TAGS : "has"
-    DISCOUNTS ||--o{ ORDERS : "used by"
+    PETS ||--o{ CART_ITEMS : "added to cart"
+    PETS ||--o{ ORDER_ITEMS : "purchased in"
+    PETS ||--o{ PET_PHOTOS : "has photos"
+    PETS ||--o{ PET_TAGS : "has tags"
     
     USERS {
-        bigint id PK
-        string email UK "Unique user email"
-        string first_name "User first name"
-        string last_name "User last name"
-        string password "Encrypted password"
-        enum role "USER, ADMIN"
-        timestamp created_at "Account creation"
-        timestamp updated_at "Last modification"
+        bigint id PK "Primary Key"
+        string email UK "@Column(unique=true, nullable=false)"
+        string first_name "First name"
+        string last_name "Last name"
+        string phone_number "Contact number"
+        string password "@Column(nullable=false) BCrypt encoded"
+        enum roles "Set<Role> USER/ADMIN @ElementCollection"
+        timestamp created_at "@CreatedDate audit field"
+        timestamp updated_at "@LastModifiedDate audit field"
     }
     
     PETS {
-        bigint id PK
-        string name "Pet name"
-        text description "Pet description"
-        enum status "AVAILABLE, PENDING, SOLD"
-        decimal price "Pet price"
-        string image_url "Pet image URL"
-        bigint category_id FK "Reference to category"
-        bigint owner_id FK "Current owner who bought the pet (nullable)"
-        bigint created_by FK "User who listed pet"
-        timestamp created_at "Listing creation"
-        timestamp updated_at "Last modification"
+        bigint id PK "Primary Key"
+        string name "@Column(nullable=false) Pet name"
+        text description "Pet description @Column(columnDefinition=TEXT)"
+        enum status "AVAILABLE/PENDING/SOLD @Enumerated(STRING)"
+        decimal price "@Column(nullable=false) BigDecimal(10,2)"
+        bigint category_id FK "@ManyToOne Category reference"
+        bigint owner_id FK "@ManyToOne Current owner (nullable)"
+        string photo_urls "@ElementCollection List<String>"
+        string tags "@ElementCollection List<String>"
+        bigint created_by "@CreatedBy User who created listing"
+        bigint last_modified_by "@LastModifiedBy Last editor"
+        timestamp created_at "@CreatedDate Listing creation"
+        timestamp updated_at "@LastModifiedDate Last modification"
     }
 
     PET_PHOTOS {
-        bigint pet_id FK "Pet Id"
-        string photo_url FK "Photo URL"
+        bigint pet_id FK "@ElementCollection Pet reference"
+        string photo_url "Photo URL @CollectionTable"
     }
 
     PET_TAGS {
-        bigint pet_id FK "Pet Id"
-        string tag FK "Tag"
+        bigint pet_id FK "@ElementCollection Pet reference"
+        string tag "Tag @CollectionTable"
     }
     
     CATEGORIES {
-        bigint id PK
-        string name UK "Unique category name"
-        timestamp created_at "Category creation"
-        timestamp updated_at "Last modification"
+        bigint id PK "Primary Key"
+        string name UK "@Column(unique=true, nullable=false)"
+        text description "Category description @Column(columnDefinition=TEXT)"
+        bigint created_by "@CreatedBy User who created"
+        bigint last_modified_by "@LastModifiedBy Last editor"
+        timestamp created_at "@CreatedDate Category creation"
+        timestamp updated_at "@LastModifiedDate Last modification"
     }
 
     DISCOUNTS {
-        bigint id PK
-        string code UK "Unique code"
-        decimal percentage "Discount percentage"
-        string description "Discount description"
-        timestamp valid_from "Valid From"
-        timestamp valid_to "Valid To"
-        bit active "Active discount"
-        timestamp created_at "Category creation"
-        timestamp updated_at "Last modification"
+        bigint id PK "Primary Key"
+        string code UK "@Column(unique=true, length=20, nullable=false)"
+        decimal percentage "@Column(nullable=false) BigDecimal(5,2)"
+        text description "@Column(length=200) Discount description"
+        timestamp valid_from "@Column(nullable=false) Start date"
+        timestamp valid_to "@Column(nullable=false) End date"
+        boolean active "@Column(nullable=false) Active status"
+        bigint created_by "@CreatedBy User who created"
+        bigint last_modified_by "@LastModifiedBy Last editor"
+        timestamp created_at "@CreatedDate Creation timestamp"
+        timestamp updated_at "@LastModifiedDate Last modification"
     }
 
-     ADDRESSES {
-        bigint id PK
-        bigint user_id FK "User belong to the address"
-        string full_name "System will concat from User's first name and last name"
-        string street "Street"
-        string city "City"
-        string postal_code "Postal Code"
-        string country "Country"
-        string phone_number "Phone NUmber"
-        bit is_default "Mark default address"
+    ADDRESSES {
+        bigint id PK "Primary Key"
+        bigint user_id FK "@ManyToOne User reference"
+        string full_name "@Column(nullable=false) Full name"
+        string phone_number "@Column(nullable=false) Phone number"
+        string street "@Column(nullable=false) Street address"
+        string city "@Column(nullable=false) City"
+        string state "State/Province"
+        string postal_code "@Column(nullable=false) Postal code"
+        string country "@Column(nullable=false) Country"
+        boolean is_default "Default address flag"
+        timestamp created_at "@CreatedDate Creation timestamp"
+        timestamp updated_at "@LastModifiedDate Last modification"
     }
 
     PAYMENTS {
-        bigint id PK
-        bigint order_id FK "Payment order id"
-        decimal amount "Amount"
-        enum status "PENDING, SUCCESS, FAILED"
-        enum payment_type "CREDIT_CARD, DEBIT_CARD, E-WALLET, PAYPAL"
-        string payment_note "Note"
-        timestamp paid_at "Paid at"
+        bigint id PK "Primary Key"
+        bigint order_id FK "@OneToOne Order reference"
+        decimal amount "@Column(nullable=false) BigDecimal(10,2)"
+        enum payment_method "CREDIT_CARD/DEBIT_CARD/E_WALLET/CASH @Enumerated(STRING)"
+        enum e_wallet_type "GRABPAY/BOOSTPAY/TOUCHNGO (nullable) @Enumerated(STRING)"
+        string card_last4 "@Column(length=4) Last 4 digits of card"
+        enum status "PENDING/COMPLETED/FAILED @Enumerated(STRING)"
+        text note "@Column(columnDefinition=TEXT) Payment notes"
+        timestamp paid_at "Payment completion timestamp"
+        timestamp created_at "@CreatedDate Creation timestamp"
     }
 
     DELIVERIES {
-        bigint id PK
-        bigint order_id FK "Order id"
-        string name "Customer name"
-        string phone "Phone Number"
-        string address "Delivery Address"
-        decimal amount "Amount"
-        enum status "PENDING, SHIPPED, DELIVERED"
-        timestamp delivered_at "Delivered At"
-        timestamp shipped_at "Shipped At"
+        bigint id PK "Primary Key"
+        bigint order_id FK "@OneToOne Order reference"
+        string name "@Column(nullable=false) Recipient name"
+        string phone "@Column(nullable=false) Contact number"
+        text address "@Column(nullable=false, columnDefinition=TEXT) Full delivery address"
+        enum status "PENDING/SHIPPED/DELIVERED @Enumerated(STRING)"
+        timestamp shipped_at "Shipment timestamp"
+        timestamp delivered_at "Delivery timestamp"
+        timestamp created_at "@CreatedDate Creation timestamp"
     }
 
-     ORDERS {
-        bigint id PK
-        string order_number "System Generated Order Number"
-        enum status "PLACED, APPROVED, DELIVERED, CANCELLED"
-        decimal total_amount "Total Amount"
-        bigint user_id FK "User Id"
-        bigint discount_id FK "Discount Id"
-        bigint billing_address_id FK "Billing Address Id"
-        bigint shipping_address_id FK "Shipping Address Id"
-        timestamp created_at "Created At"
-        timestamp updated_at "Updated At"
-     }
+    ORDERS {
+        bigint id PK "Primary Key"
+        string order_number UK "@Column(unique=true, nullable=false) Generated order ID"
+        enum status "PENDING/PAID/SHIPPED/DELIVERED/CANCELLED @Enumerated(STRING)"
+        decimal total_amount "@Column(nullable=false) BigDecimal(10,2)"
+        bigint user_id FK "@ManyToOne User reference"
+        bigint discount_id FK "@ManyToOne Discount applied (nullable)"
+        bigint payment_id FK "@OneToOne Payment reference (nullable)"
+        bigint delivery_id FK "@OneToOne Delivery reference (nullable)"
+        bigint shipping_address_id FK "@ManyToOne Shipping address"
+        bigint billing_address_id FK "@ManyToOne Billing address"
+        timestamp created_at "@CreatedDate Order creation"
+        timestamp updated_at "@LastModifiedDate Last modification"
+    }
 
-     ORDER_ITEMS {
-        bigint id PK
-        decimal price "Item Price"
-        bigint order_id FK "Order Id"
-        bigint pet_id FK "Pet Id"
+    ORDER_ITEMS {
+        bigint id PK "Primary Key"
+        bigint order_id FK "@ManyToOne Order reference"
+        bigint pet_id FK "@ManyToOne Pet reference"
+        decimal price "@Column(nullable=false) BigDecimal(10,2) Price at purchase"
+        int quantity "@Column(nullable=false, default=1) Quantity"
+    }
 
-     }
+    CARTS {
+        bigint id PK "Primary Key"
+        bigint user_id FK "@OneToOne User reference"
+        decimal total "@Column(nullable=false) BigDecimal(10,2) Cart total"
+        timestamp created_at "@CreatedDate Cart creation"
+        timestamp updated_at "@LastModifiedDate Last modification"
+    }
 
-     CARTS {
-        bigint id PK
-        bigint user_id FK "User Id"
-     }
+    CART_ITEMS {
+        bigint id PK "Primary Key"
+        bigint cart_id FK "@ManyToOne Cart reference"
+        bigint pet_id FK "@ManyToOne Pet reference"
+        decimal price "@Column(nullable=false) BigDecimal(10,2) Current price"
+        int quantity "@Column(nullable=false, default=1) Quantity"
+    }
 
-     CART_ITEMS {
-        bigint id PK
-        decimal price "Price"
-        bigint cart_id FK "Cart Id"
-        bigint pet_id FK "Pet Id"
-     }
+    AUDIT_LOGS {
+        bigint id PK "Primary Key"
+        bigint order_id FK "@ManyToOne Order reference"
+        enum action "CREATE_ORDER/CHECKOUT_ORDER/CANCEL_ORDER/UPDATE_DELIVERY_STATUS @Enumerated(STRING)"
+        text details "@Column(columnDefinition=TEXT) Action details JSON"
+        bigint created_by "@CreatedBy User who performed action"
+        timestamp created_at "@CreatedDate Action timestamp"
+    }
 ```
 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 <details>
   <summary><b>Click to expand the Project Structure</b></summary>
@@ -573,7 +679,7 @@ pet-store/
 
 ---
 
-## 🔑 Key Architecture Components
+## Key Architecture Components
 
 #### Backend (Spring Boot)
 - **Controllers**: Handle HTTP requests and responses

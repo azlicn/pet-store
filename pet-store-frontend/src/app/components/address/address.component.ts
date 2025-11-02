@@ -18,6 +18,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { AddressService } from "src/app/services/address.service";
 import { AuthService } from "src/app/services/auth.service";
+import { UserService } from "src/app/services/user.service";
 
 @Component({
   selector: "app-address",
@@ -46,7 +47,8 @@ export class AddressComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<AddressComponent>,
     private addressService: AddressService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {
     this.addressForm = this.fb.group({
       phoneNumber: ["", [Validators.required, Validators.maxLength(20)]],
@@ -80,6 +82,31 @@ export class AddressComponent implements OnInit {
       if (addressId) {
         this.isEditMode = true;
         this.loadAddress(addressId);
+      } else {
+        // Auto-populate phone number from user profile when creating new address
+        // Fetch fresh user data from API to ensure we have latest phone number
+        const currentUserId = this.authService.getCurrentUser()?.id;
+        if (currentUserId) {
+          this.userService.getUserById(currentUserId).subscribe({
+            next: (user) => {
+              if (user.phoneNumber) {
+                this.addressForm.patchValue({
+                  phoneNumber: user.phoneNumber
+                });
+              }
+            },
+            error: (error) => {
+              console.error('Error loading user phone number:', error);
+              // Fallback to cached user data if API call fails
+              const userPhoneNumber = this.authService.getCurrentUser()?.phoneNumber;
+              if (userPhoneNumber) {
+                this.addressForm.patchValue({
+                  phoneNumber: userPhoneNumber
+                });
+              }
+            }
+          });
+        }
       }
     }
   }

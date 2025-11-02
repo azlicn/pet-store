@@ -26,7 +26,7 @@
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 - **Java 17+** (OpenJDK recommended)
@@ -131,16 +131,11 @@ All sample pets include multiple high-quality photos and relevant tags for demon
 
 > **Note**: Initial data is only created when the database is empty. Existing data will not be overwritten on subsequent application starts.
 
-
 ---
 
-#```
+## Configuration
 
----
-
-## ⚙️ Configuration
-
-### Backend Configuration (`application.properties`)
+### Backend Configuration (application.properties)
 ```properties
 # Database
 spring.datasource.url=jdbc:mysql://localhost:3306/petstore_db
@@ -157,17 +152,12 @@ app.jwt.expiration-ms=86400000
 ```
 
 ### Frontend Configuration
-### Frontend Configuration
 The Angular app is configured to connect to the backend at `http://localhost:8080/api`.
 
 
 ---
 
-```
-
----
-
-## 🖥️ Local Environment Configuration
+## Local Environment Configuration
 
 This section explains how to configure environment variables for local development to securely manage sensitive configuration like database passwords and JWT secrets.
 
@@ -324,9 +314,9 @@ JWT_SECRET=your_actual_generated_jwt_secret_256_bits
 
 ---
 
-## 🐳 Docker Environment Configuration
+## Docker Environment Configuration
 
-This section explains the environment variables used when running the Pet Store API in Docker containers.
+The application supports environment-specific configuration through Spring profiles and Angular environments.
 
 ### Docker Environment Variables
 

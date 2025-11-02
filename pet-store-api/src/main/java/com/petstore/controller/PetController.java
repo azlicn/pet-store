@@ -1,9 +1,9 @@
 package com.petstore.controller;
 
 import com.petstore.enums.PetStatus;
+import com.petstore.enums.Role;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
-import com.petstore.model.Role;
 import com.petstore.service.PetService;
 import com.petstore.service.UserService;
 import com.petstore.dto.PetPageResponse;

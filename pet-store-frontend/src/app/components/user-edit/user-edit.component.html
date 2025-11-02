@@ -63,6 +63,21 @@
             </mat-error>
           </mat-form-field>
 
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Phone Number</mat-label>
+            <input matInput 
+                   type="tel"
+                   formControlName="phoneNumber" 
+                   placeholder="Enter phone number"
+                   autocomplete="tel"
+                   maxlength="20">
+            <mat-icon matPrefix>phone</mat-icon>
+            <mat-hint align="end">{{ userForm.get('phoneNumber')?.value?.length || 0 }}/20</mat-hint>
+            <mat-error *ngIf="isFieldInvalid('phoneNumber')">
+              {{getFieldError('phoneNumber')}}
+            </mat-error>
+          </mat-form-field>
+
           <mat-form-field *ngIf="authService.isAdmin()" appearance="outline" class="full-width">
             <mat-label>User Roles</mat-label>
             <mat-select formControlName="roles" multiple>

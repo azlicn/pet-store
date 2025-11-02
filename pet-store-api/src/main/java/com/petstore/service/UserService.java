@@ -90,6 +90,9 @@ public class UserService {
         if (updatedUser.getLastName() != null) {
             user.setLastName(updatedUser.getLastName());
         }
+        if (updatedUser.getPhoneNumber() != null) {
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+        }
         if (updatedUser.getEmail() != null) {
             // Check if email is already in use by another user
             Optional<User> existingUser = userRepository.findByEmail(updatedUser.getEmail());

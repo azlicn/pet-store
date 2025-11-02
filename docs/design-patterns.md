@@ -1,21 +1,17 @@
 # 🎨 Design Patterns
 
-> Design patterns used in Pawfect Store backend implementation.
+> The project uses well-established design patterns to organize code efficiently, improve flexibility, and ensure maintainability.
 
 ---
 
 ## 📋 Table of Contents
 
-- [Design Pattern Used](#design-pattern-used)
   - [1. Order Number Generator](#1-order-number-generator)
   - [2. Payment Type](#2-payment-type)
   - [3. Other Design Patterns](#3-other-design-patterns)
 
 ---
 
-## 🏗️ Design Pattern Used
-
-The project uses design patterns in below implementation
 
 ### 1. Order Number Generator
 
@@ -23,7 +19,7 @@ The project uses design patterns in below implementation
 <ul>
   <li>UUIDOrderNumberGenerator - Best for production (truly unique, distributed-safe)</li>
   <li>SSequentialOrderNumberGenerator - Thread-safe with atomic counter</li>
-  <li>imeBasedOrderNumberGenerator** - Simple timebased generator</li>
+  <li>TimeBasedOrderNumberGenerator** - Simple timebased generator</li>
 </ul>
 
 &nbsp;&nbsp;&nbsp;&nbsp;**Design Patterns Used:**
@@ -250,14 +246,14 @@ classDiagram
     - ```java
       // WITHOUT Strategy Pattern
         if (paymentType == CREDIT_CARD) {
-            // nth lines of credit card logic
+            // n-th lines of credit card logic
         } else if (paymentType == DEBIT_CARD) {
-            // nth lines of debit card logic
+            // n-th lines of debit card logic
         } else if (paymentType == E_WALLET) {
             if (eWalletType == GRABPAY) {
-                // nth lines
+                // n-th lines
             } else if (eWalletType == BOOSTPAY) {
-                // nth lines
+                // n-th lines
             }
             // ... nested
         }
@@ -529,5 +525,6 @@ Each pattern contributes to a modular, maintainable, and testable architecture.
 | **Utility / Helper** | Provides static helper methods for cross-cutting concerns. | `OrderNumberGenerator.generateOrderNumber()` (static util). | `OrderNumberGenerator.java` |
 | **Exception / Domain-specific Exceptions** | Custom exceptions represent business error conditions. | `PetNotFoundException`, `CartEmptyException`, `DiscountInUseException`. | `src/main/java/com/petstore/exception/*.java` |
 | **Strategy (via Interfaces)** | Defines interchangeable behaviors via interface implementations. | `UserDetailsService` → `UserDetailsServiceImpl`; fits Strategy pattern potential. | `UserDetailsServiceImpl.java`, `SecurityConfig.java` |
+| **Snapshot Pattern / Memento Pattern** | Captures and preserves point-in-time state of an object to maintain historical accuracy. Prevents historical data from being affected by future changes to referenced entities. | Order entity stores immutable snapshots of discount values (`discountCode`, `discountPercentage`, `discountAmount`) at order creation time, alongside the `discount_id` FK for reporting. This ensures order totals remain accurate even if admin modifies the original discount. | `Order.java`, `OrderService.java` (checkout method) |
 
 </details>

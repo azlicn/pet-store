@@ -33,10 +33,11 @@ public class Pet {
     private Long id;
 
     @NotBlank(message = "Pet name is required")
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     @Size(max = 50, message = "Pet name cannot exceed 50 characters")
     private String name;
 
+    @Column(length = 200)
     @Size(max = 200, message = "Description cannot exceed 200 characters")
     private String description;
 
@@ -113,12 +114,12 @@ public class Pet {
      * @param price the price of the pet
      * @param owner the owner of the pet
      */
-    public Pet(String name, Category category, BigDecimal price, User owner) {
+    /* public Pet(String name, Category category, BigDecimal price, User owner) {
         this.name = name;
         this.category = category;
         this.price = price;
         this.owner = owner;
-    }
+    } */
 
     /**
      * Gets the pet ID

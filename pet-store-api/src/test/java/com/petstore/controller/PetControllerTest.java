@@ -47,9 +47,8 @@ import com.petstore.service.UserDetailsServiceImpl;
 import com.petstore.model.Category;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
-import com.petstore.model.Role;
 import com.petstore.enums.PetStatus;
-
+import com.petstore.enums.Role;
 import com.petstore.exception.GlobalExceptionHandler;
 import com.petstore.exception.PetNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;

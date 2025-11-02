@@ -14,6 +14,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * Entity class representing an item in a customer order, linking a pet to an
+ * order and storing the price at purchase time.
+ */
 @Entity
 @Table(name = "order_items")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -34,38 +38,76 @@ public class OrderItem {
 
     private BigDecimal price;
 
+    /**
+     * Gets the unique identifier of the order item.
+     * 
+     * @return the order item ID
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets the unique identifier of the order item.
+     * 
+     * @param id the order item ID
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets the order to which this item belongs.
+     * 
+     * @return the order
+     */
     public Order getOrder() {
         return order;
     }
 
+    /**
+     * Sets the order to which this item belongs.
+     * 
+     * @param order the order
+     */
     public void setOrder(Order order) {
         this.order = order;
     }
 
+    /**
+     * Gets the pet associated with this order item.
+     * 
+     * @return the pet
+     */
     public Pet getPet() {
         return pet;
     }
 
+    /**
+     * Sets the pet associated with this order item.
+     * 
+     * @param pet the pet
+     */
     public void setPet(Pet pet) {
         this.pet = pet;
     }
 
+    /**
+     * Gets the price of the pet at the time of purchase.
+     * 
+     * @return the price
+     */
     public BigDecimal getPrice() {
         return price;
     }
 
+    /**
+     * Sets the price of the pet at the time of purchase.
+     * 
+     * @param price the price
+     */
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
-
-    
 
 }

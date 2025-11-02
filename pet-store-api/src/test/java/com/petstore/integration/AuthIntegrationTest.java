@@ -2,7 +2,7 @@ package com.petstore.integration;
 
 import com.petstore.dto.LoginRequest;
 import com.petstore.dto.SignUpRequest;
-import com.petstore.model.Role;
+import com.petstore.enums.Role;
 import com.petstore.model.User;
 import com.petstore.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

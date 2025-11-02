@@ -22,9 +22,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.petstore.enums.Role;
 import com.petstore.model.Category;
 import com.petstore.model.Pet;
-import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.repository.CategoryRepository;
 import com.petstore.repository.PetRepository;

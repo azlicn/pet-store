@@ -22,6 +22,7 @@ import {
   UserUpdateRequest,
 } from "../../services/user.service";
 import { AuthService } from "../../services/auth.service";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-user-edit",
@@ -55,7 +56,8 @@ export class UserEditComponent implements OnInit {
     public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +80,7 @@ export class UserEditComponent implements OnInit {
         firstName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
         lastName: ["", [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
         email: ["", [Validators.required, Validators.email, Validators.maxLength(150)]],
+        phoneNumber: ["", [Validators.maxLength(20)]],
         currentPassword: [""],
         newPassword: [""],
         confirmPassword: [""],
@@ -135,13 +138,14 @@ export class UserEditComponent implements OnInit {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          phoneNumber: user.phoneNumber,
           roles: user.roles,
         });
         this.loading = false;
       },
       error: (error) => {
         console.error("Error loading user:", error);
-        alert("Failed to load user data");
+        this.snackBar.open("Error loading user", "Close", { duration: 3000 });
         this.router.navigate(["/"]);
         this.loading = false;
       },
@@ -157,6 +161,7 @@ export class UserEditComponent implements OnInit {
         firstName: formValue.firstName,
         lastName: formValue.lastName,
         email: formValue.email,
+        phoneNumber: formValue.phoneNumber,
       };
 
       if (formValue.newPassword) {
@@ -169,19 +174,24 @@ export class UserEditComponent implements OnInit {
 
       this.userService.updateUser(this.userId, updateRequest).subscribe({
         next: (response: any) => {
-          alert("Profile updated successfully!");
+          this.snackBar.open("Profile updated successfully!", "Close", { duration: 3000 });
 
           if (this.isEditingOwnProfile) {
             const updatedUser = response.user;
             this.authService.updateCurrentUser(updatedUser);
           }
 
-          this.router.navigate(["/users"]);
+          // Navigate to appropriate page based on user role
+          if (this.authService.isAdmin()) {
+            this.router.navigate(["/users"]);
+          } else {
+            this.router.navigate(["/pets"]);
+          }
           this.loading = false;
         },
         error: (error: any) => {
           console.error("Error updating user:", error);
-          alert(error.error?.message || "Failed to update profile");
+          this.snackBar.open(error.error?.message || "Failed to update profile", "Close", { duration: 3000 });
           this.loading = false;
         },
       });
@@ -259,6 +269,7 @@ export class UserEditComponent implements OnInit {
       firstName: "First name",
       lastName: "Last name",
       email: "Email",
+      phoneNumber: "Phone number",
       currentPassword: "Current password",
       newPassword: "New password",
       confirmPassword: "Confirm password",

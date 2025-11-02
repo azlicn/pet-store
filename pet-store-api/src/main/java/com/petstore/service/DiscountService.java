@@ -52,8 +52,13 @@ public class DiscountService {
      *
      * @param discount the discount to save
      * @return the saved discount
+     * @throws DiscountAlreadyExistsException if a discount with the same code already exists
      */
     public Discount saveDiscount(Discount discount) {
+        // Check for duplicate code before saving
+        if (discountRepository.existsByCode(discount.getCode())) {
+            throw new DiscountAlreadyExistsException(discount.getCode());
+        }
         return discountRepository.save(discount);
     }
 

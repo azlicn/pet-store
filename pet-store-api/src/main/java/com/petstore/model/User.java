@@ -2,6 +2,8 @@ package com.petstore.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.petstore.enums.Role;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -38,14 +40,18 @@ public class User {
     private String password;
 
     @NotBlank(message = "First name is required")
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name", nullable = false, length = 100)
     @Size(max = 100, message = "First name cannot exceed 100 characters")
     private String firstName;
 
     @NotBlank(message = "Last name is required")
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name", nullable = false, length = 100)
     @Size(max = 100, message = "Last name cannot exceed 100 characters")
     private String lastName;
+
+    @Column(name = "phone_number", length = 20)
+    @Size(max = 20, message = "Phone number cannot exceed 20 characters")
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
@@ -202,6 +208,24 @@ public class User {
      */
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    /**
+     * Gets the user's phone number
+     *
+     * @return the phone number
+     */
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    /**
+     * Sets the user's phone number
+     *
+     * @param phoneNumber the phone number to set
+     */
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     /**

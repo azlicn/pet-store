@@ -19,17 +19,6 @@
             <form *ngIf="!loading" [formGroup]="addressForm" (ngSubmit)="onSubmit()" class="address-form">
                 <div class="form-row">
                     <mat-form-field appearance="outline">
-                        <mat-label>Phone Number</mat-label>
-                        <input matInput formControlName="phoneNumber" placeholder="Enter phone number" maxlength="20">
-                        <mat-icon matSuffix>phone</mat-icon>
-                        <mat-hint align="end">{{ phoneNumber?.value?.length || 0 }}/20</mat-hint>
-                        <mat-error *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
-                            {{ getErrorMessage('phoneNumber') }}
-                        </mat-error>
-                    </mat-form-field>
-                </div>
-                <div class="form-row">
-                    <mat-form-field appearance="outline">
                         <mat-label>Street</mat-label>
                         <input matInput formControlName="street" placeholder="Enter street" maxlength="255">
                         <mat-icon matSuffix>street</mat-icon>
@@ -84,9 +73,21 @@
                     </mat-form-field>
                 </div>
 
-                <mat-checkbox formControlName="isDefault" class="default-checkbox">
-                    Set as Default Address
-                </mat-checkbox>
+                <div class="form-row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Phone Number</mat-label>
+                        <input matInput formControlName="phoneNumber" placeholder="Enter phone number" maxlength="20">
+                        <mat-icon matSuffix>phone</mat-icon>
+                        <mat-hint align="end">{{ phoneNumber?.value?.length || 0 }}/20</mat-hint>
+                        <mat-error *ngIf="phoneNumber?.invalid && phoneNumber?.touched">
+                            {{ getErrorMessage('phoneNumber') }}
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-checkbox formControlName="isDefault" class="default-checkbox">
+                        Set as Default Address
+                    </mat-checkbox>
+                </div>
+
 
                 <div class="form-actions">
                     <button mat-raised-button color="primary" type="submit"

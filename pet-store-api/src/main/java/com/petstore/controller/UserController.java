@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -93,11 +94,18 @@ public class UserController {
         userDetails.setFirstName(updateRequest.getFirstName());
         userDetails.setLastName(updateRequest.getLastName());
         userDetails.setEmail(updateRequest.getEmail());
+        userDetails.setPhoneNumber(updateRequest.getPhoneNumber());
         if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
             userDetails.setPassword(updateRequest.getPassword());
         }
+        // Only update roles if user is ADMIN and roles are provided
+        // Otherwise, preserve existing roles
         if (isAdmin && updateRequest.getRoles() != null) {
             userDetails.setRoles(updateRequest.getRoles());
+        } else {
+            // Preserve existing roles for non-admin users or when roles not provided
+            // Create a mutable copy to avoid UnsupportedOperationException during Hibernate merge
+            userDetails.setRoles(new HashSet<>(existingUser.getRoles()));
         }
         User updatedUser = userService.updateUser(id, userDetails);
         Map<String, Object> response = new HashMap<>();
@@ -147,6 +155,7 @@ public class UserController {
         response.put("email", user.getEmail());
         response.put("firstName", user.getFirstName());
         response.put("lastName", user.getLastName());
+        response.put("phoneNumber", user.getPhoneNumber());
         response.put("roles", user.getRoles());
         response.put("createdAt", user.getCreatedAt());
         response.put("updatedAt", user.getUpdatedAt());
