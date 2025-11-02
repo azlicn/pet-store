@@ -36,6 +36,7 @@ public class Discount {
     @NotNull(message = "Valid to date cannot be null")
     private LocalDateTime validTo;
 
+    @Column(length = 200)
     @Size(max = 200, message = "Discount description cannot exceed 200 characters")
     private String description;
 

@@ -20,6 +20,9 @@ public class UserUpdateRequest {
     @Email(message = "Email should be valid")
     private String email;
     
+    @Size(max = 20, message = "Phone number cannot exceed 20 characters")
+    private String phoneNumber;
+    
     @Size(min = 6, max = 100, message = "Password should be between 6 and 100 characters")
     private String password;
     
@@ -27,10 +30,11 @@ public class UserUpdateRequest {
 
     public UserUpdateRequest() {}
 
-    public UserUpdateRequest(String firstName, String lastName, String email, String password, Set<Role> roles) {
+    public UserUpdateRequest(String firstName, String lastName, String email, String phoneNumber, String password, Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.roles = roles;
     }
@@ -59,6 +63,14 @@ public class UserUpdateRequest {
         this.email = email; 
     }
 
+    public String getPhoneNumber() { 
+        return phoneNumber; 
+    }
+    
+    public void setPhoneNumber(String phoneNumber) { 
+        this.phoneNumber = phoneNumber; 
+    }
+
     public String getPassword() { 
         return password; 
     }
@@ -81,6 +93,7 @@ public class UserUpdateRequest {
                 "firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", password='[PROTECTED]'" +
                 ", roles=" + roles +
                 '}';

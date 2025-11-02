@@ -22,7 +22,7 @@ public class Category {
     private Long id;
 
     @NotBlank(message = "Category name is required")
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 30)
     @Size(max = 30, message = "Category name cannot exceed 30 characters")
     private String name;
 

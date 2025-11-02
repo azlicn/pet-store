@@ -13,7 +13,7 @@ This guide covers unit testing and integration testing strategies for the Pet St
 
 ---
 
-## 📂 Test Structure
+## Test Structure
 
 ```
 pet-store-api/src/test/
@@ -30,7 +30,7 @@ pet-store-api/src/test/
 
 ---
 
-## 🔬 Unit Testing
+## Unit Testing
 
 Unit tests focus on testing individual components in isolation using mocks.
 
@@ -83,9 +83,11 @@ class PetServiceTest {
 
 ---
 
-## 🔗 Integration Testing
+---
 
-Integration tests verify the full application flow from HTTP request through all layers to the database.
+## Integration Testing
+
+Integration tests verify that different parts of the application work together correctly.
 
 ### Test Infrastructure
 
@@ -194,7 +196,7 @@ void testCreatePet_Success() throws Exception {
 
 ---
 
-## ▶️ Running Tests
+## Running Tests
 
 ### Run All Tests
 ```bash
@@ -234,7 +236,7 @@ mvn clean test jacoco:report
 
 ---
 
-## ⚙️ Test Configuration
+## Test Configuration
 
 ### Dependencies (pom.xml)
 
@@ -269,7 +271,7 @@ mvn clean test jacoco:report
 
 ---
 
-## ✍️ Writing New Tests
+## Writing New Tests
 
 ### 1. Create Integration Test Class
 
@@ -392,7 +394,7 @@ void testCreate_InvalidData() throws Exception {
 
 ---
 
-## 🎯 Best Practices
+## Best Practices
 
 ### ✅ DO
 
@@ -459,7 +461,7 @@ void testCreate_InvalidData() throws Exception {
 
 ---
 
-## 📊 Test Coverage Goals
+## Test Coverage Goals
 
 | Layer | Target Coverage |
 |-------|----------------|
@@ -471,7 +473,7 @@ void testCreate_InvalidData() throws Exception {
 
 ---
 
-## 🔍 Debugging Tests
+## Debugging Tests
 
 ### Enable SQL Logging
 Add to `application-test.properties`:
@@ -496,7 +498,7 @@ mockMvc.perform(get("/api/pets"))
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [Spring Boot Testing Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.testing)
 - [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)

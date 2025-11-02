@@ -35,37 +35,37 @@ public class Address {
             message = "Full name is mandatory")
     private String fullName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @NotBlank(
             message = "Phone number is mandatory")
     @Size(max = 20, message = "Phone number cannot exceed 20 characters")
     private String phoneNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     @NotBlank(
             message = "Street is mandatory")
     @Size(max = 255, message = "Street cannot exceed 255 characters")
     private String street;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     @NotBlank(
             message = "City is mandatory")
     @Size(max = 100, message = "City cannot exceed 100 characters")
     private String city;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     @NotBlank(
             message = "State is mandatory")
     @Size(max = 100, message = "State cannot exceed 100 characters")
     private String state;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @NotBlank(
             message = "Postal code is mandatory")
     @Size(max = 20, message = "Postal code cannot exceed 20 characters")
     private String postalCode;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     @NotBlank(
             message = "Country is mandatory")
     @Size(max = 100, message = "Country cannot exceed 100 characters")

@@ -59,6 +59,16 @@ public class Order {
     @JoinColumn(name = "discount_id")
     private Discount discount;
 
+    // Snapshot of discount values at time of order creation (immutable historical record)
+    @Column(name = "discount_code")
+    private String discountCode;
+
+    @Column(name = "discount_percentage", precision = 10, scale = 2)
+    private BigDecimal discountPercentage;
+
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
 
     private List<OrderItem> items = new ArrayList<>();
@@ -150,6 +160,30 @@ public class Order {
 
     public void setDiscount(Discount discount) {
         this.discount = discount;
+    }
+
+    public String getDiscountCode() {
+        return discountCode;
+    }
+
+    public void setDiscountCode(String discountCode) {
+        this.discountCode = discountCode;
+    }
+
+    public BigDecimal getDiscountPercentage() {
+        return discountPercentage;
+    }
+
+    public void setDiscountPercentage(BigDecimal discountPercentage) {
+        this.discountPercentage = discountPercentage;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public List<OrderItem> getItems() {

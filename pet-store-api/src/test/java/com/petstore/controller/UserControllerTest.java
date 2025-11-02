@@ -125,12 +125,13 @@ class UserControllerTest {
     @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
     void shouldUpdateUserByAdmin() throws Exception {
         com.petstore.dto.UserUpdateRequest updateRequest = new com.petstore.dto.UserUpdateRequest("Test", "User",
-                "user@test.com", "password123", Set.of(Role.USER));
+                "user@test.com", "1234567890", "password123", Set.of(Role.USER));
         User updatedUser = new User();
         updatedUser.setId(2L);
         updatedUser.setEmail("user@test.com");
         updatedUser.setFirstName("Test");
         updatedUser.setLastName("User");
+        updatedUser.setPhoneNumber("1234567890");
         updatedUser.setRoles(Set.of(Role.USER));
         when(userService.getUserById(2L)).thenReturn(Optional.of(updatedUser));
         when(userService.updateUser(eq(2L), any(User.class))).thenReturn(updatedUser);
@@ -150,7 +151,7 @@ class UserControllerTest {
     @org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
     void shouldReturn404WhenUpdatingNonexistentUser() throws Exception {
         com.petstore.dto.UserUpdateRequest updateRequest = new com.petstore.dto.UserUpdateRequest("Test", "User",
-                "user@test.com", "password123", Set.of(Role.USER));
+                "user@test.com", "1234567890", "password123", Set.of(Role.USER));
         when(userService.getUserById(99L)).thenReturn(Optional.empty());
         mockMvc.perform(MockMvcRequestBuilders.put("/api/users/99")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)

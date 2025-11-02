@@ -10,8 +10,15 @@ import {
   PLATFORM_ID,
   OnChanges,
   SimpleChanges,
+  HostListener,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
 } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from "@angular/common";
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 declare global {
   interface Window {
@@ -22,14 +29,17 @@ declare global {
 @Component({
   selector: "app-mermaid-diagram",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: "./mermaid-diagram.component.html",
   styleUrls: ["./mermaid-diagram.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None, // Allow fullscreen styles to apply globally
 })
 export class MermaidDiagramComponent
   implements OnInit, AfterViewInit, OnDestroy, OnChanges
 {
   @ViewChild("mermaidDiv", { static: true }) mermaidDiv!: ElementRef;
+  @ViewChild("containerDiv", { static: true }) containerDiv!: ElementRef;
 
   @Input() diagramDefinition: string = "";
   @Input() title: string = "";
@@ -45,11 +55,30 @@ export class MermaidDiagramComponent
 
   diagramId: string = "";
   isFullscreen: boolean = false;
+  private isTogglingFullscreen: boolean = false;
+  private originalParent: HTMLElement | null = null;
+  private originalNextSibling: Node | null = null;
+  
+  // Zoom and pan properties
+  zoomLevel: number = 1;
+  panX: number = 0;
+  panY: number = 0;
+  isPanning: boolean = false;
+  private startX: number = 0;
+  private startY: number = 0;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.diagramId = "mermaid-" + Math.random().toString(36).substr(2, 9);
+    /* console.log('MermaidDiagramComponent initialized:', {
+      title: this.title,
+      showActions: this.showActions,
+      diagramId: this.diagramId
+    }); */
     if (isPlatformBrowser(this.platformId)) {
       this.loadMermaidScript();
     }
@@ -115,7 +144,13 @@ export class MermaidDiagramComponent
 
   ngOnDestroy() {
     if (this.isFullscreen) {
-      this.toggleFullscreen();
+      // Cleanup without triggering toggle
+      this.isFullscreen = false;
+      document.body.style.overflow = "";
+      if (this.containerDiv && this.containerDiv.nativeElement) {
+        const container = this.containerDiv.nativeElement as HTMLElement;
+        container.classList.remove("fullscreen");
+      }
     }
   }
 
@@ -292,7 +327,7 @@ export class MermaidDiagramComponent
         });
 
         this.mermaidInitialized = true;
-        console.log("Mermaid initialized successfully with safe configuration");
+        //console.log("Mermaid initialized successfully with safe configuration");
       } catch (error) {
         console.error("Failed to initialize Mermaid:", error);
         this.mermaidInitialized = false;
@@ -347,35 +382,13 @@ export class MermaidDiagramComponent
       diagramContainer.textContent = this.diagramDefinition;
       element.appendChild(diagramContainer);
 
-      element.style.isolation = "isolate";
-      element.style.contain = "layout style paint";
+      // Don't set isolation/contain inline styles - they interfere with fullscreen
+      // element.style.isolation = "isolate";
+      // element.style.contain = "layout style paint";
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const existingContainer = document.getElementById(diagramId);
-      if (!existingContainer || existingContainer !== diagramContainer) {
-        console.warn("Container isolation failed, recreating...");
-        element.innerHTML = "";
-        const newContainer = document.createElement("div");
-        newContainer.id = diagramId + "-retry";
-        newContainer.className = "mermaid-isolated";
-        newContainer.setAttribute(
-          "data-diagram-instance",
-          diagramId + "-retry"
-        );
-        newContainer.style.cssText = diagramContainer.style.cssText;
-        newContainer.textContent = this.diagramDefinition;
-        element.appendChild(newContainer);
-
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-
-      const finalContainer = element.querySelector(
-        ".mermaid-isolated"
-      ) as HTMLElement;
-      if (!finalContainer) {
-        throw new Error("Failed to create isolated container");
-      }
+      const finalContainer = diagramContainer;
 
       try {
         if (window.mermaid.mermaidAPI && window.mermaid.mermaidAPI.reset) {
@@ -409,9 +422,9 @@ export class MermaidDiagramComponent
           this.diagramDefinition
         );
         finalContainer.innerHTML = svg;
-        console.log(
-          `Mermaid diagram rendered successfully: ${this.title || "Untitled"}`
-        );
+        /* console.log(
+          `Mermaid diagram rendered successfully: ${this.title || "Untitled"}` 
+        );*/
       } catch (renderError) {
         console.warn(
           "Mermaid render method failed, trying init method:",
@@ -475,16 +488,116 @@ export class MermaidDiagramComponent
   }
 
   toggleFullscreen() {
-    this.isFullscreen = !this.isFullscreen;
-    const container =
-      this.mermaidDiv.nativeElement.closest(".mermaid-container");
+    // Prevent multiple simultaneous toggles
+    if (this.isTogglingFullscreen) {
+      return;
+    }
 
+    this.isTogglingFullscreen = true;
+    console.log('Toggling fullscreen from:', this.isFullscreen, 'to:', !this.isFullscreen);
+    
+    try {
+      // Toggle the state
+      this.isFullscreen = !this.isFullscreen;
+      
+      // Get the container element
+      if (!this.containerDiv || !this.containerDiv.nativeElement) {
+        console.error('Container element not found');
+        this.isFullscreen = !this.isFullscreen;
+        this.isTogglingFullscreen = false;
+        return;
+      }
+
+      const container = this.containerDiv.nativeElement as HTMLElement;
+      
+      // Apply or remove fullscreen styles
+      if (this.isFullscreen) {
+        // Save original position in DOM
+        this.originalParent = container.parentElement;
+        this.originalNextSibling = container.nextSibling;
+        
+        // Move to body to break out of parent constraints
+        document.body.appendChild(container);
+        
+        container.classList.add("fullscreen");
+        document.body.style.overflow = "hidden";
+        
+        // Force inline styles to ensure fullscreen displays
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100vw';
+        container.style.height = '100vh';
+        container.style.zIndex = '99999';
+        container.style.background = '#ffffff';
+        container.style.margin = '0';
+        container.style.padding = '0';
+        container.style.border = 'none';
+        container.style.borderRadius = '0';
+        container.style.boxShadow = 'none';
+        container.style.overflow = 'auto';
+        
+        console.log('Fullscreen activated - moved to body');
+      } else {
+        // Reset zoom and pan when exiting fullscreen
+        this.resetZoom();
+        
+        container.classList.remove("fullscreen");
+        document.body.style.overflow = "";
+        
+        // Remove inline styles to restore normal view
+        container.style.position = '';
+        container.style.top = '';
+        container.style.left = '';
+        container.style.width = '';
+        container.style.height = '';
+        container.style.zIndex = '';
+        container.style.background = '';
+        container.style.margin = '';
+        container.style.padding = '';
+        container.style.border = '';
+        container.style.borderRadius = '';
+        container.style.boxShadow = '';
+        container.style.overflow = '';
+        
+        // Move back to original position in DOM
+        if (this.originalParent) {
+          if (this.originalNextSibling) {
+            this.originalParent.insertBefore(container, this.originalNextSibling);
+          } else {
+            this.originalParent.appendChild(container);
+          }
+        }
+        
+        console.log('Fullscreen deactivated - moved back to original position');
+      }
+      
+      // Mark for check with OnPush strategy
+      this.cdr.markForCheck();
+      
+      console.log('Fullscreen toggled successfully');
+      
+    } catch (error) {
+      console.error('Error in toggleFullscreen:', error);
+      this.isFullscreen = !this.isFullscreen;
+    }
+    
+    // Always reset the lock
+    this.isTogglingFullscreen = false;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent) {
     if (this.isFullscreen) {
-      container.classList.add("fullscreen");
-      document.body.style.overflow = "hidden";
-    } else {
-      container.classList.remove("fullscreen");
-      document.body.style.overflow = "auto";
+      this.toggleFullscreen();
+      event.preventDefault();
+    }
+  }
+
+  onFullscreenBackdropClick(event: MouseEvent) {
+    // Only close if clicking directly on the container (not its children)
+    if (this.isFullscreen && event.target === event.currentTarget) {
+      this.toggleFullscreen();
     }
   }
 
@@ -501,5 +614,66 @@ export class MermaidDiagramComponent
       document.execCommand("copy");
       document.body.removeChild(textArea);
     }
+  }
+
+  // Zoom and Pan functionality
+  onWheel(event: WheelEvent) {
+    if (!this.isFullscreen) return;
+    
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? -0.1 : 0.1;
+    this.zoomLevel = Math.max(0.5, Math.min(5, this.zoomLevel + delta));
+    this.applyTransform();
+  }
+
+  onMouseDown(event: MouseEvent) {
+    if (!this.isFullscreen) return;
+    
+    this.isPanning = true;
+    this.startX = event.clientX - this.panX;
+    this.startY = event.clientY - this.panY;
+    event.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.isPanning || !this.isFullscreen) return;
+    
+    this.panX = event.clientX - this.startX;
+    this.panY = event.clientY - this.startY;
+    this.applyTransform();
+  }
+
+  @HostListener('document:mouseup')
+  onMouseUp() {
+    this.isPanning = false;
+  }
+
+  zoomIn() {
+    this.zoomLevel = Math.min(5, this.zoomLevel + 0.2);
+    this.applyTransform();
+  }
+
+  zoomOut() {
+    this.zoomLevel = Math.max(0.5, this.zoomLevel - 0.2);
+    this.applyTransform();
+  }
+
+  resetZoom() {
+    this.zoomLevel = 1;
+    this.panX = 0;
+    this.panY = 0;
+    this.applyTransform();
+  }
+
+  private applyTransform() {
+    if (!this.mermaidDiv?.nativeElement) return;
+    
+    const diagramDiv = this.mermaidDiv.nativeElement as HTMLElement;
+    diagramDiv.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomLevel})`;
+    diagramDiv.style.transformOrigin = 'center center';
+    diagramDiv.style.transition = 'transform 0.1s ease-out';
+    
+    this.cdr.markForCheck();
   }
 }

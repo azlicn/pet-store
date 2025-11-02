@@ -55,8 +55,8 @@
             </div>
             <!-- Discounted amount if discount exists -->
             <div *ngIf="order?.discount" class="info-row" style="font-weight: 600; color: #e53935;">
-                <span>Discounted amount: {{ order?.discount?.code }} ({{ order?.discount?.percentage }}%):</span>
-                <span>-{{ discountedAmount | currency }}</span>
+                <span>Discounted amount: {{ order?.discount?.code }} ({{ order?.discountPercentage }}%):</span>
+                <span>-{{ order?.discountAmount | currency }}</span>
             </div>
             <!-- <div *ngIf="order.discount" class="order-discount-row mat-elevation-z1" style="display: flex; align-items: center; justify-content: space-between;">
         <span style="display: flex; align-items: center;">
