@@ -37,7 +37,8 @@
       {{ isFullscreen ? 'Exit Fullscreen' : 'Fullscreen' }}
     </button>
     <button 
-      mat-stroked-button
+      mat-raised-button
+      color="light"
       (click)="downloadSVG(); $event.stopPropagation()"
       matTooltip="Download diagram as SVG file"
       class="action-btn">
@@ -45,7 +46,8 @@
       Download
     </button>
     <button 
-      mat-stroked-button
+      mat-raised-button
+      color="light"
       (click)="copyToClipboard(); $event.stopPropagation()"
       matTooltip="Copy diagram definition to clipboard"
       class="action-btn">

@@ -24,6 +24,10 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * Entity class representing an audit trail log entry for tracking changes to
+ * system entities.
+ */
 @Entity
 @Table(name = "audit_logs")
 @EntityListeners(AuditingEntityListener.class)
@@ -66,9 +70,26 @@ public class AuditLog {
     @Column(name = "last_modified_by")
     private Long lastModifiedBy;
 
+    /**
+     * Default constructor.
+     */
     public AuditLog() {
     }
 
+    /**
+     * Constructs a new audit log entry with all required information.
+     * 
+     * @param entityType the type of entity being audited (e.g., "Order", "Pet")
+     * @param entityId   the unique identifier of the entity being audited
+     * @param user       the user who performed the action (can be null for system
+     *                   actions)
+     * @param action     the action performed (e.g., "CREATE_ORDER",
+     *                   "CHECKOUT_ORDER", "CANCEL_ORDER", "UPDATE_DELIVERY_STATUS")
+     * @param oldValue   the previous value before the change (JSON format or string
+     *                   representation)
+     * @param newValue   the new value after the change (JSON format or string
+     *                   representation)
+     */
     public AuditLog(String entityType, Long entityId, User user, String action, String oldValue, String newValue) {
         this.entityType = entityType;
         this.entityId = entityId;
@@ -78,73 +99,143 @@ public class AuditLog {
         this.newValue = newValue;
     }
 
+    /**
+     * Gets the unique identifier of this audit log entry.
+     * 
+     * @return the audit log ID
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets the unique identifier of this audit log entry.
+     * 
+     * @param id the audit log ID to set
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets the type of entity that was audited.
+     * 
+     * @return the entity type name
+     */
     public String getEntityType() {
         return entityType;
     }
 
+    /**
+     * Sets the type of entity that was audited.
+     * 
+     * @param entityType the entity type name to set (cannot be blank)
+     */
     public void setEntityType(String entityType) {
         this.entityType = entityType;
     }
 
+    /**
+     * Gets the unique identifier of the entity that was audited.
+     * 
+     * @return the entity ID
+     */
     public Long getEntityId() {
         return entityId;
     }
 
+    /**
+     * Sets the unique identifier of the entity that was audited.
+     * 
+     * @param entityId the entity ID to set (cannot be null)
+     */
     public void setEntityId(Long entityId) {
         this.entityId = entityId;
     }
 
+    /**
+     * Gets the user who performed the audited action.
+     * 
+     * @return the user entity, or null if the action was system-initiated
+     */
     public User getUser() {
         return user;
     }
 
+    /**
+     * Sets the user who performed the audited action.
+     * 
+     * @param user the user entity to set (nullable for system actions)
+     */
     public void setUser(User user) {
         this.user = user;
     }
 
+    /**
+     * Gets the action that was performed on the entity.
+     * 
+     * @return the action performed
+     */
     public String getAction() {
         return action;
     }
 
+    /**
+     * Sets the action that was performed on the entity.
+     * 
+     * @param action the action to set (e.g., "CREATE_ORDER", "UPDATE_STATUS")
+     */
     public void setAction(String action) {
         this.action = action;
     }
 
+    /**
+     * Gets the previous value before the change was made.
+     * 
+     * @return the old value, or null if not applicable
+     */
     public String getOldValue() {
         return oldValue;
     }
 
+    /**
+     * Sets the previous value before the change was made.
+     * 
+     * @param oldValue the old value to set (nullable)
+     */
     public void setOldValue(String oldValue) {
         this.oldValue = oldValue;
     }
 
+    /**
+     * Gets the new value after the change was made.
+     * 
+     * @return the new value, or null if not applicable
+     */
     public String getNewValue() {
         return newValue;
     }
 
+    /**
+     * Sets the new value after the change was made.
+     * 
+     * @param newValue the new value to set (nullable)
+     */
     public void setNewValue(String newValue) {
         this.newValue = newValue;
     }
 
     /**
-     * Gets the creation timestamp
+     * Gets the creation timestamp of this audit log entry.
      *
-     * @return when this pet was created
+     * @return when this audit log entry was created
      */
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     /**
-     * Sets the creation timestamp
+     * Sets the creation timestamp of this audit log entry.
      *
      * @param createdAt the timestamp to set
      */
@@ -153,16 +244,16 @@ public class AuditLog {
     }
 
     /**
-     * Gets the last update timestamp
+     * Gets the last update timestamp of this audit log entry.
      *
-     * @return when this pet was last updated
+     * @return when this audit log entry was last updated
      */
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     /**
-     * Sets the last update timestamp
+     * Sets the last update timestamp of this audit log entry.
      *
      * @param updatedAt the timestamp to set
      */
@@ -171,16 +262,16 @@ public class AuditLog {
     }
 
     /**
-     * Gets the ID of the user who created this pet
+     * Gets the ID of the user who created this audit log entry.
      *
-     * @return ID of the creator
+     * @return ID of the creator, or null if created by system
      */
     public Long getCreatedBy() {
         return createdBy;
     }
 
     /**
-     * Sets the ID of the user who created this pet
+     * Sets the ID of the user who created this audit log entry.
      *
      * @param createdBy the creator's ID to set
      */

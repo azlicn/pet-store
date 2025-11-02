@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ *  Entity class representing a discount offer in the system, including code, percentage, validity period, and status.
+ */
 @Entity
 @Table(name = "discounts")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -58,65 +61,146 @@ public class Discount {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Gets the unique identifier of the discount.
+     * 
+     * @return the discount ID
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets the unique identifier of the discount.
+     * 
+     * @param id the discount ID
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets the discount code.
+     * 
+     * @return the discount code
+     */
     public String getCode() {
         return code;
     }
 
+    /**
+     * Sets the discount code.
+     * 
+     * @param code the discount code
+     */
     public void setCode(String code) {
         this.code = code;
     }
 
+    /**
+     * Gets the discount percentage.
+     * 
+     * @return the discount percentage
+     */
     public BigDecimal getPercentage() {
         return percentage;
     }
 
+    /**
+     * Sets the discount percentage.
+     * 
+     * @param percentage the discount percentage
+     */
     public void setPercentage(BigDecimal percentage) {
         this.percentage = percentage;
     }
 
+    /**
+     * Gets the start date and time when the discount is valid.
+     * 
+     * @return the valid from date
+     */
     public LocalDateTime getValidFrom() {
         return validFrom;
     }
+
+    /**
+     * Sets the start date and time when the discount is valid.
+     * 
+     * @param validFrom the valid from date
+     */
     public void setValidFrom(LocalDateTime validFrom) {
         this.validFrom = validFrom;
     }
 
+    /**
+     * Gets the end date and time when the discount is valid.
+     * 
+     * @return the valid to date
+     */
     public LocalDateTime getValidTo() {
         return validTo;
     }
 
+    /**
+     * Sets the end date and time when the discount is valid.
+     * 
+     * @param validTo the valid to date
+     */
     public void setValidTo(LocalDateTime validTo) {
         this.validTo = validTo;
     }
 
+    /**
+     * Gets the description of the discount.
+     * 
+     * @return the description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the description of the discount.
+     * 
+     * @param description the description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Checks if the discount is active.
+     * 
+     * @return true if active, false otherwise
+     */
     public boolean isActive() {
         return active;
     }
 
+    /**
+     * Sets the active status of the discount.
+     * 
+     * @param active true to activate, false to deactivate
+     */
     public void setActive(boolean active) {
         this.active = active;
     }
 
+    /**
+     * Gets the creation timestamp of the discount.
+     * 
+     * @return the created at timestamp
+     */
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
+    /**
+     * Gets the last updated timestamp of the discount.
+     * 
+     * @return the updated at timestamp
+     */
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
@@ -128,5 +212,4 @@ public class Discount {
                 + createdAt + ", updatedAt=" + updatedAt + "]";
     }
 
-    
 }

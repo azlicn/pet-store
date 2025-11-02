@@ -20,8 +20,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.petstore.model.User;
-import com.petstore.model.Role;
-
 import com.petstore.security.JwtTokenProvider;
 import com.petstore.service.UserService;
 import com.petstore.service.UserDetailsServiceImpl;
@@ -29,6 +27,7 @@ import com.petstore.service.UserDetailsServiceImpl;
 import com.petstore.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petstore.config.TestSecurityConfig;
+import com.petstore.enums.Role;
 
 /**
  * WebMvcTest for UserController.

@@ -17,6 +17,9 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * Entity class representing a shopping cart belonging to a user.
+ */
 @Entity
 @Table(name = "carts")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -35,32 +38,58 @@ public class Cart {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items = new ArrayList<>();
 
+    /**
+     * Gets the unique identifier of the cart.
+     * 
+     * @return the cart ID
+     */
     public Long getId() {
         return id;
     }
-    
+
+    /**
+     * Sets the unique identifier of the cart.
+     * 
+     * @param id the cart ID
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Gets the user who owns the cart.
+     * 
+     * @return the user
+     */
     public User getUser() {
         return user;
     }
 
+    /**
+     * Sets the user who owns the cart.
+     * 
+     * @param user the user
+     */
     public void setUser(User user) {
         this.user = user;
     }
 
+    /**
+     * Gets the list of items in the cart.
+     * 
+     * @return the list of cart items
+     */
     public List<CartItem> getItems() {
         return items;
     }
 
+    /**
+     * Sets the list of items in the cart.
+     * 
+     * @param items the list of cart items
+     */
     public void setItems(List<CartItem> items) {
         this.items = items;
     }
 
-    
-
-
-    
 }

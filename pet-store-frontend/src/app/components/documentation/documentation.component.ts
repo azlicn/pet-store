@@ -5,13 +5,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MermaidDiagramComponent } from '../mermaid-diagram/mermaid-diagram.component';
+import { DesignPatternDocComponent } from "../docs/design-pattern-doc/design-pattern-doc.component";
 
 interface DiagramData {
   id: string;
   title: string;
   description: string;
   definition: string;
-  category: 'architecture' | 'database' | 'api' | 'api-section' | 'user-flow' | 'deployment';
+  category: 'architecture' | 'database' | 'api' | 'api-section' | 'user-flow' | 'deployment' | 'design-patterns';
 }
 
 @Component({
@@ -23,8 +24,9 @@ interface DiagramData {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MermaidDiagramComponent
-  ],
+    MermaidDiagramComponent,
+    DesignPatternDocComponent
+],
   templateUrl: './documentation.component.html',
   styleUrls: ['./documentation.component.scss']
 })
@@ -2691,6 +2693,281 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         CI-->>Git: Report test failures ❌
         Git-->>Dev: Notify: Tests failed, fix required
     end`
+    },
+    {
+      id: 'ong-design-pattern',
+      title: 'Order Number Generator Strategy Pattern',
+      description: 'Overview of the strategy design pattern used in the order number generator.',
+      category: 'design-patterns',
+      definition: `classDiagram
+    %% Strategy Pattern Interface
+    class OrderNumberGenerator {
+        <<interface>>
+        +generate() String
+    }
+
+    %% Concrete Implementations
+    class UUIDOrderNumberGenerator {
+        +generate() String
+    }
+
+    class SequentialOrderNumberGenerator {
+        -AtomicLong counter
+        +generate() String
+    }
+
+    class TimeBasedOrderNumberGenerator {
+        -Clock clock
+        -SecureRandom random
+        +TimeBasedOrderNumberGenerator(Clock)
+        +generate() String
+    }
+
+    %% Configuration Classes
+    class OrderConfiguration {
+        +clock() Clock
+        +orderNumberGenerator(OrderNumberGenerator) OrderNumberGenerator
+    }
+
+    class OrderGeneratorConfig {
+        -String generatorType
+        +clock() Clock
+        +configuredOrderNumberGenerator(...) OrderNumberGenerator
+    }
+
+    %% Service Layer
+    class OrderService {
+        -OrderNumberGenerator orderNumberGenerator
+        +OrderService(OrderNumberGenerator)
+        +order.setOrderNumber() void
+    }
+
+    %% Spring Components
+    class Clock {
+        <<Java Time API>>
+        +millis() long
+        +systemDefaultZone() Clock
+    }
+
+    class SecureRandom {
+        <<Java Security>>
+        +nextInt(int) int
+    }
+
+    class AtomicLong {
+        <<Java Concurrent>>
+        +incrementAndGet() long
+    }
+
+    %% Relationships - Strategy Pattern
+    OrderNumberGenerator <|.. UUIDOrderNumberGenerator : implements
+    OrderNumberGenerator <|.. SequentialOrderNumberGenerator : implements
+    OrderNumberGenerator <|.. TimeBasedOrderNumberGenerator : implements
+
+    %% Dependencies
+    OrderService --> OrderNumberGenerator : uses
+    TimeBasedOrderNumberGenerator --> Clock : depends on
+    TimeBasedOrderNumberGenerator --> SecureRandom : depends on
+    SequentialOrderNumberGenerator --> AtomicLong : contains
+
+    %% Configuration Dependencies
+    OrderConfiguration ..> OrderNumberGenerator : configures
+    OrderConfiguration ..> Clock : creates
+    OrderGeneratorConfig ..> OrderNumberGenerator : configures
+    OrderGeneratorConfig ..> Clock : creates
+    OrderGeneratorConfig ..> UUIDOrderNumberGenerator : selects
+    OrderGeneratorConfig ..> SequentialOrderNumberGenerator : selects
+    OrderGeneratorConfig ..> TimeBasedOrderNumberGenerator : selects
+
+    %% Spring Annotations
+    note for UUIDOrderNumberGenerator "@Component<br>@Qualifier('uuidOrderNumberGenerator')"
+    note for SequentialOrderNumberGenerator "@Component<br>@Qualifier('sequentialOrderNumberGenerator')"
+    note for TimeBasedOrderNumberGenerator "@Component<br>@Qualifier('timeBasedOrderNumberGenerator')"
+    note for OrderService "@Service<br>Constructor Injection"
+    note for OrderConfiguration "@Configuration<br>@Primary bean definition"
+    note for OrderGeneratorConfig "@Configuration<br>Property-based selection"`
+    },
+    {
+      id: 'payment-type-design-pattern',
+      title: 'Payment Type Strategy Pattern',
+      description: 'Overview of the strategy design pattern used in the payment processing.',
+      category: 'design-patterns',
+      definition: `classDiagram
+    %% Enums
+    class PaymentType {
+        <<enumeration>>
+        CREDIT_CARD
+        DEBIT_CARD
+        E_WALLET
+        PAYPAL
+    }
+    
+    class WalletType {
+        <<enumeration>>
+        GRABPAY
+        BOOSTPAY
+        TOUCHNGO
+    }
+    
+    class PaymentStatus {
+        <<enumeration>>
+        PENDING
+        SUCCESS
+        FAILED
+    }
+    
+    %% Entities
+    class Payment {
+        -Long id
+        -Order order
+        -BigDecimal amount
+        -PaymentStatus status
+        -PaymentType paymentType
+        -String paymentNote
+        -LocalDateTime paidAt
+    }
+    
+    class Order {
+        -Long id
+        -BigDecimal totalAmount
+        -List~OrderItem~ items
+    }
+    
+    %% DTOs
+    class PaymentOrderRequest {
+        -PaymentType paymentType
+        -WalletType walletType
+        -String paymentNote
+        -String cardNumber
+        -String paypalId
+        -String walletId
+        -Long shippingAddressId
+        -Long billingAddressId
+    }
+    
+    %% Strategy Interfaces
+    class PaymentStrategy {
+        <<interface>>
+        +getPaymentType() PaymentType
+        +processPayment(Payment, PaymentOrderRequest)
+        +validatePayment(PaymentOrderRequest)
+    }
+    
+    class EWalletStrategy {
+        <<interface>>
+        +getWalletType() WalletType
+        +processEWalletPayment(Payment, PaymentOrderRequest)
+        +validateEWalletPayment(PaymentOrderRequest)
+    }
+    
+    %% Payment Strategy Implementations
+    class CreditCardPaymentStrategy {
+        <<Component>>
+        +getPaymentType() PaymentType
+        +processPayment(Payment, PaymentOrderRequest)
+        +validatePayment(PaymentOrderRequest)
+    }
+    
+    class DebitCardPaymentStrategy {
+        <<Component>>
+        +getPaymentType() PaymentType
+        +processPayment(Payment, PaymentOrderRequest)
+        +validatePayment(PaymentOrderRequest)
+    }
+    
+    class PayPalPaymentStrategy {
+        <<Component>>
+        +getPaymentType() PaymentType
+        +processPayment(Payment, PaymentOrderRequest)
+        +validatePayment(PaymentOrderRequest)
+    }
+    
+    class EWalletPaymentStrategy {
+        <<Component>>
+        -EWalletStrategyFactory eWalletStrategyFactory
+        +getPaymentType() PaymentType
+        +processPayment(Payment, PaymentOrderRequest)
+        +validatePayment(PaymentOrderRequest)
+    }
+    
+    %% E-Wallet Strategy Implementations
+    class GrabPayStrategy {
+        <<Component>>
+        +getWalletType() WalletType
+        +processEWalletPayment(Payment, PaymentOrderRequest)
+        +validateEWalletPayment(PaymentOrderRequest)
+    }
+    
+    class BoostPayStrategy {
+        <<Component>>
+        +getWalletType() WalletType
+        +processEWalletPayment(Payment, PaymentOrderRequest)
+        +validateEWalletPayment(PaymentOrderRequest)
+    }
+    
+    class TouchNGoStrategy {
+        <<Component>>
+        +getWalletType() WalletType
+        +processEWalletPayment(Payment, PaymentOrderRequest)
+        +validateEWalletPayment(PaymentOrderRequest)
+    }
+    
+    %% Factories
+    class PaymentStrategyFactory {
+        <<Component>>
+        -Map~PaymentType, PaymentStrategy~ strategies
+        +PaymentStrategyFactory(List~PaymentStrategy~)
+        +getStrategy(PaymentType) PaymentStrategy
+    }
+    
+    class EWalletStrategyFactory {
+        <<Component>>
+        -Map~WalletType, EWalletStrategy~ strategies
+        +EWalletStrategyFactory(List~EWalletStrategy~)
+        +getStrategy(WalletType) EWalletStrategy
+    }
+    
+    %% Service
+    class OrderService {
+        <<Service>>
+        -OrderRepository orderRepository
+        -PaymentRepository paymentRepository
+        -PaymentStrategyFactory paymentStrategyFactory
+        +makePayment(Long, PaymentOrderRequest) Payment
+    }
+    
+    %% Relationships - Strategy Pattern
+    PaymentStrategy <|.. CreditCardPaymentStrategy : implements
+    PaymentStrategy <|.. DebitCardPaymentStrategy : implements
+    PaymentStrategy <|.. PayPalPaymentStrategy : implements
+    PaymentStrategy <|.. EWalletPaymentStrategy : implements
+    
+    EWalletStrategy <|.. GrabPayStrategy : implements
+    EWalletStrategy <|.. BoostPayStrategy : implements
+    EWalletStrategy <|.. TouchNGoStrategy : implements
+    
+    %% Factory Relationships
+    PaymentStrategyFactory o-- PaymentStrategy : manages
+    EWalletStrategyFactory o-- EWalletStrategy : manages
+    
+    %% Nested Strategy
+    EWalletPaymentStrategy --> EWalletStrategyFactory : uses
+    
+    %% Service Relationships
+    OrderService --> PaymentStrategyFactory : uses
+    OrderService --> Payment : creates
+    OrderService --> PaymentOrderRequest : receives
+    OrderService --> Order : manages
+    
+    %% Entity Relationships
+    Payment --> PaymentType : has
+    Payment --> PaymentStatus : has
+    Payment --> WalletType : has (optional)
+    Payment --> Order : belongs to
+    
+    %% DTO Relationships
+    PaymentOrderRequest --> PaymentType : specifies
+    PaymentOrderRequest --> WalletType : specifies (optional)`
     }
   ];
 

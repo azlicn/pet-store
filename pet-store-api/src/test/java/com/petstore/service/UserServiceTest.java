@@ -1,11 +1,11 @@
 package com.petstore.service;
 
+import com.petstore.enums.Role;
 import com.petstore.exception.EmailAlreadyInUseException;
 import com.petstore.exception.InvalidUserException;
 import com.petstore.exception.UserInUseException;
 import com.petstore.model.Pet;
 import com.petstore.model.User;
-import com.petstore.model.Role;
 import com.petstore.repository.PetRepository;
 import com.petstore.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

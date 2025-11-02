@@ -1,0 +1,379 @@
+<div class="design-pattern-doc-container">
+
+  <section id="order-number-generator" class="doc-section">
+    <h2>1. Order Number Generator</h2>
+    
+    <div class="subsection">
+      <h3>Three Generator Implementations:</h3>
+      <ul>
+        <li><strong>UUIDOrderNumberGenerator</strong> - Best for production (truly unique, distributed-safe)</li>
+        <li><strong>SequentialOrderNumberGenerator</strong> - Thread-safe with atomic counter</li>
+        <li><strong>TimeBasedOrderNumberGenerator</strong> - Simple time-based generator</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Design Patterns Used:</h3>
+      <ul>
+        <li><strong>Strategy Pattern</strong> - Interface allows swapping implementations</li>
+        <li><strong>Dependency Injection</strong> - All dependencies injected via constructor</li>
+        <li><strong>Configuration Pattern</strong> - Can switch generators via application.properties</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Key Features:</h3>
+      <ul>
+        <li><strong>Thread-safe</strong> - All implementations handle concurrency</li>
+        <li><strong>Testable</strong> - Clock injection allows deterministic tests</li>
+        <li><strong>Configurable</strong> - Switch generators without code changes</li>
+        <li><strong>SOLID principles</strong> - Single responsibility, open/closed, dependency inversion</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Benefits:</h3>
+      <ul>
+        <li><strong>Open/Closed Principle</strong> - Add new generators without modifying existing code</li>
+        <li><strong>Dependency Inversion</strong> - High-level OrderService depends on abstraction</li>
+        <li><strong>Single Responsibility</strong> - Each class has one job</li>
+        <li><strong>Testability</strong> - Mock the interface or inject test doubles</li>
+        <li><strong>Flexibility</strong> - Switch implementations via configuration</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Quick Usage:</h3>
+      <pre><code class="language-java">&#64;Autowired
+private OrderNumberGenerator orderNumberGenerator;
+order.setOrderNumber(orderNumberGenerator.generate());</code></pre>
+    </div>
+
+    <div class="subsection">
+      <h3>Configuration (application.properties):</h3>
+      <pre><code class="language-properties"># Order Number Generator Type (uuid, sequential, timeBased)
+app.order.generator.type=uuid</code></pre>
+      <p class="note">The UUID implementation is recommended for production as it guarantees uniqueness even across multiple servers/instances.</p>
+    </div>
+
+    <div class="subsection">
+      <h3>Class Diagram Architecture (See below):</h3>
+      <p class="note">The diagram shows how Spring wires everything together with annotations like <code>&#64;Component, &#64;Service, and &#64;Configuration</code>. The <code>OrderService</code> only knows about the interface, making it completely decoupled from the implementation details.</p>
+    </div>
+  </section>
+
+  <section id="payment-type" class="doc-section">
+    <h2>2. Payment Type</h2>
+    
+    <div class="subsection">
+      <h3>Design Patterns Used:</h3>
+      <ul>
+        <li>
+          <strong>Strategy Pattern (Primary)</strong>
+          <ol>
+            <li>Defines a family of algorithms (payment methods), encapsulates each one, and makes them interchangeable</li>
+            <li>Allows runtime selection of payment processing algorithm based on payment type</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Factory Pattern</strong>
+          <ol>
+            <li>Provides an interface for creating objects without specifying their exact classes</li>
+            <li>Centralizes object creation and simplifies strategy selection logic</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Dependency Injection Pattern</strong>
+          <ol>
+            <li>Dependencies are provided to objects rather than created by them</li>
+            <li>Promotes loose coupling and easier testing</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Template Method Pattern (Implicit)</strong>
+          <ol>
+            <li>Defines skeleton of algorithm, letting subclasses override specific steps</li>
+            <li>Ensures consistent payment processing flow across all payment types</li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Key Features:</h3>
+      <ul>
+        <li>
+          <strong>Type-Safe Enum-Driven Selection</strong>
+          <ul>
+            <li>Uses <code>PaymentType</code> enum to select payment strategy</li>
+            <li>Uses <code>WalletType</code> enum to select e-wallet strategy</li>
+            <li>Compile-time safety prevents invalid payment types</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Centralized Strategy Management</strong>
+          <ul>
+            <li>Factories automatically discover and register all strategies via Spring's dependency injection</li>
+            <li>No manual registration required</li>
+            <li>Strategies are managed in <code>Map&lt;Enum, Strategy&gt;</code> for O(1) lookup</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Uniform Interface</strong>
+          <pre><code class="language-java">&#64;Autowired
+private OrderNumberGenerator orderNumberGenerator;
+
+order.setOrderNumber(orderNumberGenerator.generate());</code></pre>
+        </li>
+        <li>
+          <strong>Extensibility</strong>
+          <ul>
+            <li>Add new payment type: Create new strategy class, implement interface</li>
+            <li>Add new e-wallet: Create new e-wallet strategy class, implement interface</li>
+            <li>No changes to existing code required</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Benefits:</h3>
+      <ul>
+        <li>
+          <strong>Open/Closed Principle</strong>
+          <ul>
+            <li>Open for extension (add new payment types)</li>
+            <li>Closed for modification (no changes to existing code)</li>
+          </ul>
+          <pre><code class="language-java">// Adding Apple Pay requires ZERO changes to existing code
+&#64;Component
+public class ApplePayStrategy implements PaymentStrategy {{ '{' }}
+    // Implementation
+{{ '}' }}</code></pre>
+        </li>
+        <li>
+          <strong>Single Responsibility Principle</strong>
+          <ul>
+            <li>Each strategy handles ONE payment type</li>
+            <li>Factory handles strategy selection</li>
+            <li>Service orchestrates payment flow</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Dependency Inversion Principle</strong>
+          <ul>
+            <li><code>OrderService</code> depends on <code>PaymentStrategy</code> interface, not concrete implementations</li>
+            <li>High-level modules don't depend on low-level modules</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Clean Code & Maintainability</strong>
+          <pre><code class="language-java">// WITHOUT Strategy Pattern
+if (paymentType == CREDIT_CARD) {{ '{' }}
+    // n-th lines of credit card logic
+{{ '}' }} else if (paymentType == DEBIT_CARD) {{ '{' }}
+    // n-th lines of debit card logic
+{{ '}' }} else if (paymentType == E_WALLET) {{ '{' }}
+    if (eWalletType == GRABPAY) {{ '{' }}
+        // n-th lines
+    {{ '}' }} else if (eWalletType == BOOSTPAY) {{ '{' }}
+        // n-th lines
+    {{ '}' }}
+    // ... nested
+{{ '}' }}
+
+// WITH Strategy Pattern
+PaymentStrategy strategy = factory.getStrategy(paymentType);
+strategy.processPayment(payment, request);</code></pre>
+        </li>
+        <li>
+          <strong>Easy Testing</strong>
+          <ul>
+            <li>Each strategy can be unit tested independently</li>
+            <li>Mock strategies easily in integration tests</li>
+            <li>No complex conditional logic to test</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Parallel Development</strong>
+          <ul>
+            <li>Different developers can work on different payment strategies simultaneously</li>
+            <li>No merge conflicts in business logic</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Code Reusability</strong>
+          <ul>
+            <li>Common logic can be extracted to abstract base class</li>
+            <li>Shared utilities can be injected into strategies</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Easy Integration with Third-Party APIs</strong>
+          <ul>
+            <li>Each strategy can call different payment gateways</li>
+          </ul>
+          <pre><code class="language-java">&#64;Component
+public class StripePaymentStrategy implements PaymentStrategy {{ '{' }}
+    &#64;Autowired
+    private StripeClient stripeClient;
+    
+    public void processPayment(Payment payment, PaymentOrderRequest request) {{ '{' }}
+        stripeClient.charge(payment.getAmount());
+    {{ '}' }}
+{{ '}' }}</code></pre>
+        </li>
+        <li>
+          <strong>Performance Optimization</strong>
+          <ul>
+            <li>Can optimize each strategy independently</li>
+            <li>Can implement caching per payment type</li>
+            <li>Can add async processing for specific payment types</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Scalability</strong>
+          <ul>
+            <li>Different payment strategies can be deployed as separate microservices</li>
+            <li>Can scale individual payment processors based on demand</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Future-Proof Architecture</strong>
+          <ul>
+            <li>Ready for new payment technologies (crypto, BNPL, etc.)</li>
+            <li>Can adapt to regional payment requirements</li>
+          </ul>
+          <pre><code class="language-java">// Easy to add region-specific payment methods
+&#64;Component
+public class AliPayStrategy implements PaymentStrategy {{ '{' }} /* China */{{ '}' }}
+
+&#64;Component 
+public class UPIStrategy implements PaymentStrategy {{ '{' }} /* India */ {{ '}' }}</code></pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>Class Diagram Architecture (See below):</h3>
+      <ul>
+        <li><strong>Two-level Strategy Pattern</strong> - Payment strategies with nested E-Wallet strategies</li>
+        <li><strong>Factory Pattern</strong> - Both levels have factories for strategy selection</li>
+        <li><strong>Separation of Concerns</strong> - Clear boundaries between different payment types</li>
+        <li><strong>Open/Closed Principle</strong> - Easy to add new payment types without modifying existing code</li>
+        <li><strong>Dependency Injection</strong> - All components are Spring-managed beans</li>
+      </ul>
+      <p class="note">The diagram clearly shows how OrderService delegates to PaymentStrategyFactory, which returns the appropriate strategy, and how EWalletPaymentStrategy further delegates to EWalletStrategyFactory for E-Wallet specific processing.</p>
+    </div>
+  </section>
+
+  <section id="other-patterns" class="doc-section">
+    <h2>3. Other Design Patterns</h2>
+    <p>This project demonstrates multiple <strong>software design patterns</strong> implemented using <strong>Spring Boot</strong> and <strong>Java best practices</strong>. Each pattern contributes to a modular, maintainable, and testable architecture.</p>
+
+    <div class="pattern-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Design Pattern</th>
+            <th>What</th>
+            <th>Examples</th>
+            <th>Files</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MVC (Model–View–Controller)</strong></td>
+            <td>Controllers handle HTTP requests; services implement business logic; repositories access the DB.</td>
+            <td><code>PetController</code> (controller), <code>PetService</code>, <code>OrderService</code> (services), <code>PetRepository</code>, <code>OrderRepository</code> (repositories)</td>
+            <td><code>PetController.java</code>, <code>PetService.java</code>, <code>PetRepository.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Dependency Injection (DI) / Inversion of Control</strong></td>
+            <td>Spring injects dependencies via annotations or constructor injection.</td>
+            <td>Constructor injection in controllers/services; beans annotated with <code>Service</code>, <code>Repository</code>, <code>Component</code>, <code>Configuration</code>.</td>
+            <td><code>PetController</code> constructor, <code>PetService</code> constructor, <code>OrderService</code>, <code>UserService</code></td>
+          </tr>
+          <tr>
+            <td><strong>Repository Pattern (Spring Data JPA)</strong></td>
+            <td>Data access is abstracted behind repository interfaces.</td>
+            <td><code>PetRepository extends JpaRepository&lt;Pet, Long&gt;</code> with custom <code>Query</code> methods.</td>
+            <td><code>PetRepository.java</code>, <code>UserRepository.java</code>, <code>OrderRepository.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Service Layer</strong></td>
+            <td>Business logic is encapsulated in service classes.</td>
+            <td><code>PetService</code>, <code>OrderService</code>, <code>CartService</code> encapsulate transactional and business rules.</td>
+            <td><code>src/main/java/com/petstore/service/*.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Singleton (Spring-managed beans)</strong></td>
+            <td>Spring-managed beans (<code>Service</code>, <code>RestController</code>, etc.) are singletons by default.</td>
+            <td><code>Service</code> and <code>RestController</code> classes are application-scoped singletons.</td>
+            <td><code>PetService.java</code>, <code>JwtTokenProvider.java</code>, <code>JwtAuthenticationFilter.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Factory Method</strong></td>
+            <td>Static factory methods encapsulate object creation logic.</td>
+            <td><code>UserPrincipal.create(User user)</code> builds a <code>UserPrincipal</code> from domain <code>User</code>.</td>
+            <td><code>UserPrincipal.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Adapter / Auditor Adapter</strong></td>
+            <td>Adapts one interface to another for integration purposes.</td>
+            <td><code>SpringSecurityAuditorAware</code> implements <code>AuditorAware&lt;Long&gt;</code> to map Spring Security principal → auditor ID.</td>
+            <td><code>SpringSecurityAuditorAware.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Facade</strong></td>
+            <td>Provides a unified interface for a complex subsystem.</td>
+            <td><code>JwtTokenProvider</code> encapsulates token creation, parsing, and validation.</td>
+            <td><code>JwtTokenProvider.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Interceptor / Filter</strong></td>
+            <td>Intercepts or filters requests before controller handling.</td>
+            <td><code>JwtAuthenticationFilter</code> extends <code>OncePerRequestFilter</code> and is wired into the security filter chain.</td>
+            <td><code>JwtAuthenticationFilter.java</code>, <code>SecurityConfig.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Controller Advice / Global Exception Handler</strong></td>
+            <td>Centralized exception-to-HTTP response mapping.</td>
+            <td><code>RestControllerAdvice</code> + <code>ExceptionHandler(...)</code> methods.</td>
+            <td><code>GlobalExceptionHandler.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>DTO (Data Transfer Object)</strong></td>
+            <td>Shapes responses independent of domain models.</td>
+            <td><code>PetPageResponse</code> encapsulates paginated pet data.</td>
+            <td><code>PetPageResponse.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Utility / Helper</strong></td>
+            <td>Provides static helper methods for cross-cutting concerns.</td>
+            <td><code>OrderNumberGenerator.generateOrderNumber()</code> (static util).</td>
+            <td><code>OrderNumberGenerator.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Exception / Domain-specific Exceptions</strong></td>
+            <td>Custom exceptions represent business error conditions.</td>
+            <td><code>PetNotFoundException</code>, <code>CartEmptyException</code>, <code>DiscountInUseException</code>.</td>
+            <td><code>src/main/java/com/petstore/exception/*.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Strategy (via Interfaces)</strong></td>
+            <td>Defines interchangeable behaviors via interface implementations.</td>
+            <td><code>UserDetailsService</code> → <code>UserDetailsServiceImpl</code>; fits Strategy pattern potential.</td>
+            <td><code>UserDetailsServiceImpl.java</code>, <code>SecurityConfig.java</code></td>
+          </tr>
+          <tr>
+            <td><strong>Snapshot Pattern / Memento Pattern</strong></td>
+            <td>Captures and preserves point-in-time state of an object to maintain historical accuracy. Prevents historical data from being affected by future changes to referenced entities.</td>
+            <td>Order entity stores immutable snapshots of discount values (<code>discountCode</code>, <code>discountPercentage</code>, <code>discountAmount</code>) at order creation time, alongside the <code>discount_id</code> FK for reporting. This ensures order totals remain accurate even if admin modifies the original discount.</td>
+            <td><code>Order.java</code>, <code>OrderService.java</code> (checkout method)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

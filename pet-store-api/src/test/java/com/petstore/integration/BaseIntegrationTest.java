@@ -1,7 +1,7 @@
 package com.petstore.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petstore.model.Role;
+import com.petstore.enums.Role;
 import com.petstore.model.User;
 import com.petstore.repository.UserRepository;
 import com.petstore.security.JwtTokenProvider;

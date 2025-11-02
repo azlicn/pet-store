@@ -19,7 +19,7 @@
 <ul>
   <li>UUIDOrderNumberGenerator - Best for production (truly unique, distributed-safe)</li>
   <li>SSequentialOrderNumberGenerator - Thread-safe with atomic counter</li>
-  <li>imeBasedOrderNumberGenerator** - Simple timebased generator</li>
+  <li>TimeBasedOrderNumberGenerator** - Simple timebased generator</li>
 </ul>
 
 &nbsp;&nbsp;&nbsp;&nbsp;**Design Patterns Used:**
@@ -246,14 +246,14 @@ classDiagram
     - ```java
       // WITHOUT Strategy Pattern
         if (paymentType == CREDIT_CARD) {
-            // nth lines of credit card logic
+            // n-th lines of credit card logic
         } else if (paymentType == DEBIT_CARD) {
-            // nth lines of debit card logic
+            // n-th lines of debit card logic
         } else if (paymentType == E_WALLET) {
             if (eWalletType == GRABPAY) {
-                // nth lines
+                // n-th lines
             } else if (eWalletType == BOOSTPAY) {
-                // nth lines
+                // n-th lines
             }
             // ... nested
         }

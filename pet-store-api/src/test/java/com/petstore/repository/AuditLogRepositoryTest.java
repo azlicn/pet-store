@@ -1,7 +1,7 @@
 package com.petstore.repository;
 
+import com.petstore.enums.Role;
 import com.petstore.model.AuditLog;
-import com.petstore.model.Role;
 import com.petstore.model.User;
 
 import jakarta.validation.ConstraintViolationException;

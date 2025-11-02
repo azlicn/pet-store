@@ -1,10 +1,11 @@
 package com.petstore.dto;
 
-import com.petstore.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
 import java.util.Set;
+
+import com.petstore.enums.Role;
 
 /**
  * Data Transfer Object for user update requests
