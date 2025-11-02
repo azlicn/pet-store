@@ -15,11 +15,14 @@
   width: 100%;
   min-height: 200px;
   box-sizing: border-box;
-  overflow: visible;
+  overflow: visible !important;
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
+
+  // Normal display is block
+  display: block;
 
   // Ensure proper SVG rendering environment
   .mermaid,
@@ -33,8 +36,9 @@
     background: white !important;
     position: relative;
     min-height: 100px;
-    isolation: isolate;
-    contain: layout style paint;
+    // Don't use isolation/contain - they interfere with fullscreen
+    // isolation: isolate;
+    // contain: layout style paint;
     
     // Critical: Ensure SVG elements are properly sized
     svg {
@@ -112,8 +116,34 @@
   text-align: center;
   min-height: 200px;
   overflow: auto;
-  transition: all 0.3s ease;
   background: white;
+
+  // Ensure mermaid content is always visible
+  .mermaid,
+  .mermaid-isolated,
+  .mermaid-stable {
+    display: block !important;
+    visibility: visible !important;
+    width: 100%;
+    min-height: 100px;
+
+    svg {
+      display: block !important;
+      visibility: visible !important;
+      margin: 0 auto;
+    }
+  }
+
+  // Ensure all child divs are visible
+  > div {
+    display: block !important;
+    width: 100%;
+    
+    svg {
+      display: block !important;
+      margin: 0 auto;
+    }
+  }
 }
 
 .mermaid-content {
@@ -136,40 +166,123 @@
   border-top: 1px solid #f0f0f0;
   background: #fafafa;
   border-radius: 0 0 8px 8px;
-  display: flex;
-  gap: 8px;
-}
+  display: flex !important;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 60px;
 
-.action-btn {
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8em;
-  transition: all 0.2s ease;
+  .action-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    
+    mat-icon {
+      margin-right: 6px;
+    }
+  }
 
-  &:hover {
-    background: #f0f0f0;
-    border-color: #bbb;
+  .fullscreen-btn {
+    font-weight: 500;
   }
 }
 
-.fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1000;
-  background: white;
-  border-radius: 0;
+// Fullscreen mode - use :host to ensure it applies globally
+:host-context(.fullscreen),
+.mermaid-container.fullscreen {
+  // Force override all container styles
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999 !important;
+  background: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: auto !important;
+
+  * {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .zoom-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    button {
+      width: 40px;
+      height: 40px;
+    }
+
+    .zoom-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+      margin-top: 4px;
+    }
+  }
+
+  .diagram-header {
+    display: block !important;
+    padding: 20px;
+    background: #f5f5f5;
+    border-bottom: 2px solid #ddd;
+
+    h3 {
+      font-size: 1.5em;
+      margin: 0 0 8px 0;
+      color: #333;
+    }
+    
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
 
   .mermaid-diagram {
-    height: calc(100vh - 120px);
-    display: flex;
-    align-items: center;
+    display: block !important;
+    padding: 40px !important;
+    background: white !important;
+    min-height: 70vh !important;
+    
+    > * {
+      display: block !important;
+    }
+    
+    svg {
+      display: block !important;
+      margin: 0 auto !important;
+      max-width: 95% !important;
+    }
+  }
+
+  .diagram-actions {
+    display: flex !important;
+    padding: 20px;
+    background: #f5f5f5;
+    border-top: 2px solid #ddd;
     justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 }
 

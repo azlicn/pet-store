@@ -149,9 +149,14 @@ export class DiscountFormComponent implements OnInit {
             },
             error: (error) => {
               console.error("Error updating discount:", error);
-              this.snackBar.open("Error updating discount", "Close", {
-                duration: 3000,
-              });
+              this.snackBar.open(
+                error?.error?.message || "Error updating discount",
+                "Close",
+                {
+                  duration: 3000,
+                  panelClass: ["error-snackbar"],
+                }
+              );
               this.submitting = false;
             },
           });
@@ -165,9 +170,14 @@ export class DiscountFormComponent implements OnInit {
           },
           error: (error) => {
             console.error("Error creating discount:", error);
-            this.snackBar.open("Error creating discount", "Close", {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              error?.error?.message || "Error creating discount",
+              "Close",
+              {
+                duration: 3000,
+                panelClass: ["error-snackbar"],
+              }
+            );
             this.submitting = false;
           },
         });

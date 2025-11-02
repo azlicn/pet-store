@@ -3,6 +3,7 @@ package com.petstore.integration;
 import com.petstore.dto.PaymentOrderRequest;
 import com.petstore.enums.PaymentType;
 import com.petstore.enums.PetStatus;
+import com.petstore.enums.Role;
 import com.petstore.model.*;
 import com.petstore.repository.*;
 import org.junit.jupiter.api.BeforeEach;

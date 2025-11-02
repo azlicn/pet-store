@@ -130,6 +130,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").hasAnyRole("USER", "ADMIN") // User endpoints require
                                                                                       // authentication
 
+                        // Store endpoints (cart, orders, checkout) - rely on @PreAuthorize for fine-grained control
+                        .requestMatchers("/api/stores/**").hasAnyRole("USER", "ADMIN") // Store endpoints require
+                                                                                        // USER or ADMIN role
+
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

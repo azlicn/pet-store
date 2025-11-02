@@ -1,7 +1,8 @@
 package com.petstore.repository;
 
+import com.petstore.enums.Role;
 import com.petstore.model.User;
-import com.petstore.model.Role;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

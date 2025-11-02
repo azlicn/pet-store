@@ -1,6 +1,6 @@
 # 🚀 Pawfect Store - Backend API
 
-Spring Boot 3.2 REST API for Pawfect Store pet e-commerce platform.
+Spring Boot 3.2 REST API for Pawfect Store pet application.
 
 ## 📋 Table of Contents
 

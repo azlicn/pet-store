@@ -2,9 +2,9 @@ package com.petstore.controller;
 
 import com.petstore.dto.LoginRequest;
 import com.petstore.dto.SignUpRequest;
+import com.petstore.enums.Role;
 import com.petstore.exception.AuthenticationFailedException;
 import com.petstore.exception.UserNotFoundException;
-import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.security.JwtTokenProvider;
 import com.petstore.service.UserService;

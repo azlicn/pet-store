@@ -38,7 +38,7 @@
 
 ---
 
-## 💻 Development
+## Development
 
 ### Backend Development
 - **Framework**: Spring Boot 3.2
@@ -136,7 +136,7 @@ flowchart LR
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 ### Deployment Architecture
 
@@ -230,7 +230,7 @@ docker-compose up -d petstore-frontend
 
 ---
 
-## 🔒 Docker Security Configuration
+## Docker Security Configuration
 
 This section contains multiple approaches to securely manage passwords and secrets in Docker Compose.
 
@@ -372,7 +372,7 @@ docker exec petstore-mysql cat /run/secrets/mysql_root_password
 
 ---
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### Overview
 

@@ -4,7 +4,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.petstore.dto.LoginRequest;
 import com.petstore.dto.SignUpRequest;
-import com.petstore.model.Role;
+import com.petstore.enums.Role;
 import com.petstore.model.User;
 import java.util.Optional;
 import java.util.Set;

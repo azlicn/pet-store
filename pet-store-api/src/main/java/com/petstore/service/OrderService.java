@@ -161,13 +161,21 @@ public class OrderService {
                 .map(CartItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount
+        // Apply discount and capture snapshot values
         if (discountCode != null && !discountCode.isBlank()) {
             Discount discount = discountService.validateDiscount(discountCode);
             BigDecimal percent = discount.getPercentage().divide(BigDecimal.valueOf(100));
             BigDecimal discountAmount = total.multiply(percent);
             total = total.subtract(discountAmount);
+            
+            // Store discount reference for reporting/tracking
             order.setDiscount(discount);
+            
+            // Capture immutable snapshot of discount values at time of order creation
+            // This prevents historical orders from being affected by future discount changes
+            order.setDiscountCode(discount.getCode());
+            order.setDiscountPercentage(discount.getPercentage());
+            order.setDiscountAmount(discountAmount);
         }
 
         order.setTotalAmount(total);
@@ -188,8 +196,9 @@ public class OrderService {
         orderRepository.save(order);
         cartRepository.delete(cart); // empty cart after checkout
 
-        auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(),
-                AuditOrderAction.CREATE_ORDER.name(), null, OrderStatus.PLACED.name(), LocalDateTime.now()));
+        AuditLog auditLog = new AuditLog(Order.class.getName(), order.getId(), order.getUser(),
+                AuditOrderAction.CREATE_ORDER.name(), null, OrderStatus.PLACED.name());
+        auditLogRepository.save(auditLog);
 
         return order;
     }
@@ -235,8 +244,8 @@ public class OrderService {
             pet.setOwner(order.getUser());
             petRepository.save(pet);
 
-            auditLogRepository.save(new AuditLog(Pet.class.getName(), pet.getId(),
-                    "status", PetStatus.AVAILABLE.name(), PetStatus.SOLD.name(), LocalDateTime.now()));
+            auditLogRepository.save(new AuditLog(Pet.class.getName(), pet.getId(), order.getUser(),
+                    "CHANGE_PET_STATUS", PetStatus.AVAILABLE.name(), PetStatus.SOLD.name()));
         }
         // Update order
         order.setStatus(OrderStatus.APPROVED);
@@ -260,9 +269,8 @@ public class OrderService {
         delivery.setCreatedAt(LocalDateTime.now());
         deliveryRepository.save(delivery);
 
-        auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(),
-                AuditOrderAction.CHECKOUT_ORDER.name(), OrderStatus.PLACED.name(), OrderStatus.APPROVED.name(),
-                LocalDateTime.now()));
+        auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(), order.getUser(),
+                AuditOrderAction.CHECKOUT_ORDER.name(), OrderStatus.PLACED.name(), OrderStatus.APPROVED.name()));
 
         return payment;
     }
@@ -281,9 +289,8 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
 
-        auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(),
-                AuditOrderAction.CANCEL_ORDER.name(), OrderStatus.PLACED.name(), OrderStatus.CANCELLED.name(),
-                LocalDateTime.now()));
+        auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(), order.getUser(),
+                AuditOrderAction.CANCEL_ORDER.name(), OrderStatus.PLACED.name(), OrderStatus.CANCELLED.name()));
     }
 
     /**
@@ -330,13 +337,13 @@ public class OrderService {
         deliveryRepository.save(delivery);
 
         if (newStatus == DeliveryStatus.SHIPPED) {
-            auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(),
+            auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(), order.getUser(),
                     AuditOrderAction.UPDATE_DELIVERY_STATUS.name(), DeliveryStatus.PENDING.name(),
-                    DeliveryStatus.SHIPPED.name(), LocalDateTime.now()));
+                    DeliveryStatus.SHIPPED.name()));
         } else if (newStatus == DeliveryStatus.DELIVERED) {
-            auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(),
+            auditLogRepository.save(new AuditLog(Order.class.getName(), order.getId(), order.getUser(),
                     AuditOrderAction.UPDATE_DELIVERY_STATUS.name(), DeliveryStatus.SHIPPED.name(),
-                    DeliveryStatus.DELIVERED.name(), LocalDateTime.now()));
+                    DeliveryStatus.DELIVERED.name()));
         }
     }
 

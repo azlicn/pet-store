@@ -1,6 +1,6 @@
 package com.petstore.integration;
 
-import com.petstore.model.Role;
+import com.petstore.enums.Role;
 import com.petstore.model.Address;
 import com.petstore.model.User;
 import com.petstore.repository.AddressRepository;

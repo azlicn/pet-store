@@ -46,38 +46,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        logger.debug("=== JWT Filter Debug ===");
-        logger.debug("Request URI: ", request.getRequestURI());
-        logger.debug("Request Method: ", request.getMethod());
+        logger.info("=== JWT Filter Debug ===");
+        logger.info("Request URI: {}", request.getRequestURI());
+        logger.info("Request Method: {}", request.getMethod());
         
         try {
             String jwt = getJwtFromRequest(request);
-            logger.debug("JWT Token: " + (jwt != null ? jwt.substring(0, Math.min(jwt.length(), 20)) + "..." : "null"));
+            logger.info("JWT Token present: {}", (jwt != null ? "YES" : "NO"));
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
-                logger.debug("Username from token: ", username);
+                logger.info("Username from token: {}", username);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                logger.debug("User loaded: ", userDetails.getUsername());
-                logger.debug("User authorities: ", userDetails.getAuthorities());
+                logger.info("User loaded: {}", userDetails.getUsername());
+                logger.info("User authorities: {}", userDetails.getAuthorities());
                 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("Authentication set in security context");
+                logger.info("Authentication set in security context for user: {} with roles: {}", 
+                    username, userDetails.getAuthorities());
             } else {
-                logger.debug("JWT validation failed or token is null");
+                logger.warn("JWT validation failed or token is null");
             }
         } catch (Exception ex) {
-            logger.debug("Exception in JWT filter: ", ex.getMessage());
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Exception in JWT filter: {}", ex.getMessage(), ex);
         }
 
         filterChain.doFilter(request, response);
-        logger.debug("=== End JWT Filter Debug ===");
+        logger.info("=== End JWT Filter Debug ===");
     }
 
     /**

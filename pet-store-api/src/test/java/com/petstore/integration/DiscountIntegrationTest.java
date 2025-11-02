@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.petstore.enums.Role;
 import com.petstore.model.Discount;
-import com.petstore.model.Role;
 import com.petstore.model.User;
 import com.petstore.repository.DiscountRepository;
 

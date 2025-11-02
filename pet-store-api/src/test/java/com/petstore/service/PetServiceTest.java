@@ -2,11 +2,11 @@ package com.petstore.service;
 
 import com.petstore.model.Pet;
 import com.petstore.enums.PetStatus;
+import com.petstore.enums.Role;
 import com.petstore.exception.InvalidPetException;
 import com.petstore.exception.PetNotFoundException;
 import com.petstore.model.Category;
 import com.petstore.model.User;
-import com.petstore.model.Role;
 import com.petstore.repository.PetRepository;
 import com.petstore.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
