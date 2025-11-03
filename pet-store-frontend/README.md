@@ -284,44 +284,7 @@ docker run -p 80:80 pet-store-frontend
 
 ## Testing
 
-### Run Unit Tests
-```bash
-npm test
-# or
-ng test
-```
-
-### Unit Tests (Headless)
-```bash
-ng test --browsers=ChromeHeadless --watch=false
-```
-
-### E2E Tests
-```bash
-npm run e2e
-# or
-ng e2e
-```
-
-### Code Coverage
-```bash
-ng test --code-coverage
-```
-
-View coverage report: `coverage/pet-store-frontend/index.html`
-
-### Test Structure
-```
-src/
-└── app/
-    ├── components/
-    │   └── pet-list/
-    │       ├── pet-list.component.ts
-    │       └── pet-list.component.spec.ts  # Unit tests
-    └── services/
-        ├── pet.service.ts
-        └── pet.service.spec.ts  # Service tests
-```
+### TBD
 
 ---
 
