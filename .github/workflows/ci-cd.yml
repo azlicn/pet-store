@@ -12,6 +12,9 @@ env:
   REGISTRY: docker.io
   BACKEND_IMAGE_NAME: ${{ github.repository }}/petstore-backend
   FRONTEND_IMAGE_NAME: ${{ github.repository }}/petstore-frontend
+  CORS_ALLOWED_ORIGINS: 'http://localhost:4200,https://pawfect.com'
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
 
 jobs:
   build-and-test-backend:
