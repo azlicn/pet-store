@@ -214,10 +214,13 @@ classDiagram
    - Strategies are managed in <code>Map<Enum, Strategy></code> for O(1) lookup
 - Uniform Interface 
    - ```java
-      @Autowired
-      private OrderNumberGenerator orderNumberGenerator;
+      public interface PaymentStrategy {
 
-      order.setOrderNumber(orderNumberGenerator.generate());
+        PaymentType getPaymentType();
+        void processPayment(Payment payment, PaymentOrderRequest request);
+        void validatePayment(PaymentOrderRequest request);
+    
+      }
       ```
 - Extensibility
    - Add new payment type: Create new strategy class, implement interface
@@ -522,7 +525,6 @@ Each pattern contributes to a modular, maintainable, and testable architecture.
 | **Interceptor / Filter** | Intercepts or filters requests before controller handling. | `JwtAuthenticationFilter` extends `OncePerRequestFilter` and is wired into the security filter chain. | `JwtAuthenticationFilter.java`, `SecurityConfig.java` |
 | **Controller Advice / Global Exception Handler** | Centralized exception-to-HTTP response mapping. | `@RestControllerAdvice` + `@ExceptionHandler(...)` methods. | `GlobalExceptionHandler.java` |
 | **DTO (Data Transfer Object)** | Shapes responses independent of domain models. | `PetPageResponse` encapsulates paginated pet data. | `PetPageResponse.java` |
-| **Utility / Helper** | Provides static helper methods for cross-cutting concerns. | `OrderNumberGenerator.generateOrderNumber()` (static util). | `OrderNumberGenerator.java` |
 | **Exception / Domain-specific Exceptions** | Custom exceptions represent business error conditions. | `PetNotFoundException`, `CartEmptyException`, `DiscountInUseException`. | `src/main/java/com/petstore/exception/*.java` |
 | **Strategy (via Interfaces)** | Defines interchangeable behaviors via interface implementations. | `UserDetailsService` → `UserDetailsServiceImpl`; fits Strategy pattern potential. | `UserDetailsServiceImpl.java`, `SecurityConfig.java` |
 | **Snapshot Pattern / Memento Pattern** | Captures and preserves point-in-time state of an object to maintain historical accuracy. Prevents historical data from being affected by future changes to referenced entities. | Order entity stores immutable snapshots of discount values (`discountCode`, `discountPercentage`, `discountAmount`) at order creation time, alongside the `discount_id` FK for reporting. This ensures order totals remain accurate even if admin modifies the original discount. | `Order.java`, `OrderService.java` (checkout method) |

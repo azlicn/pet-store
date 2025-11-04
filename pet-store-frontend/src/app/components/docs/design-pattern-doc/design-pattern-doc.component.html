@@ -120,10 +120,11 @@ app.order.generator.type=uuid</code></pre>
         </li>
         <li>
           <strong>Uniform Interface</strong>
-          <pre><code class="language-java">&#64;Autowired
-private OrderNumberGenerator orderNumberGenerator;
-
-order.setOrderNumber(orderNumberGenerator.generate());</code></pre>
+          <pre><code class="language-java">public interface PaymentStrategy &lcub;
+    PaymentType getPaymentType();
+    void processPayment(Payment payment, PaymentOrderRequest request);
+    void validatePayment(PaymentOrderRequest request);
+&rcub;</code></pre>
         </li>
         <li>
           <strong>Extensibility</strong>
@@ -347,12 +348,6 @@ public class UPIStrategy implements PaymentStrategy {{ '{' }} /* India */ {{ '}'
             <td>Shapes responses independent of domain models.</td>
             <td><code>PetPageResponse</code> encapsulates paginated pet data.</td>
             <td><code>PetPageResponse.java</code></td>
-          </tr>
-          <tr>
-            <td><strong>Utility / Helper</strong></td>
-            <td>Provides static helper methods for cross-cutting concerns.</td>
-            <td><code>OrderNumberGenerator.generateOrderNumber()</code> (static util).</td>
-            <td><code>OrderNumberGenerator.java</code></td>
           </tr>
           <tr>
             <td><strong>Exception / Domain-specific Exceptions</strong></td>
