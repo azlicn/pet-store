@@ -86,10 +86,10 @@ jobs:
    #     npm test -- --watch=false --code-coverage
         
    # - name: Upload Coverage
-      # uses: codecov/codecov-action@v3
-      # with:
-      #   files: ./pet-store-frontend/coverage/lcov.info
-      #   flags: frontend
+   # uses: codecov/codecov-action@v3
+   # with:
+   #   files: ./pet-store-frontend/coverage/lcov.info
+   #   flags: frontend
 
   docker-build-and-push:
     name: Build and Push Docker Images
@@ -112,14 +112,14 @@ jobs:
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
         
     - name: Extract metadata (tags, labels)
       id: meta-backend
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+        images: ${{ env.BACKEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=sha,prefix={{branch}}-
@@ -139,7 +139,7 @@ jobs:
       id: meta-frontend
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+        images: ${{ env.FRONTEND_IMAGE_NAME }}
         
     - name: Build and push frontend image
       uses: docker/build-push-action@v5
