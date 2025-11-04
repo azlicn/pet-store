@@ -2,7 +2,8 @@ name: Pawfect CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'feature/*', 'release/*' ]
+    tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ main, develop ]
 
@@ -94,7 +95,12 @@ jobs:
     name: Build and Push Docker Images
     needs: [build-and-test-backend, build-and-test-frontend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: |
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop' ||
+      startsWith(github.ref, 'refs/heads/release/') ||
+      startsWith(github.ref, 'refs/tags/v')
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -147,12 +153,25 @@ jobs:
 
   deploy:
     name: Deploy to Environment
-    needs: docker-build-and-push
+    needs: [build-and-test-backend, build-and-test-frontend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - name: Deploy to production
+    - name: Deploy to Development
+      if: startsWith(github.ref, 'refs/heads/develop')
       run: |
-        echo "Deploying to production environment..."
-        # Add deployment commands here (e.g., kubectl, AWS ECS, etc.)
+        echo "Deploying to DEVELOPMENT environment..."
+      # e.g. ssh user@dev-server 'cd /app && git pull && docker-compose up -d'
+
+    - name: Deploy to Staging
+      if: startsWith(github.ref, 'refs/heads/release/')
+      run: |
+        echo "Deploying to STAGING environment..."
+      # e.g. ssh user@staging-server 'cd /app && git pull && docker-compose up -d'
+
+    - name: Deploy to Production
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      needs: docker-build-and-push
+      run: |
+        echo "Deploying to PRODUCTION environment..."
+      # Add deployment commands here (e.g., kubectl, AWS ECS, etc.)
