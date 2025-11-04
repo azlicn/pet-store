@@ -153,7 +153,7 @@ jobs:
 
   deploy:
     name: Deploy to Environment
-    needs: [build-and-test-backend, build-and-test-frontend]
+    needs: [build-and-test-backend, build-and-test-frontend, docker-build-and-push]
     runs-on: ubuntu-latest
     
     steps:
@@ -171,7 +171,6 @@ jobs:
 
     - name: Deploy to Production
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      needs: docker-build-and-push
       run: |
         echo "Deploying to PRODUCTION environment..."
       # Add deployment commands here (e.g., kubectl, AWS ECS, etc.)
