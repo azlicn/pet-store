@@ -13,7 +13,7 @@ env:
   REGISTRY: docker.io
   BACKEND_IMAGE_NAME: azlicn/petstore-backend
   FRONTEND_IMAGE_NAME: azlicn/petstore-frontend
-  CORS_ALLOWED_ORIGINS: 'http://localhost:4200,https://pawfect.com'
+  CORS_ALLOWED_ORIGINS: 'http://localhost:4200,https://dev.pawfect.com,https://staging.pawfect.com,https://pawfect.com'
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
 
@@ -132,6 +132,10 @@ jobs:
         push: true
         tags: ${{ steps.meta-backend.outputs.tags }}
         labels: ${{ steps.meta-backend.outputs.labels }}
+        build-args: |
+          DB_URL=${{ secrets.DB_URL }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
